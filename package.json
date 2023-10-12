@@ -1,0 +1,36 @@
+{
+  "name": "stable-protocol-backend-v2",
+  "version": "1.0.0",
+  "description": "Money On Chain Protocol - Backend Integration - V2 Contracts",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "eslint": "eslint . --ext .jsx --ext .js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/money-on-chain/stable-protocol-backend-v2.git"
+  },
+  "keywords": [
+    "Web3"
+  ],
+  "author": "Martin Mulone",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/money-on-chain/stable-protocol-backend-v2/issues"
+  },
+  "homepage": "https://github.com/money-on-chain/stable-protocol-backend-v2#readme",
+  "dependencies": {
+    "abi-decoder": "^2.4.0",
+    "bignumber.js": "^9.0.2",
+    "dotenv": "^16.0.0",
+    "web3": "^1.7.3"
+  },
+  "devDependencies": {
+    "eslint": "^8.16.0",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-n": "^15.2.0",
+    "eslint-plugin-promise": "^6.0.0"
+  }
+}
