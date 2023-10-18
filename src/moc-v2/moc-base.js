@@ -13,7 +13,7 @@ const AllowanceUseWrapper = async (web3, dContracts, token, allow, tokenDecimals
     let amountAllowance = new BigNumber('0')
     const valueToSend = null
     if (allow) {
-        amountAllowance = new BigNumber(1000) //Number.MAX_SAFE_INTEGER.toString()
+        amountAllowance = new BigNumber(10000) //Number.MAX_SAFE_INTEGER.toString()
     }
 
     // Calculate estimate gas cost

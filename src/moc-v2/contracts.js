@@ -13,7 +13,6 @@ BigNumber.config({ ROUNDING_MODE: BigNumber.ROUND_DOWN })
 
 const readContracts = async (web3, configProject) => {
   const appProject = configProject.appProject
-  const appMode = configProject.appMode
 
   const dContracts = {}
   dContracts.json = {}

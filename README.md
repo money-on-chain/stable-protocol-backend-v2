@@ -2,60 +2,53 @@
 
 ## Warning: This is only for version 2 of the main contracts.
 
-Money on chain token operations with multi collateral (coinbase or RRC20).
+Money on chain token operations (backend to contracts)
 
-* Mint / Redeem Pegged Token (TP): Ex.: DoC or RDOC
-* Mint / Redeem Collateral Token (TC): Ex.: BPro or RIFP
-* Mint / Redeem Token X (TX): Ex.: BTCx or RIFx
-* Allowance to use Reserve Token: RIF
-* Enable / Disable Paying Commissions with Govern Token (TG): Ex.: MOC
+* Mint / Redeem Pegged Token (TP): Ex.: DoC, USDRIF, FARS, FMXN (depends on the project)
+* Mint / Redeem Collateral Token (TC): Ex.: BPro, RIFP, GoTurbo
+* Allowance to use Collateral Asset
 * Status of Main MoC Contracts
 * "Governanza" operations
 
 **Tokens**
 
-| Token | Name             | Ex.        |                           |
-|-------|------------------|------------|---------------------------|
-| TP    | Token Pegged     | DOC, RDOC  | Pegged token 1:1 with USD |
-| TC    | Collateral Token | BPRO, RIFP | HODL + Earn Token         |
-| TX    | Token X          | BTCX, RIF  | Leveraged long position   |
-| TG    | Govern Token     | MOC        | Govern + Stake token      |
+| Token | Name             | Ex.                     |                      |
+|-------|------------------|-------------------------|----------------------|
+| TP    | Token Pegged     | DOC, USDRIF, FARS, FMXN | Pegged token         |
+| TC    | Collateral Token | BPRO, RIFP, GoTurbo     | HODL + Earn Token    |
+| TG    | Govern Token     | MOC                     | Govern + Stake token |
 
 
 ### Setup
 
 1. `nvm use`
 2. `npm install`
-3. Clone `.env.mocTestnet` and save it as `.env` ... use environment you want to use please refer environment table
+3. Clone `.env.flipagoRskTestnet` and save it as `.env` ... use environment you want to use please refer environment table
 4. Fill in wallet address and private key (it needs some testnet RBTC) in that file.
 
 
 
 #### Money on Chain projects and tokens 
 
-| Token | Token name       | Project | Token Name | Collateral |
-|-------|------------------|---------|------------|------------|
-| TP    | Pegged Token 1:1 | MOC     | DOC        | RBTC       |
-| TC    | Collateral Token | MOC     | BPRO       | RBTC       |
-| TX    | Leverage Token X | MOC     | BTCX       | RBTC       |
-| TG    | Govern Token     | MOC     | MOC        | -          |
-| TP    | Pegged Token 1:1 | ROC     | RDOC       | RIF        |
-| TC    | Collateral Token | ROC     | RIFP       | RIF        |
-| TX    | Leverage Token X | ROC     | RIFX       | RIF        |
-| TG    | Govern Token     | ROC     | MOC        | -          |
+| Token | Token name       | Project  | Token Name | Collateral   |
+|-------|------------------|----------|------------|--------------|
+| TP    | Pegged Token 1:1 | MOC      | DOC        | RBTC         |
+| TC    | Collateral Token | MOC      | BPRO       | RBTC         |
+| TG    | Govern Token     | MOC      | MOC        | -            |
+| TP    | Pegged Token 1:1 | ROC      | USDRIF     | RIF          |
+| TC    | Collateral Token | ROC      | RIFP       | RIF          |
+| TG    | Govern Token     | ROC      | MOC        | -            |
+| TP    | Pegged Token 1:1 | Flipago  | FARS, FMXN | DOC, USDRIF  |
+| TC    | Collateral Token | Flipago  | GoTurbo    | DOC, USDRIF  |
+| TG    | Govern Token     | Flipago  | MOC        | -            |
 
 #### Environment table
 
-Environment is our already deployed contracts. For example **mocMainnet2** is our MOC current production enviroment.
+Environment is our already deployed contracts. 
 
-| Network Name      | Project | Enviroment                       | Network    |
-|-------------------|---------|----------------------------------|------------|
-| mocTestnetAlpha   | MOC     |                                  | Testnet    |
-| mocTestnet        | MOC     | moc-testnet.moneyonchain.com     | Testnet    |
-| mocMainnet2       | MOC     | alpha.moneyonchain.com           | Mainnet    |
-| rdocTestnetAlpha  | RIF     |                                  | Testnet    |
-| rdocTestnet       | RIF     | rif-testnet.moneyonchain.com     | Testnet    |
-| rdocMainnet       | RIF     | rif.moneyonchain.com             | Mainnet    |
+| Network Name      | Project | Environment          | Network    |
+|-------------------|---------|----------------------|------------|
+| flipagoRskTestnet | Flipago | Flipago Testnet RSK  | Testnet    |
 
 
 ### Faucets
@@ -70,185 +63,139 @@ In testnet you may need some test tRIF o tRBTC
 ### How to run scripts
 
 
-| Command                                        | Action                                        | Obs                                              | 
-|------------------------------------------------|-----------------------------------------------|--------------------------------------------------|
-| node scripts/moc-v0/commission-tg-enable.js    | Enable paying commission MoC                  |                                                  |
-| node scripts/moc-v0/commission-tg-disable.js   | Disable paying commission MoC                 |                                                  |
-| node scripts/moc-v0/tp-mint.js                 | Mint DoC or Rdoc depend of the environment    | In rdoc environment before make allowance action |
-| node scripts/moc-v0/tp-redeem.js               | Redeem DoC or Rdoc depend of the environment  |                                                  |
-| node scripts/moc-v0/tc-mint.js                 | Mint BPro or RIFP depend of the environment   | In rdoc environment before make allowance action |
-| node scripts/moc-v0/tc-redeem.js               | Redeem BPro or RIFP depend of the environment |                                                  |
-| node scripts/moc-v0/tx-mint.js                 | Mint BTCx or RIFx depend of the environment   | In rdoc environment before make allowance action |
-| node scripts/moc-v0/tx-redeem.js               | Redeem BTCx or RIFx depend of the environment | In rdoc environment before make allowance action |
-| node scripts/moc-v0/allowance-reserve-token.js | Allowance to use Reserve Token in MoC         |                                                  |
+| Command                      | Action                                        | Obs | 
+|------------------------------|-----------------------------------------------|-----|
+| node scripts/allowance-ca.js | Allowance to use Collateral Asset in Contract |     |
+| node scripts/tp-mint.js      | Mint TP depend of the environment             |     |
+| node scripts/tp-redeem.js    | Redeem TP depend of the environment           |     |
+| node scripts/tc-mint.js      | Mint TC depend of the environment             |     |
+| node scripts/tc-redeem.js    | Redeem TC depend of the environment           |     |
+
 
 Example Contract status:
 
-`node scripts/moc-v0/contract-status.js`
+`node scripts/contract-status.js`
 
 Result:
 
 ```
-node scripts/moc-v0/contract-status.js
-
+ node scripts/contract-status.js
 Reading Multicall2 Contract... address:  0xaf7be1ef9537018feda5397d9e3bb9a1e4e27ac8
-Reading MoC Contract... address:  0x2820f6d4D199B8D8838A4B26F9917754B86a0c1F
-Reading MoCConnector... address:  0xABB405e01Da6212E2d6fc87bbc460c73201cF6b0
-Reading MoC State Contract... address:  0x0adb40132cB0ffcEf6ED81c26A1881e214100555
-Reading MoC Inrate Contract... address:  0x76790f846FAAf44cf1B2D717d0A6c5f6f5152B60
-Reading MoC Exchange Contract... address:  0xc03Ac60eBbc01A1f4e9b5bb989F359e5D8348919
-Reading MoC Settlement  Contract... address:  0x367D283c53f8F10e47424e2AeB102F45eCC49FEa
+Reading GoARS Token Contract... address:  0x1C25c283e47F2d9d3238a72991B7b7da014aC73e
+Reading GoMXN Token Contract... address:  0x8Cd0aBB6C73A3374FCEacDB5C1Fa125bb5E08c32
 Reading DOC Token Contract... address:  0xCB46c0ddc60D18eFEB0E586C17Af6ea36452Dae0
-Reading BPRO Token Contract... address:  0x4dA7997A819bb46B6758B9102234c289dD2Ad3bf
-Reading MoC Token Contract... address:  0x45a97b54021a3F99827641AFe1BFAE574431e6ab
-Reading MoC Vendors Contract... address:  0x84b895A1b7be8fAc64d43757479281Bf0b5E3719
-Reading contract status ...
-
-Contract Status
-
-RBTC Price: 20313.01 USD
-RBTC EMA Price: 21916.638300185512591211 USD
-MOC Price: 0.5 USD
-BPRO Available to redeem: 13.186063065807900771 BPRO
-BTCX Available to mint: 30.329763312062422142 BTCX
-DOC Available to mint: 93475.814206036066204569 DOC
-DOC Available to redeem: 584060.252100385988435753 DOC
-BPRO Leverage: 1.287217215492544006
-BPRO Target Coverage: 1.287217215492544006
-Total RBTC in contract: 128.893354687331135192 
-Total RBTC inrate Bag: 0.000031014568418826 
-Global Coverage: 4.479886338349662268 
-BTCX Coverage: 2.109675442696165192
-BTCX Leverage: 1.901164395933924538
-BPRO Price: 21266.957485230759985609 USD
-BTCX Price: 1.051986879344816469 RBTC
-Contract State: 3 
-Contract Paused: false 
-Contract Protected: 1500000000000000000 
-    
-Reading user balance ... account: 0xcd8a1c9acc980ae031456573e34dc05cd7dae6e3
-User Balance: 0xcd8a1c9acc980ae031456573e34dc05cd7dae6e3
-
-User: 0xcd8a1c9acc980ae031456573e34dc05cd7dae6e3
-RBTC Balance: 0.129822610624906657 RBTC
-DOC Balance: 4000.341130829353748485 DOC
-BPRO Balance: 41.982780218139322316 BPRO
-BTCX Balance: 0.007079287509122713 BTCX
-MOC Balance: 31358.982677120417617073 MOC
-MOC Allowance: 9007199254740990.671389927501977624 MOC
-DOC queue to redeem: 0 DOC
-
-```
-
-
-Example Mint Pegged Token:
-
-`node scripts/moc-v0/tp-mint.js `
-
-Result:
-
-```
-node scripts/moc-v0/tp-mint.js 
-Reading Multicall2 Contract... address:  0xaf7be1ef9537018feda5397d9e3bb9a1e4e27ac8
-Reading MoC Contract... address:  0x2820f6d4D199B8D8838A4B26F9917754B86a0c1F
-Reading MoCConnector... address:  0xABB405e01Da6212E2d6fc87bbc460c73201cF6b0
-Reading MoC State Contract... address:  0x0adb40132cB0ffcEf6ED81c26A1881e214100555
-Reading MoC Inrate Contract... address:  0x76790f846FAAf44cf1B2D717d0A6c5f6f5152B60
-Reading MoC Exchange Contract... address:  0xc03Ac60eBbc01A1f4e9b5bb989F359e5D8348919
-Reading MoC Settlement  Contract... address:  0x367D283c53f8F10e47424e2AeB102F45eCC49FEa
-Reading DOC Token Contract... address:  0xCB46c0ddc60D18eFEB0E586C17Af6ea36452Dae0
-Reading BPRO Token Contract... address:  0x4dA7997A819bb46B6758B9102234c289dD2Ad3bf
-Reading MOC Token Contract... address:  0x45a97b54021a3F99827641AFe1BFAE574431e6ab
-Reading MoC Vendors Contract... address:  0x84b895A1b7be8fAc64d43757479281Bf0b5E3719
+Reading USDRIF Token Contract... address:  0xC3De9F38581f83e281f260d0DdbaAc0e102ff9F8
+Reading Price Provider GoARS Contract... address:  0xD1AFe67986523447b3426Ac2Fb8be2EE4aF5dad7
+Reading Price Provider GoMXN Contract... address:  0x6951020041bFA2565877BF0eaF7f5DF039b490dC
+Reading Price Provider DOC Tokens Contract... address:  0x0e8E63721E49dbde105a4085b3D548D292Edf38A
+Reading Price Provider USDRIF Tokens Contract... address:  0x0e8E63721E49dbde105a4085b3D548D292Edf38A
+Reading MocCABag Contract... address:  0x2781df266eE4A5A678074227027d945a6c53BdB6
+Reading MocCAWrapper Contract... address:  0x01efe9D03982cEBFaB1ca85E6c8f78380cfDc41f
+Reading CollateralTokenCABag Contract... address:  0x1f5106C6Fcf9Cc83204B3fd330B340f2718DA11D
 Reading contract status ...
 Contract Status
 
+Contract Status
+===============
 
-RBTC Price: 20589.14 USD
-RBTC EMA Price: 21889.656344189960467318 USD
-MOC Price: 0.5 USD
-BPRO Available to redeem: 14.595636140134689731 BPRO
-BTCX Available to mint: 30.332701472969623252 BTCX
-DOC Available to mint: 105278.82362137741582602 DOC
-DOC Available to redeem: 584116.832264976018166095 DOC
-BPRO Leverage: 1.282305051914530634
-BPRO Target Coverage: 1.282305051914530634
-Total RBTC in contract: 128.896348936219223067 
-Total RBTC inrate Bag: 0.000033364465093186 
-Global Coverage: 4.540426724778309605 
-BTCX Coverage: 2.138353845354938639
-BTCX Leverage: 1.87846147670208825
-BPRO Price: 21639.102799750781025749 USD
-BTCX Price: 1.064701099705964054 RBTC
-Contract State: 3 
-Contract Paused: false 
-Contract Protected: 1500000000000000000 
+Total amount of Collateral Asset held in the Collateral Bag (nACcb): 430.57477547079609387
+Collateral Token in the Collateral Bag (nTCcb): 377.856725850890766725
+Total supply of GoARS:  21253.27845
+Total supply of GoMXN:  105
+Total supply of DOC:  221.163205955924558144
+Total supply of USDRIF:  210.347190242937401722
+
+
+Prices
+======
+
+Price GoARS:  972.15
+Price GoMXN:  18.253418
+Price DOC:  1
+Price USDRIF:  1
+Price GoTURBO:  1.053329260427303511
+Price Wrapped Token:  1
+
+
+Coverage & Leverage
+===================
+
+Bucket global coverage: 15.412998335424735914
+Target coverage adjusted by all Pegged Token's to Collateral Asset rate moving average (CtargemaCA): 3.021643451365846932
+GoARS Target Coverage:  1.3
+GoMXN Target Coverage:  1.3
+GoTURBO Leverage:  1.069381816102910904
+
+
+Available
+=========
+
+GoTURBO available to redeem:  324.856541045937595296
+GoARS available to mint:  134424.018881108232673372
+GoMXN available to mint:  20819.903338652862247469
+Total Collateral available:  425.62203192355877138
+
+
+EMA
+====
+
+GoARS EMA:  353.493213948690459564
+GoMXN EMA:  19.451499198587908075
+Block next calculation: 4378278
+EMA Block Span: 2880
+Should Calculate EMA: true
+
+
+Contract Params
+===============
+ 
+Contract Protected threshold <: 1.5
+Contract Liquidation threshold <: 1.04
+Contract Liquidation enabled: false
+Contract Liquidated: false
+Contract is Liquidation Reached: false
+
+
+Settlement
+==========
+
+Nº of blocks between settlements: 2880
+Next settlement block: 3475719
+Nº of blocks remaining for settlement: 0
+
+
+Fees
+====
+
+Success Fee: 0.2
+Appreciation Factor: 0
+Fee Retainer: 0.1
+Token Collateral Mint Fee: 0.001
+Token Collateral Redeem Fee: 0.001
+Swap TP x TP Fee: 0.001
+Swap TP x TC Fee: 0.001
+Redeem TC & TP Fee: 0.001
+Mint TC & TP Fee: 0.001
+Mint GoARS Fee:  0.01
+Mint GoMXN Fee:  0.01
+Redeem GoARS Fee:  0.01
+Redeem GoMXN Fee:  0.01
+Blockheight: 4399130  
     
-Reading user balance ... account: 0xcd8a1c9acc980ae031456573e34dc05cd7dae6e3
+Reading user balance ... account: 0xb5e2bed9235b6366fa0254c2e6754e167e0a2383
+User Balance: 0xb5e2bed9235b6366fa0254c2e6754e167e0a2383
 
 
-User: 0xcd8a1c9acc980ae031456573e34dc05cd7dae6e3
-RBTC Balance: 0.128883811086135203 RBTC
-DOC Balance: 4010.341130829353720593 DOC
-BPRO Balance: 41.982780218139322315 BPRO
-BTCX Balance: 0.007169287509122712 BTCX
-MOC Balance: 31358.889479611078575745 MOC
-MOC Allowance: 9007199254740991 MOC
-DOC queue to redeem: 0 DOC
-    
-Paying commission with MOC Tokens: 0.01999999999997211784 MOC
-Mint Slippage using 0.2 %. Slippage amount: 9.713858859573542e-7 Total to send: 0.0004866643288646344542
-To mint 10 DOC you need > 0.0004866643288646344542 RBTC in your balance
-Please wait... sending transaction... Wait until blockchain mine transaction!
+User: undefined
 
-Event: Transfer
-
-from: 0x0000000000000000000000000000000000000000
-to: 0xcd8a1c9acc980ae031456573e34dc05cd7dae6e3
-value: 9.989926728362620006
-
-Event: StableTokenMint
-
-account: 0xcd8a1c9acc980ae031456573e34dc05cd7dae6e3
-amount: 9.989926728362620006
-reserveTotal: 0.000485692942978677
-commission: 0
-reservePrice: 20568.4
-mocCommissionValue: 0.009989926728348695
-mocPrice: 0.5
-btcMarkup: 0
-mocMarkup: 0.009989926728348695
-vendorAccount: 0xf69287f5ca3cc3c6d3981f2412109110cb8af076
-
-Event: VendorReceivedMarkup
-
-vendorAdress: 0xf69287f5ca3cc3c6d3981f2412109110cb8af076
-paidMoC: 0.009989926728348695
-paidRBTC: 0
-
-Event: Transfer
-
-from: 0xcd8a1c9acc980ae031456573e34dc05cd7dae6e3
-to: 0xf69287f5ca3cc3c6d3981f2412109110cb8af076
-value: 0.009989926728348695
-
-Event: Approval
-
-owner: 0xcd8a1c9acc980ae031456573e34dc05cd7dae6e3
-spender: 0x2820f6d4d199b8d8838a4b26f9917754b86a0c1f
-value: 9007199254740990.990010073271651305
-
-Event: Transfer
-
-from: 0xcd8a1c9acc980ae031456573e34dc05cd7dae6e3
-to: 0xc003a2e210fa3e2fbddcf564fe0e1bbcd93e3b40
-value: 0.009989926728348695
-
-Event: Approval
-
-owner: 0xcd8a1c9acc980ae031456573e34dc05cd7dae6e3
-spender: 0x2820f6d4d199b8d8838a4b26f9917754b86a0c1f
-value: 9007199254740990.98002014654330261
-Transaction hash: 0x26223b391eecbb7576a7ba031b9dbaf8e0559097727371eeb7063b1de22c130f
+RBTC Balance: 0.082309577214112371 RBTC
+DOC Balance: 793.425634215325640154 DOC
+DOC Allowance: 997.34418662628384594 DOC
+USDRIF Balance: 12706.160701352026791452 USDRIF
+USDRIF Allowance: 997.993179648404697811 USDRIF
+GoARS Balance: 610 GoARS
+GoMXN Balance: 55 GoMXN
+GoTURBO Balance: 17.999407759344045756 GoTURBO
+GoTURBO Allowance: 998.999407759344045756 GoTURBO
 
 ```

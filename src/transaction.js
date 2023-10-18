@@ -14,11 +14,7 @@ const addABI = (dContracts, appMode) => {
   abiDecoder.addABI(dContracts.json.TC.abi)
   abiDecoder.addABI(dContracts.json.TG.abi)
   abiDecoder.addABI(dContracts.json.MoCVendors.abi)
-  if (appMode === 'RRC20') {
-    abiDecoder.addABI(dContracts.json.ReserveToken.abi)
-  }
 
-  if (process.env.CONTRACT_TOKEN_MIGRATOR) abiDecoder.addABI(dContracts.json.TokenMigrator.abi)
 }
 
 const addABIOMoC = (dContracts) => {
@@ -84,14 +80,6 @@ const decodeEvents = (receipt) => {
   const decodedLogs = abiDecoder.decodeLogs(receipt.logs)
 
   const filterIncludes = [
-    'StableTokenMint',
-    'StableTokenRedeem',
-    'FreeStableTokenRedeem',
-    'RiskProWithDiscountMint',
-    'RiskProMint',
-    'RiskProRedeem',
-    'RiskProxMint',
-    'RiskProxRedeem',
     'Transfer',
     'Approval',
     'VendorReceivedMarkup',

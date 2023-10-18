@@ -2,7 +2,6 @@
   "projects": {
     "flipago": {
       "collateral": "bag",
-      "appMode": "v1",
       "appProject": "flipago",
       "tokens": {
         "COINBASE": {
@@ -41,7 +40,6 @@
     },
     "flipago_polygon": {
       "collateral": "bag",
-      "appMode": "v1",
       "appProject": "flipago",
       "tokens": {
         "COINBASE": {
