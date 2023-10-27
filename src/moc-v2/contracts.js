@@ -3,7 +3,7 @@ import Web3 from 'web3'
 import * as dotenv from 'dotenv'
 
 import { readJsonFile, fromContractPrecisionDecimals } from '../utils.js'
-import { addABIv1 } from '../transaction.js'
+import { addABIv2 } from '../transaction.js'
 
 import { contractStatus, userBalance } from './multicall.js'
 
@@ -26,6 +26,7 @@ const readContracts = async (web3, configProject) => {
   dContracts.json.IPriceProvider = readJsonFile(`./abis/${appProject}/IPriceProvider.json`)
   dContracts.json.MocCABag = readJsonFile(`./abis/${appProject}/MocCABag.json`)
   dContracts.json.MocCAWrapper = readJsonFile(`./abis/${appProject}/MocCAWrapper.json`)
+  dContracts.json.MocVendorsCABag = readJsonFile(`./abis/${appProject}/MocVendorsCABag.json`)
 
   console.log('Reading Multicall2 Contract... address: ', process.env.CONTRACT_MULTICALL2)
   dContracts.contracts.multicall = new web3.eth.Contract(dContracts.json.Multicall2.abi, process.env.CONTRACT_MULTICALL2)
@@ -71,8 +72,11 @@ const readContracts = async (web3, configProject) => {
   console.log('Reading CollateralTokenCABag Contract... address: ', process.env.CONTRACT_TC)
   dContracts.contracts.CollateralTokenCABag = new web3.eth.Contract(dContracts.json.CollateralTokenCABag.abi, process.env.CONTRACT_TC)
 
+  console.log('Reading MocVendorsCABag Contract... address: ', process.env.CONTRACT_MOC_VENDORS)
+  dContracts.contracts.MocVendorsCABag = new web3.eth.Contract(dContracts.json.MocVendorsCABag.abi, process.env.CONTRACT_MOC_VENDORS)
+
   // Add to abi decoder
-  addABIv1(dContracts)
+  addABIv2(dContracts)
 
   return dContracts
 }
