@@ -168,7 +168,13 @@ Mint ${config.tokens.TP[0].name} Fee:  ${Web3.utils.fromWei(contractStatus.tpMin
 Mint ${config.tokens.TP[1].name} Fee:  ${Web3.utils.fromWei(contractStatus.tpMintFee[1])}
 Redeem ${config.tokens.TP[0].name} Fee:  ${Web3.utils.fromWei(contractStatus.tpRedeemFee[0])}
 Redeem ${config.tokens.TP[1].name} Fee:  ${Web3.utils.fromWei(contractStatus.tpRedeemFee[1])}
-Blockheight: ${contractStatus.blockHeight}  
+Blockheight: ${contractStatus.blockHeight} 
+
+
+Vendors
+=======
+Guardian Address: ${contractStatus.vendorGuardianAddress}
+ 
     `
 
   return render

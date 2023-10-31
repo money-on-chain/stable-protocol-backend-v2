@@ -99,10 +99,43 @@ const UpdateEma = async (web3, dContracts, configProject) => {
     return { receipt, filteredEvents }
 }
 
+const VendorsGuardianSetMarkup = async (web3, dContracts, configProject, vendorAddress, vendorMarkup) => {
+
+    const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
+    const MocVendors = dContracts.contracts.MocVendorsCABag
+    const MocVendorsAddress = MocVendors.options.address
+
+    // Get information from contracts
+    const dataContractStatus = await statusFromContracts(web3, dContracts, configProject)
+
+    // You are vendors guardian?
+    if (vendorAddress.toLowerCase() !== dataContractStatus.vendorGuardianAddress.toLowerCase()) throw new Error(`You are not Vendor guardian address`)
+
+    const valueToSend = null
+
+    // Calculate estimate gas cost
+    const estimateGas = await MocVendors.methods
+        .setVendorMarkup(vendorAddress, vendorMarkup)
+        .estimateGas({ from: userAddress, value: '0x' })
+
+    // encode function
+    const encodedCall = MocVendors.methods
+        .setVendorMarkup(vendorAddress, vendorMarkup)
+        .encodeABI()
+
+    // send transaction to the blockchain and get receipt
+    const { receipt, filteredEvents } = await sendTransaction(web3, valueToSend, estimateGas, encodedCall, MocVendorsAddress)
+
+    console.log(`Transaction hash: ${receipt.transactionHash}`)
+
+    return { receipt, filteredEvents }
+}
+
 
 
 export {
     AllowanceUseWrapper,
     SettlementExecute,
-    UpdateEma
+    UpdateEma,
+    VendorsGuardianSetMarkup
 }

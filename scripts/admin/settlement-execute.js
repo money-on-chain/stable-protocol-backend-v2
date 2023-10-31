@@ -1,8 +1,8 @@
 import * as dotenv from 'dotenv'
 
-import { readJsonFile, getWeb3 } from '../src/utils.js'
-import { readContracts } from '../src/moc-v2/contracts.js'
-import { UpdateEma } from '../src/moc-v2/moc-base.js'
+import { readJsonFile, getWeb3 } from '../../src/utils.js'
+import { readContracts } from '../../src/moc-v2/contracts.js'
+import { SettlementExecute } from '../../src/moc-v2/moc-base.js'
 
 dotenv.config()
 
@@ -18,7 +18,7 @@ const main = async () => {
     const dContracts = await readContracts(web3, configProject)
 
     // Send transaction and get receipt
-    const { receipt, filteredEvents } = await UpdateEma(web3, dContracts, configProject)
+    const { receipt, filteredEvents } = await SettlementExecute(web3, dContracts, configProject)
 }
 
 main()
