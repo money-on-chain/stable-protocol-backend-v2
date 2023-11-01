@@ -3,20 +3,6 @@ import abiDecoder from 'abi-decoder'
 
 import { toContractPrecision } from './utils.js'
 
-const addABI = (dContracts, appMode) => {
-  // Abi decoder
-  abiDecoder.addABI(dContracts.json.MoC.abi)
-  abiDecoder.addABI(dContracts.json.MoCState.abi)
-  abiDecoder.addABI(dContracts.json.MoCExchange.abi)
-  abiDecoder.addABI(dContracts.json.MoCInrate.abi)
-  abiDecoder.addABI(dContracts.json.MoCSettlement.abi)
-  abiDecoder.addABI(dContracts.json.TP.abi)
-  abiDecoder.addABI(dContracts.json.TC.abi)
-  abiDecoder.addABI(dContracts.json.TG.abi)
-  abiDecoder.addABI(dContracts.json.MoCVendors.abi)
-
-}
-
 const addABIOMoC = (dContracts) => {
   abiDecoder.addABI(dContracts.json.IRegistry.abi)
   abiDecoder.addABI(dContracts.json.IStakingMachine.abi)
@@ -26,7 +12,7 @@ const addABIOMoC = (dContracts) => {
   abiDecoder.addABI(dContracts.json.IVotingMachine.abi)
 }
 
-const addABIv1 = (dContracts) => {
+const addABIv2 = (dContracts) => {
   // Abi decoder
   abiDecoder.addABI(dContracts.json.WrappedCollateralAsset.abi)
   abiDecoder.addABI(dContracts.json.TokenPegged.abi)
@@ -37,23 +23,6 @@ const addABIv1 = (dContracts) => {
 
 const renderEventField = (eveName, eveValue) => {
   const formatItemsWei = new Set([
-    'amount',
-    'reserveTotal',
-    'reservePrice',
-    'mocCommissionValue',
-    'mocPrice',
-    'commission',
-    'mocCommissionValue',
-    'mocPrice',
-    'btcMarkup',
-    'mocMarkup',
-    'interests',
-    'leverage',
-    'value',
-    'paidMoC',
-    'paidReserveToken',
-    'paidRBTC',
-    'staking',
     'qTC_',
     'qAsset_',
     'qACfee_',
@@ -61,7 +30,11 @@ const renderEventField = (eveName, eveValue) => {
     'oldTPema_',
     'newTPema_',
     'qTP_',
-    'TokenMigrated'
+    'TokenMigrated',
+    'qFeeToken_',
+    'qACVendorMarkup_',
+    'qFeeTokenVendorMarkup_',
+    'value'
   ])
 
   if (formatItemsWei.has(eveName)) { eveValue = Web3.utils.fromWei(eveValue) }
@@ -82,9 +55,6 @@ const decodeEvents = (receipt) => {
   const filterIncludes = [
     'Transfer',
     'Approval',
-    'VendorReceivedMarkup',
-    'VendorStakeAdded',
-    'VendorStakeRemoved',
     'TCMinted',
     'TCRedeemed',
     'TPMinted',
@@ -105,7 +75,16 @@ const decodeEvents = (receipt) => {
     'TCandTPRedeemedWithWrapper',
     'TPSwappedForTPWithWrapper',
     'TPSwappedForTCWithWrapper',
-    'TCSwappedForTPWithWrapper'
+    'TCSwappedForTPWithWrapper',
+    'BeaconUpgraded',
+    'ContractLiquidated',
+    'Paused',
+    'PeggedTokenChange',
+    'SettlementExecuted',
+    'SuccessFeeDistributed',
+    'TCInterestPayment',
+    'AssetModified',
+    'VendorMarkupChanged'
   ]
 
   const filteredEvents = decodedLogs.filter(event =>
@@ -161,7 +140,6 @@ const sendTransaction = async (web3, value, estimateGas, encodedCall, toContract
 
 export {
   sendTransaction,
-  addABI,
   addABIOMoC,
-  addABIv1
+  addABIv2
 }

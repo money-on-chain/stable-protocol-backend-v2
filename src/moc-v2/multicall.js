@@ -10,6 +10,8 @@ const contractStatus = async (web3, dContracts, configProject) => {
   const MocCAWrapper = dContracts.contracts.MocCAWrapper
   const CA_0 = dContracts.contracts.CA[0]
   const CA_1 = dContracts.contracts.CA[1]
+  const MocVendors = dContracts.contracts.MocVendorsCABag
+  const PP_FeeToken = dContracts.contracts.PP_FeeToken
 
   console.log('Reading contract status ...')
 
@@ -67,6 +69,15 @@ const contractStatus = async (web3, dContracts, configProject) => {
     [MocCAWrapper.options.address, MocCAWrapper.methods.getTokenPrice().encodeABI(), 'uint256'], // 50
     [CA_0.options.address, CA_0.methods.balanceOf(MocCAWrapper.options.address).encodeABI(), 'uint256'], // 51
     [CA_1.options.address, CA_1.methods.balanceOf(MocCAWrapper.options.address).encodeABI(), 'uint256'], // 52
+    [MocVendors.options.address, MocVendors.methods.vendorsGuardianAddress().encodeABI(), 'address'], // 53
+    [MocCABag.options.address, MocCABag.methods.feeTokenPct().encodeABI(), 'uint256'], // 54
+    [MocCABag.options.address, MocCABag.methods.feeToken().encodeABI(), 'address'], // 55
+    [MocCABag.options.address, MocCABag.methods.feeTokenPriceProvider().encodeABI(), 'address'], // 56
+    [MocCABag.options.address, MocCABag.methods.tcInterestCollectorAddress().encodeABI(), 'address'], // 57
+    [MocCABag.options.address, MocCABag.methods.tcInterestRate().encodeABI(), 'uint256'], // 58
+    [MocCABag.options.address, MocCABag.methods.tcInterestPaymentBlockSpan().encodeABI(), 'uint256'], // 59
+    [MocCABag.options.address, MocCABag.methods.nextTCInterestPayment().encodeABI(), 'uint256'], // 60
+    [PP_FeeToken.options.address, PP_FeeToken.methods.peek().encodeABI(), 'uint256'], // 61
   ]
 
   // Remove decode result parameter
@@ -122,6 +133,15 @@ const contractStatus = async (web3, dContracts, configProject) => {
   status.getBts = listReturnData[49]
   status.getTokenPrice = listReturnData[50]
   status.getACBalance = [listReturnData[51], listReturnData[52]]
+  status.vendorGuardianAddress = listReturnData[53]
+  status.feeTokenPct = listReturnData[54] // e.g. if tcMintFee = 1%, FeeTokenPct = 50% => qFeeToken = 0.5%
+  status.feeToken = listReturnData[55]
+  status.feeTokenPriceProvider = listReturnData[56]
+  status.tcInterestCollectorAddress = listReturnData[57]
+  status.tcInterestRate = listReturnData[58]
+  status.tcInterestPaymentBlockSpan = listReturnData[59]
+  status.nextTCInterestPayment = listReturnData[60]
+  status.PP_FeeToken = listReturnData[61]
 
   return status
 }
@@ -135,6 +155,7 @@ const userBalance = async (web3, dContracts, userAddress, configProject) => {
   const TP_0 = dContracts.contracts.TP[0]
   const TP_1 = dContracts.contracts.TP[1]
   const CollateralTokenCABag = dContracts.contracts.CollateralTokenCABag
+  const FeeToken = dContracts.contracts.FeeToken
 
   console.log(`Reading user balance ... account: ${userAddress}`)
 
@@ -147,7 +168,9 @@ const userBalance = async (web3, dContracts, userAddress, configProject) => {
     [TP_0.options.address, TP_0.methods.balanceOf(userAddress).encodeABI(), 'uint256'], // 5
     [TP_1.options.address, TP_1.methods.balanceOf(userAddress).encodeABI(), 'uint256'], // 6
     [CollateralTokenCABag.options.address, CollateralTokenCABag.methods.balanceOf(userAddress).encodeABI(), 'uint256'], // 7
-    [CollateralTokenCABag.options.address, CollateralTokenCABag.methods.allowance(userAddress, MocCAWrapper.options.address).encodeABI(), 'uint256'] // 8
+    [CollateralTokenCABag.options.address, CollateralTokenCABag.methods.allowance(userAddress, MocCAWrapper.options.address).encodeABI(), 'uint256'], // 8
+    [FeeToken.options.address, FeeToken.methods.balanceOf(userAddress).encodeABI(), 'uint256'], // 9
+    [FeeToken.options.address, FeeToken.methods.allowance(userAddress, MocCAWrapper.options.address).encodeABI(), 'uint256'] // 10
   ]
 
   // Remove decode result parameter
@@ -172,6 +195,10 @@ const userBalance = async (web3, dContracts, userAddress, configProject) => {
   userBalance.TC = {
     balance: listReturnData[7],
     allowance: listReturnData[8]
+  }
+  userBalance.FeeToken = {
+    balance: listReturnData[9],
+    allowance: listReturnData[10]
   }
 
   return userBalance

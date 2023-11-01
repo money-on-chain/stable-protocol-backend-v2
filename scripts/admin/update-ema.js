@@ -1,12 +1,13 @@
 import * as dotenv from 'dotenv'
 
-import { readJsonFile, getWeb3 } from '../src/utils.js'
-import { readContracts } from '../src/moc-v2/contracts.js'
-import { AllowanceUseWrapper } from '../src/moc-v2/moc-base.js'
+import { readJsonFile, getWeb3 } from '../../src/utils.js'
+import { readContracts } from '../../src/moc-v2/contracts.js'
+import { UpdateEma } from '../../src/moc-v2/moc-base.js'
 
 dotenv.config()
 
 const main = async () => {
+
     const configPath = './settings/projects.json'
     const configProject = readJsonFile(configPath).projects[process.env.MOC_PROJECT.toLowerCase()]
 
@@ -16,12 +17,8 @@ const main = async () => {
     // Obtain all contracts
     const dContracts = await readContracts(web3, configProject)
 
-    // Token to approve
-    const token = dContracts.contracts.TP[0]
-    const tokenDecimals = configProject.tokens.TP[0].decimals
-
     // Send transaction and get receipt
-    const { receipt, filteredEvents } = await AllowanceUseWrapper(web3, dContracts, token, true, tokenDecimals)
+    const { receipt, filteredEvents } = await UpdateEma(web3, dContracts, configProject)
 }
 
 main()
