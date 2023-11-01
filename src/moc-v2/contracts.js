@@ -27,6 +27,7 @@ const readContracts = async (web3, configProject) => {
   dContracts.json.MocCABag = readJsonFile(`./abis/${appProject}/MocCABag.json`)
   dContracts.json.MocCAWrapper = readJsonFile(`./abis/${appProject}/MocCAWrapper.json`)
   dContracts.json.MocVendorsCABag = readJsonFile(`./abis/${appProject}/MocVendorsCABag.json`)
+  dContracts.json.FeeToken = readJsonFile(`./abis/${appProject}/FeeToken.json`)
 
   console.log('Reading Multicall2 Contract... address: ', process.env.CONTRACT_MULTICALL2)
   dContracts.contracts.multicall = new web3.eth.Contract(dContracts.json.Multicall2.abi, process.env.CONTRACT_MULTICALL2)
@@ -75,6 +76,12 @@ const readContracts = async (web3, configProject) => {
   console.log('Reading MocVendorsCABag Contract... address: ', process.env.CONTRACT_MOC_VENDORS)
   dContracts.contracts.MocVendorsCABag = new web3.eth.Contract(dContracts.json.MocVendorsCABag.abi, process.env.CONTRACT_MOC_VENDORS)
 
+  console.log('Reading Fee Token Contract... address: ', process.env.CONTRACT_FEE_TOKEN)
+  dContracts.contracts.FeeToken = new web3.eth.Contract(dContracts.json.FeeToken.abi, process.env.CONTRACT_FEE_TOKEN)
+
+  console.log('Reading Fee Token PP Contract... address: ', process.env.CONTRACT_PRICE_PROVIDER_FEE_TOKEN)
+  dContracts.contracts.PP_FeeToken = new web3.eth.Contract(dContracts.json.IPriceProvider.abi, process.env.CONTRACT_PRICE_PROVIDER_FEE_TOKEN)
+
   // Add to abi decoder
   addABIv2(dContracts)
 
@@ -102,6 +109,7 @@ Price ${config.tokens.TP[1].name}:  ${Web3.utils.fromWei(contractStatus.PP_TP[1]
 Price ${config.tokens.CA[0].name}:  ${Web3.utils.fromWei(contractStatus.PP_CA[0])}
 Price ${config.tokens.CA[1].name}:  ${Web3.utils.fromWei(contractStatus.PP_CA[1])}
 Price ${config.tokens.TC.name}:  ${Web3.utils.fromWei(contractStatus.getPTCac)}
+Price ${config.tokens.FeeToken.name}:  ${Web3.utils.fromWei(contractStatus.PP_FeeToken)}
 Price Wrapped Token:  ${Web3.utils.fromWei(contractStatus.getTokenPrice)}
 
 
@@ -173,12 +181,31 @@ Blockheight: ${contractStatus.blockHeight}
 
 Vendors
 =======
-Guardian Address: ${contractStatus.vendorGuardianAddress}
- 
-    `
 
-  return render
-}
+Guardian Address: ${contractStatus.vendorGuardianAddress}
+
+
+Fee Token
+=========
+
+Fee Token Name: ${config.tokens.FeeToken.name}
+Fee Token %: ${Web3.utils.fromWei(contractStatus.feeTokenPct)}
+Fee Token Address: ${contractStatus.feeToken}
+Fee Token Price Provider: ${contractStatus.feeTokenPriceProvider}
+       
+
+Token Collateral Interest
+=========================
+
+Collector Address: ${contractStatus.tcInterestCollectorAddress}
+Interest Rate: ${Web3.utils.fromWei(contractStatus.tcInterestRate)}
+Block Span: ${contractStatus.tcInterestPaymentBlockSpan}
+Next Payment Block: ${contractStatus.nextTCInterestPayment}
+
+          `
+
+        return render
+      }
 
 const renderUserBalance = (userBalance, config) => {
   const render = `
@@ -193,6 +220,9 @@ ${config.tokens.TP[0].name} Balance: ${fromContractPrecisionDecimals(userBalance
 ${config.tokens.TP[1].name} Balance: ${fromContractPrecisionDecimals(userBalance.TP[1], config.tokens.TP[1].decimals).toString()} ${config.tokens.TP[1].name}
 ${config.tokens.TC.name} Balance: ${fromContractPrecisionDecimals(userBalance.TC.balance, config.tokens.TC.decimals).toString()} ${config.tokens.TC.name}
 ${config.tokens.TC.name} Allowance: ${fromContractPrecisionDecimals(userBalance.TC.allowance, config.tokens.TC.decimals).toString()} ${config.tokens.TC.name}
+${config.tokens.FeeToken.name} Balance: ${fromContractPrecisionDecimals(userBalance.FeeToken.balance, config.tokens.FeeToken.decimals).toString()} ${config.tokens.FeeToken.name}
+${config.tokens.FeeToken.name} Allowance: ${fromContractPrecisionDecimals(userBalance.FeeToken.allowance, config.tokens.FeeToken.decimals).toString()} ${config.tokens.FeeToken.name}
+
     `
 
   return render

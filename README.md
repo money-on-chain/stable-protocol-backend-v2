@@ -12,11 +12,11 @@ Money on chain token operations (backend to contracts)
 
 **Tokens**
 
-| Token | Name             | Ex.                     |                      |
-|-------|------------------|-------------------------|----------------------|
-| TP    | Token Pegged     | DOC, USDRIF, FARS, FMXN | Pegged token         |
-| TC    | Collateral Token | BPRO, RIFP, GoTurbo     | HODL + Earn Token    |
-| TG    | Govern Token     | MOC                     | Govern + Stake token |
+| Token     | Name             | Ex.                     |                   |
+|-----------|------------------|-------------------------|-------------------|
+| TP        | Token Pegged     | DOC, USDRIF, FARS, FMXN | Pegged token      |
+| TC        | Collateral Token | BPRO, RIFP, GoTurbo     | HODL + Earn Token |
+| Fee Token | Fee Token        | MOC                     | Fee Token         |
 
 
 ### Setup
@@ -30,17 +30,17 @@ Money on chain token operations (backend to contracts)
 
 #### Money on Chain projects and tokens 
 
-| Token | Token name       | Project  | Token Name | Collateral   |
-|-------|------------------|----------|------------|--------------|
-| TP    | Pegged Token 1:1 | MOC      | DOC        | RBTC         |
-| TC    | Collateral Token | MOC      | BPRO       | RBTC         |
-| TG    | Govern Token     | MOC      | MOC        | -            |
-| TP    | Pegged Token 1:1 | ROC      | USDRIF     | RIF          |
-| TC    | Collateral Token | ROC      | RIFP       | RIF          |
-| TG    | Govern Token     | ROC      | MOC        | -            |
-| TP    | Pegged Token 1:1 | Flipago  | FARS, FMXN | DOC, USDRIF  |
-| TC    | Collateral Token | Flipago  | GoTurbo    | DOC, USDRIF  |
-| TG    | Govern Token     | Flipago  | MOC        | -            |
+| Token      | Token name       | Project  | Token Name | Collateral   |
+|------------|------------------|----------|------------|--------------|
+| TP         | Pegged Token 1:1 | MOC      | DOC        | RBTC         |
+| TC         | Collateral Token | MOC      | BPRO       | RBTC         |
+| Fee Token  | Fee Token        | MOC      | MOC        | -            |
+| TP         | Pegged Token 1:1 | ROC      | USDRIF     | RIF          |
+| TC         | Collateral Token | ROC      | RIFP       | RIF          |
+| Fee Token  | Fee Token        | ROC      | MOC        | -            |
+| TP         | Pegged Token 1:1 | Flipago  | FARS, FMXN | DOC, USDRIF  |
+| TC         | Collateral Token | Flipago  | GoTurbo    | DOC, USDRIF  |
+| Fee Token  | Fee Token        | Flipago  | MOC        | -            |
 
 #### Environment table
 
