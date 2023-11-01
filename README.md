@@ -80,68 +80,55 @@ Result:
 
 ```
  node scripts/contract-status.js
-Reading Multicall2 Contract... address:  0xaf7be1ef9537018feda5397d9e3bb9a1e4e27ac8
-Reading GoARS Token Contract... address:  0x1C25c283e47F2d9d3238a72991B7b7da014aC73e
-Reading GoMXN Token Contract... address:  0x8Cd0aBB6C73A3374FCEacDB5C1Fa125bb5E08c32
-Reading DOC Token Contract... address:  0xCB46c0ddc60D18eFEB0E586C17Af6ea36452Dae0
-Reading USDRIF Token Contract... address:  0xC3De9F38581f83e281f260d0DdbaAc0e102ff9F8
-Reading Price Provider GoARS Contract... address:  0xD1AFe67986523447b3426Ac2Fb8be2EE4aF5dad7
-Reading Price Provider GoMXN Contract... address:  0x6951020041bFA2565877BF0eaF7f5DF039b490dC
-Reading Price Provider DOC Tokens Contract... address:  0x0e8E63721E49dbde105a4085b3D548D292Edf38A
-Reading Price Provider USDRIF Tokens Contract... address:  0x0e8E63721E49dbde105a4085b3D548D292Edf38A
-Reading MocCABag Contract... address:  0x2781df266eE4A5A678074227027d945a6c53BdB6
-Reading MocCAWrapper Contract... address:  0x01efe9D03982cEBFaB1ca85E6c8f78380cfDc41f
-Reading CollateralTokenCABag Contract... address:  0x1f5106C6Fcf9Cc83204B3fd330B340f2718DA11D
-Reading contract status ...
-Contract Status
 
 Contract Status
 ===============
 
-Total amount of Collateral Asset held in the Collateral Bag (nACcb): 430.57477547079609387
-Collateral Token in the Collateral Bag (nTCcb): 377.856725850890766725
-Total supply of GoARS:  21253.27845
-Total supply of GoMXN:  105
-Total supply of DOC:  221.163205955924558144
-Total supply of USDRIF:  210.347190242937401722
+Total amount of Collateral Asset held in the Collateral Bag (nACcb): 52.06436453972232587
+Collateral Token in the Collateral Bag (nTCcb): 50.993851282756313852
+Total supply of GoARS:  59
+Total supply of GoMXN:  18.0394335
+Total supply of DOC:  47.153295591823618332
+Total supply of USDRIF:  5.004989999999999997
 
 
 Prices
 ======
 
-Price GoARS:  972.15
-Price GoMXN:  18.253418
+Price GoARS:  864.33
+Price GoMXN:  18.22165
 Price DOC:  1
 Price USDRIF:  1
-Price GoTURBO:  1.053329260427303511
+Price GoTURBO:  1.000240269983874036
+Price FLIP:  0.5
 Price Wrapped Token:  1
 
 
 Coverage & Leverage
 ===================
 
-Bucket global coverage: 15.412998335424735914
-Target coverage adjusted by all Pegged Token's to Collateral Asset rate moving average (CtargemaCA): 3.021643451365846932
+Bucket global coverage: 49.198039287789139117
+Target coverage adjusted by all Pegged Token's to Collateral Asset rate moving average (CtargemaCA): 1.442024021067767829
 GoARS Target Coverage:  1.3
 GoMXN Target Coverage:  1.3
-GoTURBO Leverage:  1.069381816102910904
+GoTURBO Leverage:  1.020747731957082902
 
 
 Available
 =========
 
-GoTURBO available to redeem:  324.856541045937595296
-GoARS available to mint:  134424.018881108232673372
-GoMXN available to mint:  20819.903338652862247469
-Total Collateral available:  425.62203192355877138
+GoTURBO available to redeem:  50.52618688132398669
+GoARS available to mint:  36571.102019555765053732
+GoMXN available to mint:  2360.383478316282790692
+Total Collateral available:  52.06436453972232587
 
 
 EMA
 ====
 
-GoARS EMA:  353.493213948690459564
-GoMXN EMA:  19.451499198587908075
-Block next calculation: 4378278
+GoARS EMA:  506.114447
+GoMXN EMA:  17.0201938745
+Block next calculation: 4446253
 EMA Block Span: 2880
 Should Calculate EMA: true
 
@@ -160,7 +147,7 @@ Settlement
 ==========
 
 Nº of blocks between settlements: 2880
-Next settlement block: 3475719
+Next settlement block: 4432296
 Nº of blocks remaining for settlement: 0
 
 
@@ -180,22 +167,49 @@ Mint GoARS Fee:  0.01
 Mint GoMXN Fee:  0.01
 Redeem GoARS Fee:  0.01
 Redeem GoMXN Fee:  0.01
-Blockheight: 4399130  
-    
-Reading user balance ... account: 0xb5e2bed9235b6366fa0254c2e6754e167e0a2383
-User Balance: 0xb5e2bed9235b6366fa0254c2e6754e167e0a2383
+Blockheight: 4447461 
+
+
+Vendors
+=======
+
+Guardian Address: 0xCD8A1c9aCc980ae031456573e34dC05cD7daE6e3
+
+
+Fee Token
+=========
+
+Fee Token Name: FLIP
+Fee Token %: 0.5
+Fee Token Address: 0x45a97b54021a3F99827641AFe1BFAE574431e6ab
+Fee Token Price Provider: 0x8DCE78BbD4D757EF7777Be113277cf5A35283b1E
+       
+
+Token Collateral Interest
+=========================
+
+Collector Address: 0xCD8A1c9aCc980ae031456573e34dC05cD7daE6e3
+Interest Rate: 0.00005
+Block Span: 20160
+Next Payment Block: 4449576
+
+          
+Reading user balance ... account: 0xcd8a1c9acc980ae031456573e34dc05cd7dae6e3
+User Balance: 0xcd8a1c9acc980ae031456573e34dc05cd7dae6e3
 
 
 User: undefined
 
-RBTC Balance: 0.082309577214112371 RBTC
-DOC Balance: 793.425634215325640154 DOC
-DOC Allowance: 997.34418662628384594 DOC
-USDRIF Balance: 12706.160701352026791452 USDRIF
-USDRIF Allowance: 997.993179648404697811 USDRIF
-GoARS Balance: 610 GoARS
-GoMXN Balance: 55 GoMXN
-GoTURBO Balance: 17.999407759344045756 GoTURBO
-GoTURBO Allowance: 998.999407759344045756 GoTURBO
+RBTC Balance: 0.737351150982014835 RBTC
+DOC Balance: 4414.056850735010043528 DOC
+DOC Allowance: 9958.441015319228749012 DOC
+USDRIF Balance: 588.785510128343550596 USDRIF
+USDRIF Allowance: 0.99 USDRIF
+GoARS Balance: 49 GoARS
+GoMXN Balance: 18.0394335 GoMXN
+GoTURBO Balance: 40.993851282756313852 GoTURBO
+GoTURBO Allowance: 9996 GoTURBO
+FLIP Balance: 29901.034356213713643989 FLIP
+FLIP Allowance: 0 FLIP
 
 ```
