@@ -12,13 +12,17 @@ const addABIOMoC = (dContracts) => {
   abiDecoder.addABI(dContracts.json.IVotingMachine.abi)
 }
 
-const addABIv2 = (dContracts) => {
+const addABIv2 = (dContracts, configProject) => {
+
   // Abi decoder
-  abiDecoder.addABI(dContracts.json.WrappedCollateralAsset.abi)
   abiDecoder.addABI(dContracts.json.TokenPegged.abi)
-  abiDecoder.addABI(dContracts.json.CollateralTokenCABag.abi)
-  abiDecoder.addABI(dContracts.json.MocCABag.abi)
-  abiDecoder.addABI(dContracts.json.MocCAWrapper.abi)
+  abiDecoder.addABI(dContracts.json.CollateralToken.abi)
+  abiDecoder.addABI(dContracts.json.Moc.abi)
+
+  if (configProject.collateral === 'bag') {
+    abiDecoder.addABI(dContracts.json.MocWrapper.abi)
+    abiDecoder.addABI(dContracts.json.WrappedCollateralAsset.abi)
+  }
 }
 
 const renderEventField = (eveName, eveValue) => {
@@ -127,7 +131,7 @@ const sendTransaction = async (web3, value, estimateGas, encodedCall, toContract
     privateKey
   )
 
-  // Send transaction and get recipt
+  // Send transaction and get receipt
   const receipt = await web3.eth.sendSignedTransaction(
     transaction.rawTransaction
   )

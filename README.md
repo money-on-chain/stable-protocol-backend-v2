@@ -8,6 +8,7 @@ Money on chain token operations (backend to contracts)
 * Mint / Redeem Collateral Token (TC): Ex.: BPro, RIFP, GoTurbo
 * Allowance to use Collateral Asset
 * Status of Main MoC Contracts
+* Admin operations: Ex. Execute settlement, calculate EMA, Vendor, etc.
 
 
 **Tokens**

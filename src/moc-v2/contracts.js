@@ -13,6 +13,7 @@ BigNumber.config({ ROUNDING_MODE: BigNumber.ROUND_DOWN })
 
 const readContracts = async (web3, configProject) => {
   const appProject = configProject.appProject
+  const collateral = configProject.collateral
 
   const dContracts = {}
   dContracts.json = {}
@@ -20,18 +21,28 @@ const readContracts = async (web3, configProject) => {
   dContracts.contractsAddresses = {}
 
   dContracts.json.Multicall2 = readJsonFile(`./abis/${appProject}/Multicall2.json`)
-  dContracts.json.WrappedCollateralAsset = readJsonFile(`./abis/${appProject}/WrappedCollateralAsset.json`)
   dContracts.json.TokenPegged = readJsonFile(`./abis/${appProject}/TokenPegged.json`)
-  dContracts.json.CollateralTokenCABag = readJsonFile(`./abis/${appProject}/CollateralTokenCABag.json`)
+  dContracts.json.CollateralToken = readJsonFile(`./abis/${appProject}/CollateralToken.json`)
   dContracts.json.IPriceProvider = readJsonFile(`./abis/${appProject}/IPriceProvider.json`)
-  dContracts.json.MocCABag = readJsonFile(`./abis/${appProject}/MocCABag.json`)
-  dContracts.json.MocCAWrapper = readJsonFile(`./abis/${appProject}/MocCAWrapper.json`)
-  dContracts.json.MocVendorsCABag = readJsonFile(`./abis/${appProject}/MocVendorsCABag.json`)
+  dContracts.json.Moc = readJsonFile(`./abis/${appProject}/Moc.json`)
+  dContracts.json.MocVendors = readJsonFile(`./abis/${appProject}/MocVendors.json`)
   dContracts.json.FeeToken = readJsonFile(`./abis/${appProject}/FeeToken.json`)
+
+  if (collateral === 'bag') {
+    dContracts.json.WrappedCollateralAsset = readJsonFile(`./abis/${appProject}/WrappedCollateralAsset.json`)
+    dContracts.json.MocWrapper = readJsonFile(`./abis/${appProject}/MocWrapper.json`)
+  }
 
   console.log('Reading Multicall2 Contract... address: ', process.env.CONTRACT_MULTICALL2)
   dContracts.contracts.multicall = new web3.eth.Contract(dContracts.json.Multicall2.abi, process.env.CONTRACT_MULTICALL2)
 
+  dContracts.contracts.TP = []
+  for (let i = 0; i < configProject.tokens.TP.length; i++) {
+    console.log(`Reading ${configProject.tokens.TP[i].name} Token Contract... address: `, process.env[`CONTRACT_TP_${i}`])
+    dContracts.contracts.TP.push(new web3.eth.Contract(dContracts.json.TokenPegged.abi, process.env[`CONTRACT_TP_${i}`]))
+  }
+
+  /*
   console.log(`Reading ${configProject.tokens.TP[0].name} Token Contract... address: `, process.env.CONTRACT_TP_0)
   const TP_0 = new web3.eth.Contract(dContracts.json.TokenPegged.abi, process.env.CONTRACT_TP_0)
 
@@ -39,7 +50,15 @@ const readContracts = async (web3, configProject) => {
   const TP_1 = new web3.eth.Contract(dContracts.json.TokenPegged.abi, process.env.CONTRACT_TP_1)
 
   dContracts.contracts.TP = [TP_0, TP_1]
+  */
 
+  dContracts.contracts.CA = []
+  for (let i = 0; i < configProject.tokens.CA.length; i++) {
+    console.log(`Reading ${configProject.tokens.CA[i].name} Token Contract... address: `, process.env[`CONTRACT_CA_${i}`])
+    dContracts.contracts.CA.push(new web3.eth.Contract(dContracts.json.WrappedCollateralAsset.abi, process.env[`CONTRACT_CA_${i}`]))
+  }
+
+  /*
   console.log(`Reading ${configProject.tokens.CA[0].name} Token Contract... address: `, process.env.CONTRACT_CA_0)
   const CA_0 = new web3.eth.Contract(dContracts.json.WrappedCollateralAsset.abi, process.env.CONTRACT_CA_0)
 
@@ -48,6 +67,15 @@ const readContracts = async (web3, configProject) => {
 
   dContracts.contracts.CA = [CA_0, CA_1]
 
+   */
+
+  dContracts.contracts.PP_TP = []
+  for (let i = 0; i < configProject.tokens.TP.length; i++) {
+    console.log(`Reading Price Provider ${configProject.tokens.TP[i].name} Contract... address: `, process.env[`CONTRACT_PRICE_PROVIDER_TP_${i}`])
+    dContracts.contracts.PP_TP.push(new web3.eth.Contract(dContracts.json.IPriceProvider.abi, process.env[`CONTRACT_PRICE_PROVIDER_TP_${i}`]))
+  }
+
+  /*
   console.log(`Reading Price Provider ${configProject.tokens.TP[0].name} Contract... address: `, process.env.CONTRACT_PRICE_PROVIDER_TP_0)
   const PP_TP_0 = new web3.eth.Contract(dContracts.json.IPriceProvider.abi, process.env.CONTRACT_PRICE_PROVIDER_TP_0)
 
@@ -55,6 +83,16 @@ const readContracts = async (web3, configProject) => {
   const PP_TP_1 = new web3.eth.Contract(dContracts.json.IPriceProvider.abi, process.env.CONTRACT_PRICE_PROVIDER_TP_1)
 
   dContracts.contracts.PP_TP = [PP_TP_0, PP_TP_1]
+
+   */
+
+  dContracts.contracts.PP_CA = []
+  for (let i = 0; i < configProject.tokens.CA.length; i++) {
+    console.log(`Reading Price Provider ${configProject.tokens.CA[i].name} Tokens Contract... address: `, process.env[`CONTRACT_PRICE_PROVIDER_CA_${i}`])
+    dContracts.contracts.PP_CA.push(new web3.eth.Contract(dContracts.json.IPriceProvider.abi, process.env[`CONTRACT_PRICE_PROVIDER_CA_${i}`]))
+  }
+
+  /*
 
   console.log(`Reading Price Provider ${configProject.tokens.CA[0].name} Tokens Contract... address: `, process.env.CONTRACT_PRICE_PROVIDER_CA_0)
   const PP_CA_0 = new web3.eth.Contract(dContracts.json.IPriceProvider.abi, process.env.CONTRACT_PRICE_PROVIDER_CA_0)
@@ -64,17 +102,16 @@ const readContracts = async (web3, configProject) => {
 
   dContracts.contracts.PP_CA = [PP_CA_0, PP_CA_1]
 
-  console.log('Reading MocCABag Contract... address: ', process.env.CONTRACT_MOC_CA)
-  dContracts.contracts.MocCABag = new web3.eth.Contract(dContracts.json.MocCABag.abi, process.env.CONTRACT_MOC_CA)
+   */
 
-  console.log('Reading MocCAWrapper Contract... address: ', process.env.CONTRACT_MOC_CA_WRAPPER)
-  dContracts.contracts.MocCAWrapper = new web3.eth.Contract(dContracts.json.MocCAWrapper.abi, process.env.CONTRACT_MOC_CA_WRAPPER)
+  console.log('Reading Moc Contract... address: ', process.env.CONTRACT_MOC)
+  dContracts.contracts.Moc = new web3.eth.Contract(dContracts.json.Moc.abi, process.env.CONTRACT_MOC)
 
-  console.log('Reading CollateralTokenCABag Contract... address: ', process.env.CONTRACT_TC)
-  dContracts.contracts.CollateralTokenCABag = new web3.eth.Contract(dContracts.json.CollateralTokenCABag.abi, process.env.CONTRACT_TC)
+  console.log('Reading Collateral Token Contract... address: ', process.env.CONTRACT_TC)
+  dContracts.contracts.CollateralToken = new web3.eth.Contract(dContracts.json.CollateralToken.abi, process.env.CONTRACT_TC)
 
-  console.log('Reading MocVendorsCABag Contract... address: ', process.env.CONTRACT_MOC_VENDORS)
-  dContracts.contracts.MocVendorsCABag = new web3.eth.Contract(dContracts.json.MocVendorsCABag.abi, process.env.CONTRACT_MOC_VENDORS)
+  console.log('Reading MocVendors Contract... address: ', process.env.CONTRACT_MOC_VENDORS)
+  dContracts.contracts.MocVendors = new web3.eth.Contract(dContracts.json.MocVendors.abi, process.env.CONTRACT_MOC_VENDORS)
 
   console.log('Reading Fee Token Contract... address: ', process.env.CONTRACT_FEE_TOKEN)
   dContracts.contracts.FeeToken = new web3.eth.Contract(dContracts.json.FeeToken.abi, process.env.CONTRACT_FEE_TOKEN)
@@ -82,10 +119,80 @@ const readContracts = async (web3, configProject) => {
   console.log('Reading Fee Token PP Contract... address: ', process.env.CONTRACT_PRICE_PROVIDER_FEE_TOKEN)
   dContracts.contracts.PP_FeeToken = new web3.eth.Contract(dContracts.json.IPriceProvider.abi, process.env.CONTRACT_PRICE_PROVIDER_FEE_TOKEN)
 
+  if (collateral === 'bag') {
+    console.log('Reading MocWrapper Contract... address: ', process.env.CONTRACT_MOC_WRAPPER)
+    dContracts.contracts.MocWrapper = new web3.eth.Contract(dContracts.json.MocWrapper.abi, process.env.CONTRACT_MOC_WRAPPER)
+  }
+
   // Add to abi decoder
-  addABIv2(dContracts)
+  addABIv2(dContracts, configProject)
 
   return dContracts
+}
+
+const totalSupplyTP = (contractStatus, config) => {
+  let result = '';
+  for (let i = 0; i < config.tokens.TP.length; i++) {
+    result += `Total supply of ${config.tokens.TP[i].name}:  ${Web3.utils.fromWei(contractStatus.pegContainer[i])} \n`
+  }
+  return result
+}
+
+const totalSupplyCA = (contractStatus, config) => {
+  let result = '';
+  for (let i = 0; i < config.tokens.CA.length; i++) {
+    result += `Total supply of ${config.tokens.CA[i].name}:  ${fromContractPrecisionDecimals(contractStatus.getACBalance[i], config.tokens.CA[i].decimals).toString()} \n`
+  }
+  return result
+}
+
+const pricesTP = (contractStatus, config) => {
+  let result = '';
+  for (let i = 0; i < config.tokens.TP.length; i++) {
+    result += `Price ${config.tokens.TP[i].name}:  ${Web3.utils.fromWei(contractStatus.PP_TP[i])} \n`
+  }
+  return result
+}
+
+const pricesCA = (contractStatus, config) => {
+  let result = '';
+  for (let i = 0; i < config.tokens.CA.length; i++) {
+    result += `Price ${config.tokens.CA[i].name}:  ${Web3.utils.fromWei(contractStatus.PP_CA[i])} \n`
+  }
+  return result
+}
+
+const targetCoverageTP = (contractStatus, config) => {
+  let result = '';
+  for (let i = 0; i < config.tokens.TP.length; i++) {
+    result += `${config.tokens.TP[i].name} Target Coverage:  ${Web3.utils.fromWei(contractStatus.tpCtarg[i])} \n`
+  }
+  return result
+}
+
+const availableToMintTP = (contractStatus, config) => {
+  let result = '';
+  for (let i = 0; i < config.tokens.TP.length; i++) {
+    result += `${config.tokens.TP[i].name} available to mint:  ${Web3.utils.fromWei(contractStatus.getTPAvailableToMint[i])} \n`
+  }
+  return result
+}
+
+const emaTP = (contractStatus, config) => {
+  let result = '';
+  for (let i = 0; i < config.tokens.TP.length; i++) {
+    result += `${config.tokens.TP[i].name} EMA:  ${Web3.utils.fromWei(contractStatus.tpEma[i])} \n`
+  }
+  return result
+}
+
+const feeTP = (contractStatus, config) => {
+  let result = '';
+  for (let i = 0; i < config.tokens.TP.length; i++) {
+    result += `Mint ${config.tokens.TP[i].name} Fee:  ${Web3.utils.fromWei(contractStatus.tpMintFee[i])} \n`
+    result += `Redeem ${config.tokens.TP[i].name} Fee:  ${Web3.utils.fromWei(contractStatus.tpRedeemFee[i])} \n`
+  }
+  return result
 }
 
 const renderContractStatus = (contractStatus, config) => {
@@ -95,19 +202,14 @@ Contract Status
 
 Total amount of Collateral Asset held in the Collateral Bag (nACcb): ${Web3.utils.fromWei(contractStatus.nACcb)}
 Collateral Token in the Collateral Bag (nTCcb): ${Web3.utils.fromWei(contractStatus.nTCcb)}
-Total supply of ${config.tokens.TP[0].name}:  ${Web3.utils.fromWei(contractStatus.pegContainer[0])}
-Total supply of ${config.tokens.TP[1].name}:  ${Web3.utils.fromWei(contractStatus.pegContainer[1])}
-Total supply of ${config.tokens.CA[0].name}:  ${fromContractPrecisionDecimals(contractStatus.getACBalance[0], config.tokens.CA[0].decimals).toString()}
-Total supply of ${config.tokens.CA[1].name}:  ${fromContractPrecisionDecimals(contractStatus.getACBalance[1], config.tokens.CA[1].decimals).toString()}
-
+${totalSupplyTP(contractStatus, config)}
+${totalSupplyCA(contractStatus, config)}
 
 Prices
 ======
 
-Price ${config.tokens.TP[0].name}:  ${Web3.utils.fromWei(contractStatus.PP_TP[0])}
-Price ${config.tokens.TP[1].name}:  ${Web3.utils.fromWei(contractStatus.PP_TP[1])}
-Price ${config.tokens.CA[0].name}:  ${Web3.utils.fromWei(contractStatus.PP_CA[0])}
-Price ${config.tokens.CA[1].name}:  ${Web3.utils.fromWei(contractStatus.PP_CA[1])}
+${pricesTP(contractStatus, config)}
+${pricesCA(contractStatus, config)}
 Price ${config.tokens.TC.name}:  ${Web3.utils.fromWei(contractStatus.getPTCac)}
 Price ${config.tokens.FeeToken.name}:  ${Web3.utils.fromWei(contractStatus.PP_FeeToken)}
 Price Wrapped Token:  ${Web3.utils.fromWei(contractStatus.getTokenPrice)}
@@ -118,8 +220,7 @@ Coverage & Leverage
 
 Bucket global coverage: ${Web3.utils.fromWei(contractStatus.getCglb)}
 Target coverage adjusted by all Pegged Token's to Collateral Asset rate moving average (CtargemaCA): ${Web3.utils.fromWei(contractStatus.calcCtargemaCA)}
-${config.tokens.TP[0].name} Target Coverage:  ${Web3.utils.fromWei(contractStatus.tpCtarg[0])}
-${config.tokens.TP[1].name} Target Coverage:  ${Web3.utils.fromWei(contractStatus.tpCtarg[1])}
+${targetCoverageTP(contractStatus, config)}
 ${config.tokens.TC.name} Leverage:  ${Web3.utils.fromWei(contractStatus.getLeverageTC)}
 
 
@@ -127,16 +228,13 @@ Available
 =========
 
 ${config.tokens.TC.name} available to redeem:  ${Web3.utils.fromWei(contractStatus.getTCAvailableToRedeem)}
-${config.tokens.TP[0].name} available to mint:  ${Web3.utils.fromWei(contractStatus.getTPAvailableToMint[0])}
-${config.tokens.TP[1].name} available to mint:  ${Web3.utils.fromWei(contractStatus.getTPAvailableToMint[1])}
+${availableToMintTP(contractStatus, config)}
 Total Collateral available:  ${Web3.utils.fromWei(contractStatus.getTotalACavailable)}
 
 
 EMA
 ====
-
-${config.tokens.TP[0].name} EMA:  ${Web3.utils.fromWei(contractStatus.tpEma[0])}
-${config.tokens.TP[1].name} EMA:  ${Web3.utils.fromWei(contractStatus.tpEma[1])}
+${emaTP(contractStatus, config)}
 Block next calculation: ${contractStatus.nextEmaCalculation}
 EMA Block Span: ${contractStatus.emaCalculationBlockSpan}
 Should Calculate EMA: ${contractStatus.shouldCalculateEma}
@@ -172,10 +270,7 @@ Swap TP x TP Fee: ${Web3.utils.fromWei(contractStatus.swapTPforTPFee)}
 Swap TP x TC Fee: ${Web3.utils.fromWei(contractStatus.swapTPforTCFee)}
 Redeem TC & TP Fee: ${Web3.utils.fromWei(contractStatus.redeemTCandTPFee)}
 Mint TC & TP Fee: ${Web3.utils.fromWei(contractStatus.mintTCandTPFee)}
-Mint ${config.tokens.TP[0].name} Fee:  ${Web3.utils.fromWei(contractStatus.tpMintFee[0])}
-Mint ${config.tokens.TP[1].name} Fee:  ${Web3.utils.fromWei(contractStatus.tpMintFee[1])}
-Redeem ${config.tokens.TP[0].name} Fee:  ${Web3.utils.fromWei(contractStatus.tpRedeemFee[0])}
-Redeem ${config.tokens.TP[1].name} Fee:  ${Web3.utils.fromWei(contractStatus.tpRedeemFee[1])}
+${feeTP(contractStatus, config)}
 Blockheight: ${contractStatus.blockHeight} 
 
 
@@ -201,23 +296,35 @@ Collector Address: ${contractStatus.tcInterestCollectorAddress}
 Interest Rate: ${Web3.utils.fromWei(contractStatus.tcInterestRate)}
 Block Span: ${contractStatus.tcInterestPaymentBlockSpan}
 Next Payment Block: ${contractStatus.nextTCInterestPayment}
-
           `
-
         return render
       }
+
+const userBalanceAllowanceCA = (userBalance, config) => {
+  let result = '';
+  for (let i = 0; i < config.tokens.CA.length; i++) {
+    result += `${config.tokens.CA[i].name} Balance: ${fromContractPrecisionDecimals(userBalance.CA[i].balance, config.tokens.CA[i].decimals).toString()} ${config.tokens.CA[i].name} \n`
+    result += `${config.tokens.CA[i].name} Allowance: ${fromContractPrecisionDecimals(userBalance.CA[i].allowance, config.tokens.CA[i].decimals).toString()} ${config.tokens.CA[i].name} \n`
+  }
+  return result
+}
+
+const userBalanceAllowanceTP = (userBalance, config) => {
+  let result = '';
+  for (let i = 0; i < config.tokens.TP.length; i++) {
+    result += `${config.tokens.TP[i].name} Balance: ${fromContractPrecisionDecimals(userBalance.TP[i].balance, config.tokens.TP[i].decimals).toString()} ${config.tokens.TP[i].name} \n`
+    //result += `${config.tokens.TP[i].name} Allowance: ${fromContractPrecisionDecimals(userBalance.TP[i].allowance, config.tokens.TP[i].decimals).toString()} ${config.tokens.TP[i].name} \n`
+  }
+  return result
+}
 
 const renderUserBalance = (userBalance, config) => {
   const render = `
 User: ${userBalance.userAddress}
 
 ${config.tokens.COINBASE.name} Balance: ${fromContractPrecisionDecimals(userBalance.coinbase, config.tokens.COINBASE.decimals).toString()} ${config.tokens.COINBASE.name}
-${config.tokens.CA[0].name} Balance: ${fromContractPrecisionDecimals(userBalance.CA[0].balance, config.tokens.CA[0].decimals).toString()} ${config.tokens.CA[0].name}
-${config.tokens.CA[0].name} Allowance: ${fromContractPrecisionDecimals(userBalance.CA[0].allowance, config.tokens.CA[0].decimals).toString()} ${config.tokens.CA[0].name}
-${config.tokens.CA[1].name} Balance: ${fromContractPrecisionDecimals(userBalance.CA[1].balance, config.tokens.CA[1].decimals).toString()} ${config.tokens.CA[1].name}
-${config.tokens.CA[1].name} Allowance: ${fromContractPrecisionDecimals(userBalance.CA[1].allowance, config.tokens.CA[1].decimals).toString()} ${config.tokens.CA[1].name}
-${config.tokens.TP[0].name} Balance: ${fromContractPrecisionDecimals(userBalance.TP[0], config.tokens.TP[0].decimals).toString()} ${config.tokens.TP[0].name}
-${config.tokens.TP[1].name} Balance: ${fromContractPrecisionDecimals(userBalance.TP[1], config.tokens.TP[1].decimals).toString()} ${config.tokens.TP[1].name}
+${userBalanceAllowanceCA(userBalance, config)}
+${userBalanceAllowanceTP(userBalance, config)}
 ${config.tokens.TC.name} Balance: ${fromContractPrecisionDecimals(userBalance.TC.balance, config.tokens.TC.decimals).toString()} ${config.tokens.TC.name}
 ${config.tokens.TC.name} Allowance: ${fromContractPrecisionDecimals(userBalance.TC.allowance, config.tokens.TC.decimals).toString()} ${config.tokens.TC.name}
 ${config.tokens.FeeToken.name} Balance: ${fromContractPrecisionDecimals(userBalance.FeeToken.balance, config.tokens.FeeToken.decimals).toString()} ${config.tokens.FeeToken.name}
