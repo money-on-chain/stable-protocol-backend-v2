@@ -99,6 +99,9 @@ Total supply of USDRIF:  5.004989999999999997
 
 ```
 
+Note before mint or redeem you need to make an allowance to contract like this
+
+`node scripts/rc20/allowance-ca.js`
 
 Example Mint TC in ROC project:
 

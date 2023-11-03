@@ -4,7 +4,7 @@ import * as dotenv from 'dotenv'
 
 import { readJsonFile, getWeb3 } from '../../src/utils.js'
 import { readContracts } from '../../src/moc-v2/contracts.js'
-import { mintTCandTP } from '../../src/moc-v2/moc-collateral-bag.js'
+import { mintTCandTP } from '../../src/moc-v2/moc-rc20.js'
 
 dotenv.config()
 
@@ -20,10 +20,9 @@ const main = async () => {
 
     // Get amount from environment
     const qTP = `${process.env.OPERATION_AMOUNT_MINT_TP}`
-    const caIndex = 0
     const tpIndex = 0
 
-    const { receipt, filteredEvents } = await mintTCandTP(web3, dContracts, configProject, caIndex, tpIndex, qTP)
+    const { receipt, filteredEvents } = await mintTCandTP(web3, dContracts, configProject, tpIndex, qTP)
 
 }
 

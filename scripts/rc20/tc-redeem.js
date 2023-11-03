@@ -4,7 +4,7 @@ import * as dotenv from 'dotenv'
 
 import { readJsonFile, getWeb3 } from '../../src/utils.js'
 import { readContracts } from '../../src/moc-v2/contracts.js'
-import { redeemTC } from '../../src/moc-v2/moc-collateral-bag.js'
+import { redeemTC } from '../../src/moc-v2/moc-rc20.js'
 
 dotenv.config()
 
@@ -15,14 +15,13 @@ const main = async () => {
     // get web3 connection
     const web3 = getWeb3(process.env.HOST_URI)
 
-    // Obtain all contracts from one address of the MoC.sol
+    // Obtain connection to all contracts
     const dContracts = await readContracts(web3, configProject)
 
     // Get amount from environment
     const qTC = `${process.env.OPERATION_AMOUNT_REDEEM_TC}`
-    const caIndex = 0
 
-    const { receipt, filteredEvents } = await redeemTC(web3, dContracts, configProject, caIndex, qTC)
+    const { receipt, filteredEvents } = await redeemTC(web3, dContracts, configProject, qTC)
 
 }
 

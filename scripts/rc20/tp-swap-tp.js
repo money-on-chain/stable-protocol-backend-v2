@@ -4,7 +4,7 @@ import * as dotenv from 'dotenv'
 
 import { readJsonFile, getWeb3 } from '../../src/utils.js'
 import { readContracts } from '../../src/moc-v2/contracts.js'
-import { swapTPforTP } from '../../src/moc-v2/moc-collateral-bag.js'
+import { swapTPforTP } from '../../src/moc-v2/moc-rc20.js'
 
 dotenv.config()
 
@@ -22,9 +22,8 @@ const main = async () => {
     const iFromTP = 0
     const iToTP = 1
     const qTP = `${process.env.OPERATION_AMOUNT_SWAP_TP_FOR_TP}`
-    const caIndex = 0
 
-    const { receipt, filteredEvents } = await swapTPforTP(web3, dContracts, configProject, iFromTP, iToTP, qTP, caIndex)
+    const { receipt, filteredEvents } = await swapTPforTP(web3, dContracts, configProject, iFromTP, iToTP, qTP)
 
 }
 
