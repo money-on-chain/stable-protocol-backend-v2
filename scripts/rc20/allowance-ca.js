@@ -1,8 +1,8 @@
 import * as dotenv from 'dotenv'
 
-import { readJsonFile, getWeb3 } from '../src/utils.js'
-import { readContracts } from '../src/moc-v2/contracts.js'
-import { AllowanceUseWrapper } from '../src/moc-v2/moc-base.js'
+import { readJsonFile, getWeb3 } from '../../src/utils.js'
+import { readContracts } from '../../src/moc-v2/contracts.js'
+import { AllowanceUseWrapper } from '../../src/moc-v2/moc-base.js'
 
 dotenv.config()
 
@@ -17,8 +17,8 @@ const main = async () => {
     const dContracts = await readContracts(web3, configProject)
 
     // Token to approve
-    const token = dContracts.contracts.CollateralTokenCABag
-    const tokenDecimals = configProject.tokens.TC.decimals
+    const token = dContracts.contracts.CA[0]
+    const tokenDecimals = configProject.tokens.CA[0].decimals
 
     // Send transaction and get receipt
     const { receipt, filteredEvents } = await AllowanceUseWrapper(web3, dContracts, token, true, tokenDecimals)

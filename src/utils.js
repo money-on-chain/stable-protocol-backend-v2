@@ -7,8 +7,6 @@ BigNumber.config({
   FORMAT: { decimalSeparator: '.', groupSeparator: ',' }
 })
 
-const BUCKET_X2 = '0x5832000000000000000000000000000000000000000000000000000000000000'
-const BUCKET_C0 = '0x4330000000000000000000000000000000000000000000000000000000000000'
 
 const readJsonFile = (path) => {
   //console.log('Read json path: ', path)
@@ -80,7 +78,5 @@ export {
   formatVisibleValue,
   formatTimestamp,
   fromContractPrecisionDecimals,
-  toContractPrecisionDecimals,
-  BUCKET_X2,
-  BUCKET_C0
+  toContractPrecisionDecimals
 }

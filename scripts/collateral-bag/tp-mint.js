@@ -2,9 +2,9 @@
 
 import * as dotenv from 'dotenv'
 
-import { readJsonFile, getWeb3 } from '../src/utils.js'
-import { readContracts } from '../src/moc-v2/contracts.js'
-import { mintTCandTP } from '../src/moc-v2/moc-collateral-bag.js'
+import { readJsonFile, getWeb3 } from '../../src/utils.js'
+import { readContracts } from '../../src/moc-v2/contracts.js'
+import { mintTP } from '../../src/moc-v2/moc-collateral-bag.js'
 
 dotenv.config()
 
@@ -23,7 +23,7 @@ const main = async () => {
     const caIndex = 0
     const tpIndex = 0
 
-    const { receipt, filteredEvents } = await mintTCandTP(web3, dContracts, configProject, caIndex, tpIndex, qTP)
+    const { receipt, filteredEvents } = await mintTP(web3, dContracts, configProject, caIndex, tpIndex, qTP)
 
 }
 

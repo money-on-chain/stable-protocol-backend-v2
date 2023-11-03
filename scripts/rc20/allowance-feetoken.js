@@ -1,8 +1,8 @@
 import * as dotenv from 'dotenv'
 
-import { readJsonFile, getWeb3 } from '../src/utils.js'
-import { readContracts } from '../src/moc-v2/contracts.js'
-import { AllowanceUseWrapper } from '../src/moc-v2/moc-base.js'
+import { readJsonFile, getWeb3 } from '../../src/utils.js'
+import { readContracts } from '../../src/moc-v2/contracts.js'
+import { AllowanceUseWrapper } from '../../src/moc-v2/moc-base.js'
 
 dotenv.config()
 
