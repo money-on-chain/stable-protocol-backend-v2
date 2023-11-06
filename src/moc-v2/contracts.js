@@ -312,7 +312,7 @@ const userBalanceAllowanceCA = (userBalance, config) => {
 const userBalanceAllowanceTP = (userBalance, config) => {
   let result = '';
   for (let i = 0; i < config.tokens.TP.length; i++) {
-    result += `${config.tokens.TP[i].name} Balance: ${fromContractPrecisionDecimals(userBalance.TP[i].balance, config.tokens.TP[i].decimals).toString()} ${config.tokens.TP[i].name} \n`
+    result += `${config.tokens.TP[i].name} Balance: ${fromContractPrecisionDecimals(userBalance.TP[i], config.tokens.TP[i].decimals).toString()} ${config.tokens.TP[i].name} \n`
     //result += `${config.tokens.TP[i].name} Allowance: ${fromContractPrecisionDecimals(userBalance.TP[i].allowance, config.tokens.TP[i].decimals).toString()} ${config.tokens.TP[i].name} \n`
   }
   return result
