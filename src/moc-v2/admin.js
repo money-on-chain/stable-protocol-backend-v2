@@ -5,8 +5,9 @@ import {sendTransaction} from "../transaction.js";
 const SettlementExecute = async (web3, dContracts, configProject) => {
 
     const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
-    const MocCABag = dContracts.contracts.MocCABag
-    const MocCABagAddress = MocCABag.options.address
+
+    const Moc = dContracts.contracts.Moc
+    const MocAddress = Moc.options.address
 
     // Get information from contracts
     const dataContractStatus = await statusFromContracts(web3, dContracts, configProject)
@@ -18,17 +19,17 @@ const SettlementExecute = async (web3, dContracts, configProject) => {
     const valueToSend = null
 
     // Calculate estimate gas cost
-    const estimateGas = await MocCABag.methods
+    const estimateGas = await Moc.methods
         .execSettlement()
         .estimateGas({ from: userAddress, value: '0x' })
 
     // encode function
-    const encodedCall = MocCABag.methods
+    const encodedCall = Moc.methods
         .execSettlement()
         .encodeABI()
 
     // send transaction to the blockchain and get receipt
-    const { receipt, filteredEvents } = await sendTransaction(web3, valueToSend, estimateGas, encodedCall, MocCABagAddress)
+    const { receipt, filteredEvents } = await sendTransaction(web3, valueToSend, estimateGas, encodedCall, MocAddress)
 
     console.log(`Transaction hash: ${receipt.transactionHash}`)
 
@@ -38,8 +39,8 @@ const SettlementExecute = async (web3, dContracts, configProject) => {
 const TCHoldersInterestPayment = async (web3, dContracts, configProject) => {
 
     const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
-    const MocCABag = dContracts.contracts.MocCABag
-    const MocCABagAddress = MocCABag.options.address
+    const Moc = dContracts.contracts.Moc
+    const MocAddress = Moc.options.address
 
     // Get information from contracts
     const dataContractStatus = await statusFromContracts(web3, dContracts, configProject)
@@ -51,17 +52,17 @@ const TCHoldersInterestPayment = async (web3, dContracts, configProject) => {
     const valueToSend = null
 
     // Calculate estimate gas cost
-    const estimateGas = await MocCABag.methods
+    const estimateGas = await Moc.methods
         .tcHoldersInterestPayment()
         .estimateGas({ from: userAddress, value: '0x' })
 
     // encode function
-    const encodedCall = MocCABag.methods
+    const encodedCall = Moc.methods
         .tcHoldersInterestPayment()
         .encodeABI()
 
     // send transaction to the blockchain and get receipt
-    const { receipt, filteredEvents } = await sendTransaction(web3, valueToSend, estimateGas, encodedCall, MocCABagAddress)
+    const { receipt, filteredEvents } = await sendTransaction(web3, valueToSend, estimateGas, encodedCall, MocAddress)
 
     console.log(`Transaction hash: ${receipt.transactionHash}`)
 
@@ -71,8 +72,8 @@ const TCHoldersInterestPayment = async (web3, dContracts, configProject) => {
 const UpdateEma = async (web3, dContracts, configProject) => {
 
     const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
-    const MocCABag = dContracts.contracts.MocCABag
-    const MocCABagAddress = MocCABag.options.address
+    const Moc = dContracts.contracts.Moc
+    const MocAddress = Moc.options.address
 
     // Get information from contracts
     const dataContractStatus = await statusFromContracts(web3, dContracts, configProject)
@@ -83,17 +84,17 @@ const UpdateEma = async (web3, dContracts, configProject) => {
     const valueToSend = null
 
     // Calculate estimate gas cost
-    const estimateGas = await MocCABag.methods
+    const estimateGas = await Moc.methods
         .updateEmas()
         .estimateGas({ from: userAddress, value: '0x' })
 
     // encode function
-    const encodedCall = MocCABag.methods
+    const encodedCall = Moc.methods
         .updateEmas()
         .encodeABI()
 
     // send transaction to the blockchain and get receipt
-    const { receipt, filteredEvents } = await sendTransaction(web3, valueToSend, estimateGas, encodedCall, MocCABagAddress)
+    const { receipt, filteredEvents } = await sendTransaction(web3, valueToSend, estimateGas, encodedCall, MocAddress)
 
     console.log(`Transaction hash: ${receipt.transactionHash}`)
 
@@ -103,7 +104,7 @@ const UpdateEma = async (web3, dContracts, configProject) => {
 const VendorsGuardianSetMarkup = async (web3, dContracts, configProject, vendorAddress, vendorMarkup) => {
 
     const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
-    const MocVendors = dContracts.contracts.MocVendorsCABag
+    const MocVendors = dContracts.contracts.MocVendors
     const MocVendorsAddress = MocVendors.options.address
 
     // Get information from contracts
