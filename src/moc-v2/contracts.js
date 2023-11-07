@@ -27,9 +27,9 @@ const readContracts = async (web3, configProject) => {
   dContracts.json.Moc = readJsonFile(`./abis/${appProject}/Moc.json`)
   dContracts.json.MocVendors = readJsonFile(`./abis/${appProject}/MocVendors.json`)
   dContracts.json.FeeToken = readJsonFile(`./abis/${appProject}/FeeToken.json`)
+  dContracts.json.WrappedCollateralAsset = readJsonFile(`./abis/${appProject}/WrappedCollateralAsset.json`)
 
   if (collateral === 'bag') {
-    dContracts.json.WrappedCollateralAsset = readJsonFile(`./abis/${appProject}/WrappedCollateralAsset.json`)
     dContracts.json.MocWrapper = readJsonFile(`./abis/${appProject}/MocWrapper.json`)
   }
 
@@ -89,7 +89,10 @@ const readContracts = async (web3, configProject) => {
 const totalSupplyTP = (contractStatus, config) => {
   let result = '';
   for (let i = 0; i < config.tokens.TP.length; i++) {
-    result += `Total supply of ${config.tokens.TP[i].name}:  ${Web3.utils.fromWei(contractStatus.pegContainer[i])} \n`
+    result += `Total supply of ${config.tokens.TP[i].name}:  ${Web3.utils.fromWei(contractStatus.pegContainer[i])} `
+    if (i + 1 < config.tokens.TP.length) {
+      result += '\n'
+    }
   }
   return result
 }
@@ -97,7 +100,10 @@ const totalSupplyTP = (contractStatus, config) => {
 const totalSupplyCA = (contractStatus, config) => {
   let result = '';
   for (let i = 0; i < config.tokens.CA.length; i++) {
-    result += `Total supply of ${config.tokens.CA[i].name}:  ${fromContractPrecisionDecimals(contractStatus.getACBalance[i], config.tokens.CA[i].decimals).toString()} \n`
+    result += `Total supply of ${config.tokens.CA[i].name}:  ${fromContractPrecisionDecimals(contractStatus.getACBalance[i], config.tokens.CA[i].decimals).toString()} `
+    if (i + 1 < config.tokens.CA.length) {
+      result += '\n'
+    }
   }
   return result
 }
@@ -105,7 +111,10 @@ const totalSupplyCA = (contractStatus, config) => {
 const pricesTP = (contractStatus, config) => {
   let result = '';
   for (let i = 0; i < config.tokens.TP.length; i++) {
-    result += `Price ${config.tokens.TP[i].name}:  ${Web3.utils.fromWei(contractStatus.PP_TP[i])} \n`
+    result += `Price ${config.tokens.TP[i].name}:  ${Web3.utils.fromWei(contractStatus.PP_TP[i])} `
+    if (i + 1 < config.tokens.TP.length) {
+      result += '\n'
+    }
   }
   return result
 }
@@ -113,7 +122,10 @@ const pricesTP = (contractStatus, config) => {
 const pricesCA = (contractStatus, config) => {
   let result = '';
   for (let i = 0; i < config.tokens.CA.length; i++) {
-    result += `Price ${config.tokens.CA[i].name}:  ${Web3.utils.fromWei(contractStatus.PP_CA[i])} \n`
+    result += `Price ${config.tokens.CA[i].name}:  ${Web3.utils.fromWei(contractStatus.PP_CA[i])} `
+    if (i + 1 < config.tokens.CA.length) {
+      result += '\n'
+    }
   }
   return result
 }
@@ -121,7 +133,10 @@ const pricesCA = (contractStatus, config) => {
 const targetCoverageTP = (contractStatus, config) => {
   let result = '';
   for (let i = 0; i < config.tokens.TP.length; i++) {
-    result += `${config.tokens.TP[i].name} Target Coverage:  ${Web3.utils.fromWei(contractStatus.tpCtarg[i])} \n`
+    result += `${config.tokens.TP[i].name} Target Coverage:  ${Web3.utils.fromWei(contractStatus.tpCtarg[i])} `
+    if (i + 1 < config.tokens.TP.length) {
+      result += '\n'
+    }
   }
   return result
 }
@@ -129,7 +144,11 @@ const targetCoverageTP = (contractStatus, config) => {
 const availableToMintTP = (contractStatus, config) => {
   let result = '';
   for (let i = 0; i < config.tokens.TP.length; i++) {
-    result += `${config.tokens.TP[i].name} available to mint:  ${Web3.utils.fromWei(contractStatus.getTPAvailableToMint[i])} \n`
+    result += `${config.tokens.TP[i].name} available to mint:  ${Web3.utils.fromWei(contractStatus.getTPAvailableToMint[i])} `
+
+    if (i + 1 < config.tokens.TP.length) {
+      result += '\n'
+    }
   }
   return result
 }
@@ -137,7 +156,10 @@ const availableToMintTP = (contractStatus, config) => {
 const emaTP = (contractStatus, config) => {
   let result = '';
   for (let i = 0; i < config.tokens.TP.length; i++) {
-    result += `${config.tokens.TP[i].name} EMA:  ${Web3.utils.fromWei(contractStatus.tpEma[i])} \n`
+    result += `${config.tokens.TP[i].name} EMA:  ${Web3.utils.fromWei(contractStatus.tpEma[i])} `
+    if (i + 1 < config.tokens.TP.length) {
+      result += '\n'
+    }
   }
   return result
 }
@@ -146,7 +168,10 @@ const feeTP = (contractStatus, config) => {
   let result = '';
   for (let i = 0; i < config.tokens.TP.length; i++) {
     result += `Mint ${config.tokens.TP[i].name} Fee:  ${Web3.utils.fromWei(contractStatus.tpMintFee[i])} \n`
-    result += `Redeem ${config.tokens.TP[i].name} Fee:  ${Web3.utils.fromWei(contractStatus.tpRedeemFee[i])} \n`
+    result += `Redeem ${config.tokens.TP[i].name} Fee:  ${Web3.utils.fromWei(contractStatus.tpRedeemFee[i])} `
+    if (i + 1 < config.tokens.TP.length) {
+      result += '\n'
+    }
   }
   return result
 }
@@ -167,7 +192,7 @@ Prices
 ${pricesTP(contractStatus, config)} ${pricesCA(contractStatus, config)} 
 Price ${config.tokens.TC.name}:  ${Web3.utils.fromWei(contractStatus.getPTCac)}
 Price ${config.tokens.FeeToken.name}:  ${Web3.utils.fromWei(contractStatus.PP_FeeToken)}
-Price Wrapped Token:  ${Web3.utils.fromWei(contractStatus.getTokenPrice)}
+Price Wrapped Token:  ${contractStatus.getTokenPrice}
 
 
 Coverage & Leverage
@@ -259,7 +284,11 @@ const userBalanceAllowanceCA = (userBalance, config) => {
   let result = '';
   for (let i = 0; i < config.tokens.CA.length; i++) {
     result += `${config.tokens.CA[i].name} Balance: ${fromContractPrecisionDecimals(userBalance.CA[i].balance, config.tokens.CA[i].decimals).toString()} ${config.tokens.CA[i].name} \n`
-    result += `${config.tokens.CA[i].name} Allowance: ${fromContractPrecisionDecimals(userBalance.CA[i].allowance, config.tokens.CA[i].decimals).toString()} ${config.tokens.CA[i].name} \n`
+    result += `${config.tokens.CA[i].name} Allowance: ${fromContractPrecisionDecimals(userBalance.CA[i].allowance, config.tokens.CA[i].decimals).toString()} ${config.tokens.CA[i].name} `
+
+    if (i + 1 < config.tokens.CA.length) {
+      result += '\n'
+    }
   }
   return result
 }
@@ -267,7 +296,10 @@ const userBalanceAllowanceCA = (userBalance, config) => {
 const userBalanceAllowanceTP = (userBalance, config) => {
   let result = '';
   for (let i = 0; i < config.tokens.TP.length; i++) {
-    result += `${config.tokens.TP[i].name} Balance: ${fromContractPrecisionDecimals(userBalance.TP[i], config.tokens.TP[i].decimals).toString()} ${config.tokens.TP[i].name} \n`
+    result += `${config.tokens.TP[i].name} Balance: ${fromContractPrecisionDecimals(userBalance.TP[i], config.tokens.TP[i].decimals).toString()} ${config.tokens.TP[i].name} `
+    if (i + 1 < config.tokens.TP.length) {
+      result += '\n'
+    }
     //result += `${config.tokens.TP[i].name} Allowance: ${fromContractPrecisionDecimals(userBalance.TP[i].allowance, config.tokens.TP[i].decimals).toString()} ${config.tokens.TP[i].name} \n`
   }
   return result

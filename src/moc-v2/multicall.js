@@ -1,3 +1,4 @@
+import BigNumber from "bignumber.js";
 
 const contractStatus = async (web3, dContracts, configProject) => {
 
@@ -184,7 +185,7 @@ const contractStatus = async (web3, dContracts, configProject) => {
   if (collateral === 'bag') {
     status.getTokenPrice = listReturnData[last_index + 1]
   } else {
-    status.getTokenPrice = 0
+    status.getTokenPrice = new BigNumber('0')
   }
 
   last_index = last_index + 1
