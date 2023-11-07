@@ -42,32 +42,11 @@ const readContracts = async (web3, configProject) => {
     dContracts.contracts.TP.push(new web3.eth.Contract(dContracts.json.TokenPegged.abi, process.env[`CONTRACT_TP_${i}`]))
   }
 
-  /*
-  console.log(`Reading ${configProject.tokens.TP[0].name} Token Contract... address: `, process.env.CONTRACT_TP_0)
-  const TP_0 = new web3.eth.Contract(dContracts.json.TokenPegged.abi, process.env.CONTRACT_TP_0)
-
-  console.log(`Reading ${configProject.tokens.TP[1].name} Token Contract... address: `, process.env.CONTRACT_TP_1)
-  const TP_1 = new web3.eth.Contract(dContracts.json.TokenPegged.abi, process.env.CONTRACT_TP_1)
-
-  dContracts.contracts.TP = [TP_0, TP_1]
-  */
-
   dContracts.contracts.CA = []
   for (let i = 0; i < configProject.tokens.CA.length; i++) {
     console.log(`Reading ${configProject.tokens.CA[i].name} Token Contract... address: `, process.env[`CONTRACT_CA_${i}`])
     dContracts.contracts.CA.push(new web3.eth.Contract(dContracts.json.WrappedCollateralAsset.abi, process.env[`CONTRACT_CA_${i}`]))
   }
-
-  /*
-  console.log(`Reading ${configProject.tokens.CA[0].name} Token Contract... address: `, process.env.CONTRACT_CA_0)
-  const CA_0 = new web3.eth.Contract(dContracts.json.WrappedCollateralAsset.abi, process.env.CONTRACT_CA_0)
-
-  console.log(`Reading ${configProject.tokens.CA[1].name} Token Contract... address: `, process.env.CONTRACT_CA_1)
-  const CA_1 = new web3.eth.Contract(dContracts.json.WrappedCollateralAsset.abi, process.env.CONTRACT_CA_1)
-
-  dContracts.contracts.CA = [CA_0, CA_1]
-
-   */
 
   dContracts.contracts.PP_TP = []
   for (let i = 0; i < configProject.tokens.TP.length; i++) {
@@ -75,34 +54,11 @@ const readContracts = async (web3, configProject) => {
     dContracts.contracts.PP_TP.push(new web3.eth.Contract(dContracts.json.IPriceProvider.abi, process.env[`CONTRACT_PRICE_PROVIDER_TP_${i}`]))
   }
 
-  /*
-  console.log(`Reading Price Provider ${configProject.tokens.TP[0].name} Contract... address: `, process.env.CONTRACT_PRICE_PROVIDER_TP_0)
-  const PP_TP_0 = new web3.eth.Contract(dContracts.json.IPriceProvider.abi, process.env.CONTRACT_PRICE_PROVIDER_TP_0)
-
-  console.log(`Reading Price Provider ${configProject.tokens.TP[1].name} Contract... address: `, process.env.CONTRACT_PRICE_PROVIDER_TP_1)
-  const PP_TP_1 = new web3.eth.Contract(dContracts.json.IPriceProvider.abi, process.env.CONTRACT_PRICE_PROVIDER_TP_1)
-
-  dContracts.contracts.PP_TP = [PP_TP_0, PP_TP_1]
-
-   */
-
   dContracts.contracts.PP_CA = []
   for (let i = 0; i < configProject.tokens.CA.length; i++) {
     console.log(`Reading Price Provider ${configProject.tokens.CA[i].name} Tokens Contract... address: `, process.env[`CONTRACT_PRICE_PROVIDER_CA_${i}`])
     dContracts.contracts.PP_CA.push(new web3.eth.Contract(dContracts.json.IPriceProvider.abi, process.env[`CONTRACT_PRICE_PROVIDER_CA_${i}`]))
   }
-
-  /*
-
-  console.log(`Reading Price Provider ${configProject.tokens.CA[0].name} Tokens Contract... address: `, process.env.CONTRACT_PRICE_PROVIDER_CA_0)
-  const PP_CA_0 = new web3.eth.Contract(dContracts.json.IPriceProvider.abi, process.env.CONTRACT_PRICE_PROVIDER_CA_0)
-
-  console.log(`Reading Price Provider ${configProject.tokens.CA[1].name} Tokens Contract... address: `, process.env.CONTRACT_PRICE_PROVIDER_CA_1)
-  const PP_CA_1 = new web3.eth.Contract(dContracts.json.IPriceProvider.abi, process.env.CONTRACT_PRICE_PROVIDER_CA_1)
-
-  dContracts.contracts.PP_CA = [PP_CA_0, PP_CA_1]
-
-   */
 
   console.log('Reading Moc Contract... address: ', process.env.CONTRACT_MOC)
   dContracts.contracts.Moc = new web3.eth.Contract(dContracts.json.Moc.abi, process.env.CONTRACT_MOC)
@@ -201,15 +157,14 @@ Contract Status
 ===============
 
 Total amount of Collateral Asset held in the Collateral Bag (nACcb): ${Web3.utils.fromWei(contractStatus.nACcb)}
-Collateral Token in the Collateral Bag (nTCcb): ${Web3.utils.fromWei(contractStatus.nTCcb)}
+Collateral Token in the Collateral Bag (nTCcb): ${Web3.utils.fromWei(contractStatus.nTCcb)} 
 ${totalSupplyTP(contractStatus, config)}
 ${totalSupplyCA(contractStatus, config)}
 
 Prices
 ======
 
-${pricesTP(contractStatus, config)}
-${pricesCA(contractStatus, config)}
+${pricesTP(contractStatus, config)} ${pricesCA(contractStatus, config)} 
 Price ${config.tokens.TC.name}:  ${Web3.utils.fromWei(contractStatus.getPTCac)}
 Price ${config.tokens.FeeToken.name}:  ${Web3.utils.fromWei(contractStatus.PP_FeeToken)}
 Price Wrapped Token:  ${Web3.utils.fromWei(contractStatus.getTokenPrice)}
@@ -220,7 +175,7 @@ Coverage & Leverage
 
 Bucket global coverage: ${Web3.utils.fromWei(contractStatus.getCglb)}
 Target coverage adjusted by all Pegged Token's to Collateral Asset rate moving average (CtargemaCA): ${Web3.utils.fromWei(contractStatus.calcCtargemaCA)}
-${targetCoverageTP(contractStatus, config)}
+${targetCoverageTP(contractStatus, config)} 
 ${config.tokens.TC.name} Leverage:  ${Web3.utils.fromWei(contractStatus.getLeverageTC)}
 
 
@@ -228,7 +183,7 @@ Available
 =========
 
 ${config.tokens.TC.name} available to redeem:  ${Web3.utils.fromWei(contractStatus.getTCAvailableToRedeem)}
-${availableToMintTP(contractStatus, config)}
+${availableToMintTP(contractStatus, config)} 
 Total Collateral available:  ${Web3.utils.fromWei(contractStatus.getTotalACavailable)}
 
 
@@ -329,7 +284,6 @@ ${config.tokens.TC.name} Balance: ${fromContractPrecisionDecimals(userBalance.TC
 ${config.tokens.TC.name} Allowance: ${fromContractPrecisionDecimals(userBalance.TC.allowance, config.tokens.TC.decimals).toString()} ${config.tokens.TC.name}
 ${config.tokens.FeeToken.name} Balance: ${fromContractPrecisionDecimals(userBalance.FeeToken.balance, config.tokens.FeeToken.decimals).toString()} ${config.tokens.FeeToken.name}
 ${config.tokens.FeeToken.name} Allowance: ${fromContractPrecisionDecimals(userBalance.FeeToken.allowance, config.tokens.FeeToken.decimals).toString()} ${config.tokens.FeeToken.name}
-
     `
 
   return render

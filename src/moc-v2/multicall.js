@@ -1,11 +1,19 @@
 
 const contractStatus = async (web3, dContracts, configProject) => {
 
+  const collateral = configProject.collateral
+
   const multicall = dContracts.contracts.multicall
   const Moc = dContracts.contracts.Moc
   const MocVendors = dContracts.contracts.MocVendors
   const PP_FeeToken = dContracts.contracts.PP_FeeToken
-  const MocWrapper = dContracts.contracts.MocWrapper
+
+  let MoCContract
+  if (collateral === 'bag') {
+    MoCContract = dContracts.contracts.MocWrapper
+  } else {
+    MoCContract = dContracts.contracts.Moc
+  }
 
   console.log('Reading contract status ...')
 
@@ -42,16 +50,15 @@ const contractStatus = async (web3, dContracts, configProject) => {
   listMethods.push([Moc.options.address, Moc.methods.bes().encodeABI(), 'uint256']) // 29
   listMethods.push([Moc.options.address, Moc.methods.bns().encodeABI(), 'uint256']) // 30
   listMethods.push([Moc.options.address, Moc.methods.getBts().encodeABI(), 'uint256']) // 31
-  listMethods.push([MocWrapper.options.address, MocWrapper.methods.getTokenPrice().encodeABI(), 'uint256']) // 32
-  listMethods.push([MocVendors.options.address, MocVendors.methods.vendorsGuardianAddress().encodeABI(), 'address']) // 33
-  listMethods.push([Moc.options.address, Moc.methods.feeTokenPct().encodeABI(), 'uint256']) // 34
-  listMethods.push([Moc.options.address, Moc.methods.feeToken().encodeABI(), 'address']) // 35
-  listMethods.push([Moc.options.address, Moc.methods.feeTokenPriceProvider().encodeABI(), 'address']) // 36
-  listMethods.push([Moc.options.address, Moc.methods.tcInterestCollectorAddress().encodeABI(), 'address']) // 37
-  listMethods.push([Moc.options.address, Moc.methods.tcInterestRate().encodeABI(), 'uint256']) // 38
-  listMethods.push([Moc.options.address, Moc.methods.tcInterestPaymentBlockSpan().encodeABI(), 'uint256']) // 39
-  listMethods.push([Moc.options.address, Moc.methods.nextTCInterestPayment().encodeABI(), 'uint256']) // 40
-  listMethods.push([PP_FeeToken.options.address, PP_FeeToken.methods.peek().encodeABI(), 'uint256']) // 41
+  listMethods.push([MocVendors.options.address, MocVendors.methods.vendorsGuardianAddress().encodeABI(), 'address']) // 32
+  listMethods.push([Moc.options.address, Moc.methods.feeTokenPct().encodeABI(), 'uint256']) // 33
+  listMethods.push([Moc.options.address, Moc.methods.feeToken().encodeABI(), 'address']) // 34
+  listMethods.push([Moc.options.address, Moc.methods.feeTokenPriceProvider().encodeABI(), 'address']) // 35
+  listMethods.push([Moc.options.address, Moc.methods.tcInterestCollectorAddress().encodeABI(), 'address']) // 36
+  listMethods.push([Moc.options.address, Moc.methods.tcInterestRate().encodeABI(), 'uint256']) // 37
+  listMethods.push([Moc.options.address, Moc.methods.tcInterestPaymentBlockSpan().encodeABI(), 'uint256']) // 38
+  listMethods.push([Moc.options.address, Moc.methods.nextTCInterestPayment().encodeABI(), 'uint256']) // 39
+  listMethods.push([PP_FeeToken.options.address, PP_FeeToken.methods.peek().encodeABI(), 'uint256']) // 40
 
   let PP_TP
   for (let i = 0; i < configProject.tokens.TP.length; i++) {
@@ -71,8 +78,13 @@ const contractStatus = async (web3, dContracts, configProject) => {
   for (let i = 0; i < configProject.tokens.CA.length; i++) {
     PP_CA = dContracts.contracts.PP_CA[i]
     CA = dContracts.contracts.CA[i]
-    listMethods.push([CA.options.address, CA.methods.balanceOf(MocWrapper.options.address).encodeABI(), 'uint256'])
+    listMethods.push([CA.options.address, CA.methods.balanceOf(MoCContract.options.address).encodeABI(), 'uint256'])
     listMethods.push([PP_CA.options.address, PP_CA.methods.peek().encodeABI(), 'uint256'])
+  }
+
+  if (collateral === 'bag') {
+    const MocWrapper = dContracts.contracts.MocWrapper
+    listMethods.push([MocWrapper.options.address, MocWrapper.methods.getTokenPrice().encodeABI(), 'uint256'])
   }
 
   // Remove decode result parameter
@@ -117,16 +129,15 @@ const contractStatus = async (web3, dContracts, configProject) => {
   status.bes = listReturnData[29]
   status.bns = listReturnData[30]
   status.getBts = listReturnData[31]
-  status.getTokenPrice = listReturnData[32]
-  status.vendorGuardianAddress = listReturnData[33]
-  status.feeTokenPct = listReturnData[34] // e.g. if tcMintFee = 1%, FeeTokenPct = 50% => qFeeToken = 0.5%
-  status.feeToken = listReturnData[35]
-  status.feeTokenPriceProvider = listReturnData[36]
-  status.tcInterestCollectorAddress = listReturnData[37]
-  status.tcInterestRate = listReturnData[38]
-  status.tcInterestPaymentBlockSpan = listReturnData[39]
-  status.nextTCInterestPayment = listReturnData[40]
-  status.PP_FeeToken = listReturnData[41]
+  status.vendorGuardianAddress = listReturnData[32]
+  status.feeTokenPct = listReturnData[33] // e.g. if tcMintFee = 1%, FeeTokenPct = 50% => qFeeToken = 0.5%
+  status.feeToken = listReturnData[34]
+  status.feeTokenPriceProvider = listReturnData[35]
+  status.tcInterestCollectorAddress = listReturnData[36]
+  status.tcInterestRate = listReturnData[37]
+  status.tcInterestPaymentBlockSpan = listReturnData[38]
+  status.nextTCInterestPayment = listReturnData[39]
+  status.PP_FeeToken = listReturnData[40]
 
   const tpMintFee = []
   const tpRedeemFee = []
@@ -137,7 +148,7 @@ const contractStatus = async (web3, dContracts, configProject) => {
   const getTPAvailableToMint = []
   const tpEma = []
 
-  let last_index = 41 // this is the last used array index
+  let last_index = 40 // this is the last used array index
   for (let i = 0; i < configProject.tokens.TP.length; i++) {
     tpMintFee.push(listReturnData[last_index + 1])
     tpRedeemFee.push(listReturnData[last_index + 2])
@@ -170,24 +181,40 @@ const contractStatus = async (web3, dContracts, configProject) => {
   status.getACBalance = getACBalance
   status.PP_CA = PP_CA
 
+  if (collateral === 'bag') {
+    status.getTokenPrice = listReturnData[last_index + 1]
+  } else {
+    status.getTokenPrice = 0
+  }
+
+  last_index = last_index + 1
+
   return status
 }
 
 const userBalance = async (web3, dContracts, userAddress, configProject) => {
 
+  const collateral = configProject.collateral
+
   const multicall = dContracts.contracts.multicall
-  const MocWrapper = dContracts.contracts.MocWrapper
   const CollateralToken = dContracts.contracts.CollateralToken
   const FeeToken = dContracts.contracts.FeeToken
+
+  let MoCContract
+  if (collateral === 'bag') {
+    MoCContract = dContracts.contracts.MocWrapper
+  } else {
+    MoCContract = dContracts.contracts.Moc
+  }
 
   console.log(`Reading user balance ... account: ${userAddress}`)
 
   const listMethods = []
   listMethods.push([multicall.options.address, multicall.methods.getEthBalance(userAddress).encodeABI(), 'uint256']) // 0
   listMethods.push([CollateralToken.options.address, CollateralToken.methods.balanceOf(userAddress).encodeABI(), 'uint256']) // 1
-  listMethods.push([CollateralToken.options.address, CollateralToken.methods.allowance(userAddress, MocWrapper.options.address).encodeABI(), 'uint256']) // 2
+  listMethods.push([CollateralToken.options.address, CollateralToken.methods.allowance(userAddress, MoCContract.options.address).encodeABI(), 'uint256']) // 2
   listMethods.push([FeeToken.options.address, FeeToken.methods.balanceOf(userAddress).encodeABI(), 'uint256']) // 3
-  listMethods.push([FeeToken.options.address, FeeToken.methods.allowance(userAddress, MocWrapper.options.address).encodeABI(), 'uint256']) // 4
+  listMethods.push([FeeToken.options.address, FeeToken.methods.allowance(userAddress, MoCContract.options.address).encodeABI(), 'uint256']) // 4
 
   let TP
   for (let i = 0; i < configProject.tokens.TP.length; i++) {
@@ -199,7 +226,7 @@ const userBalance = async (web3, dContracts, userAddress, configProject) => {
   for (let i = 0; i < configProject.tokens.CA.length; i++) {
     CA = dContracts.contracts.CA[i]
     listMethods.push([CA.options.address, CA.methods.balanceOf(userAddress).encodeABI(), 'uint256'])
-    listMethods.push([CA.options.address, CA.methods.allowance(userAddress, MocWrapper.options.address).encodeABI(), 'uint256']) // 2
+    listMethods.push([CA.options.address, CA.methods.allowance(userAddress, MoCContract.options.address).encodeABI(), 'uint256']) // 2
   }
 
   // Remove decode result parameter
@@ -230,7 +257,7 @@ const userBalance = async (web3, dContracts, userAddress, configProject) => {
 
   CA = []
   for (let i = 0; i < configProject.tokens.CA.length; i++) {
-    CA.push({balance: listReturnData[last_index + 1], allowance: [last_index + 2]})
+    CA.push({balance: listReturnData[last_index + 1], allowance: listReturnData[last_index + 2]})
     last_index = last_index + 1
   }
   userBalance.CA = CA
