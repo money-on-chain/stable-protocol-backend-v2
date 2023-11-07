@@ -17,7 +17,7 @@ const main = async () => {
     const dContracts = await readContracts(web3, configProject)
 
     // Token to approve
-    const token = dContracts.contracts.CollateralTokenCABag
+    const token = dContracts.contracts.CollateralToken
     const tokenDecimals = configProject.tokens.TC.decimals
 
     // Send transaction and get receipt
