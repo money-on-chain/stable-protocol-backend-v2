@@ -189,8 +189,9 @@ ${totalSupplyCA(contractStatus, config)}
 Prices
 ======
 
-${pricesTP(contractStatus, config)} ${pricesCA(contractStatus, config)} 
-Price ${config.tokens.TC.name}:  ${Web3.utils.fromWei(contractStatus.getPTCac)}
+${pricesTP(contractStatus, config)} 
+${pricesCA(contractStatus, config)} 
+Price Tec ${config.tokens.TC.name}:  ${Web3.utils.fromWei(contractStatus.getPTCac)}
 Price ${config.tokens.FeeToken.name}:  ${Web3.utils.fromWei(contractStatus.PP_FeeToken)}
 Price Wrapped Token:  ${contractStatus.getTokenPrice}
 

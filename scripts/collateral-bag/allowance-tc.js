@@ -21,7 +21,7 @@ const main = async () => {
     const tokenDecimals = configProject.tokens.TC.decimals
 
     // Send transaction and get receipt
-    const { receipt, filteredEvents } = await AllowanceUseWrapper(web3, dContracts, token, true, tokenDecimals)
+    const { receipt, filteredEvents } = await AllowanceUseWrapper(web3, dContracts, configProject, token, true, tokenDecimals)
 }
 
 main()

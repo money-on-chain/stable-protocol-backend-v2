@@ -9,12 +9,19 @@ import {sendTransaction} from "../transaction.js";
 const mintTC = async (web3, dContracts, configProject, caIndex, qTC) => {
     // Mint Collateral token with CA support vendors
 
+    const collateral = configProject.collateral
     const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
     const vendorAddress = `${process.env.VENDOR_ADDRESS}`.toLowerCase()
     const slippage = `${process.env.MINT_SLIPPAGE}`
 
-    const MocCAWrapper = dContracts.contracts.MocCAWrapper
-    const MocCAWrapperAddress = MocCAWrapper.options.address
+    let MoCContract
+    if (collateral === 'bag') {
+        MoCContract = dContracts.contracts.MocWrapper
+    } else {
+        MoCContract = dContracts.contracts.Moc
+    }
+    const MoCContractAddress = MoCContract.options.address
+
     const caToken = dContracts.contracts.CA[caIndex]
     const caAddress = caToken.options.address
 
@@ -56,24 +63,42 @@ const mintTC = async (web3, dContracts, configProject, caIndex, qTC) => {
 
     const valueToSend = null
 
-    // Calculate estimate gas cost
-    const estimateGas = await MocCAWrapper.methods
-        .mintTCViaVendor(caAddress,
-            toContractPrecisionDecimals(new BigNumber(qTC), configProject.tokens.TC.decimals),
-            toContractPrecisionDecimals(qAssetMax, configProject.tokens.CA[caIndex].decimals),
-            vendorAddress
-        ).estimateGas({ from: userAddress, value: '0x' })
+    let estimateGas
+    let encodedCall
+    if (collateral === 'bag') {
+        // Calculate estimate gas cost
+        estimateGas = await MoCContract.methods
+            .mintTCViaVendor(caAddress,
+                toContractPrecisionDecimals(new BigNumber(qTC), configProject.tokens.TC.decimals),
+                toContractPrecisionDecimals(qAssetMax, configProject.tokens.CA[caIndex].decimals),
+                vendorAddress
+            ).estimateGas({ from: userAddress, value: '0x' })
 
-    // encode function
-    const encodedCall = MocCAWrapper.methods
-        .mintTCViaVendor(caAddress,
-            toContractPrecisionDecimals(new BigNumber(qTC), configProject.tokens.TC.decimals),
-            toContractPrecisionDecimals(qAssetMax, configProject.tokens.CA[caIndex].decimals),
-            vendorAddress
-        ).encodeABI()
+        // encode function
+        encodedCall = MoCContract.methods
+            .mintTCViaVendor(caAddress,
+                toContractPrecisionDecimals(new BigNumber(qTC), configProject.tokens.TC.decimals),
+                toContractPrecisionDecimals(qAssetMax, configProject.tokens.CA[caIndex].decimals),
+                vendorAddress
+            ).encodeABI()
+    } else {
+        // Calculate estimate gas cost
+        estimateGas = await MoCContract.methods
+            .mintTCViaVendor(toContractPrecisionDecimals(new BigNumber(qTC), configProject.tokens.TC.decimals),
+                toContractPrecisionDecimals(qAssetMax, configProject.tokens.CA[caIndex].decimals),
+                vendorAddress
+            ).estimateGas({ from: userAddress, value: '0x' })
+
+        // encode function
+        encodedCall = MoCContract.methods
+            .mintTCViaVendor(toContractPrecisionDecimals(new BigNumber(qTC), configProject.tokens.TC.decimals),
+                toContractPrecisionDecimals(qAssetMax, configProject.tokens.CA[caIndex].decimals),
+                vendorAddress
+            ).encodeABI()
+    }
 
     // send transaction to the blockchain and get receipt
-    const { receipt, filteredEvents } = await sendTransaction(web3, valueToSend, estimateGas, encodedCall, MocCAWrapperAddress)
+    const { receipt, filteredEvents } = await sendTransaction(web3, valueToSend, estimateGas, encodedCall, MoCContractAddress)
 
     console.log(`Transaction hash: ${receipt.transactionHash}`)
 
@@ -83,12 +108,20 @@ const mintTC = async (web3, dContracts, configProject, caIndex, qTC) => {
 const redeemTC = async (web3, dContracts, configProject, caIndex, qTC) => {
     // Redeem Collateral token receiving CA support vendors
 
+    const collateral = configProject.collateral
+
     const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
     const vendorAddress = `${process.env.VENDOR_ADDRESS}`.toLowerCase()
     const slippage = `${process.env.REDEEM_SLIPPAGE}`
 
-    const MocCAWrapper = dContracts.contracts.MocCAWrapper
-    const MocCAWrapperAddress = MocCAWrapper.options.address
+    let MoCContract
+    if (collateral === 'bag') {
+        MoCContract = dContracts.contracts.MocWrapper
+    } else {
+        MoCContract = dContracts.contracts.Moc
+    }
+    const MoCContractAddress = MoCContract.options.address
+
     const caToken = dContracts.contracts.CA[caIndex]
     const caAddress = caToken.options.address
 
@@ -140,7 +173,7 @@ const redeemTC = async (web3, dContracts, configProject, caIndex, qTC) => {
     const valueToSend = null
 
     // Calculate estimate gas cost
-    const estimateGas = await MocCAWrapper.methods
+    const estimateGas = await MoCContract.methods
         .redeemTCViaVendor(
             caAddress,
             toContractPrecisionDecimals(new BigNumber(qTC), configProject.tokens.TC.decimals),
@@ -149,7 +182,7 @@ const redeemTC = async (web3, dContracts, configProject, caIndex, qTC) => {
         ).estimateGas({ from: userAddress, value: '0x' })
 
     // encode function
-    const encodedCall = MocCAWrapper.methods
+    const encodedCall = MoCContract.methods
         .redeemTCViaVendor(
             caAddress,
             toContractPrecisionDecimals(new BigNumber(qTC), configProject.tokens.TC.decimals),
@@ -163,7 +196,7 @@ const redeemTC = async (web3, dContracts, configProject, caIndex, qTC) => {
         valueToSend,
         estimateGas,
         encodedCall,
-        MocCAWrapperAddress)
+        MoCContractAddress)
 
     console.log(`Transaction hash: ${receipt.transactionHash}`)
 
@@ -173,12 +206,19 @@ const redeemTC = async (web3, dContracts, configProject, caIndex, qTC) => {
 const mintTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) => {
     // Mint pegged token with collateral CA BAG support vendor
 
+    const collateral = configProject.collateral
     const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
     const vendorAddress = `${process.env.VENDOR_ADDRESS}`.toLowerCase()
     const slippage = `${process.env.MINT_SLIPPAGE}`
 
-    const MocCAWrapper = dContracts.contracts.MocCAWrapper
-    const MocCAWrapperAddress = MocCAWrapper.options.address
+    let MoCContract
+    if (collateral === 'bag') {
+        MoCContract = dContracts.contracts.MocWrapper
+    } else {
+        MoCContract = dContracts.contracts.Moc
+    }
+    const MoCContractAddress = MoCContract.options.address
+
     const caToken = dContracts.contracts.CA[caIndex]
     const caAddress = caToken.options.address
 
@@ -228,7 +268,7 @@ const mintTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) =>
     const valueToSend = null
 
     // Calculate estimate gas cost
-    const estimateGas = await MocCAWrapper.methods
+    const estimateGas = await MoCContract.methods
         .mintTPViaVendor(
             caAddress,
             tpIndex,
@@ -238,7 +278,7 @@ const mintTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) =>
         ).estimateGas({ from: userAddress, value: '0x' })
 
     // encode function
-    const encodedCall = MocCAWrapper.methods
+    const encodedCall = MoCContract.methods
         .mintTPViaVendor(
             caAddress,
             tpIndex,
@@ -248,7 +288,7 @@ const mintTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) =>
         ).encodeABI()
 
     // send transaction to the blockchain and get receipt
-    const { receipt, filteredEvents } = await sendTransaction(web3, valueToSend, estimateGas, encodedCall, MocCAWrapperAddress)
+    const { receipt, filteredEvents } = await sendTransaction(web3, valueToSend, estimateGas, encodedCall, MoCContractAddress)
 
     console.log(`Transaction hash: ${receipt.transactionHash}`)
 
@@ -258,12 +298,19 @@ const mintTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) =>
 const redeemTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) => {
     // Redeem pegged token receiving CA support vendor
 
+    const collateral = configProject.collateral
     const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
     const vendorAddress = `${process.env.VENDOR_ADDRESS}`.toLowerCase()
     const slippage = `${process.env.REDEEM_SLIPPAGE}`
 
-    const MocCAWrapper = dContracts.contracts.MocCAWrapper
-    const MocCAWrapperAddress = MocCAWrapper.options.address
+    let MoCContract
+    if (collateral === 'bag') {
+        MoCContract = dContracts.contracts.MocWrapper
+    } else {
+        MoCContract = dContracts.contracts.Moc
+    }
+    const MoCContractAddress = MoCContract.options.address
+
     const caToken = dContracts.contracts.CA[caIndex]
     const caAddress = caToken.options.address
 
@@ -313,7 +360,7 @@ const redeemTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) 
     const valueToSend = null
 
     // Calculate estimate gas cost
-    const estimateGas = await MocCAWrapper.methods
+    const estimateGas = await MoCContract.methods
         .redeemTPViaVendor(
             caAddress,
             tpIndex,
@@ -324,7 +371,7 @@ const redeemTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) 
         .estimateGas({ from: userAddress, value: '0x' })
 
     // encode function
-    const encodedCall = MocCAWrapper.methods
+    const encodedCall = MoCContract.methods
         .redeemTPViaVendor(
             caAddress,
             tpIndex,
@@ -335,7 +382,7 @@ const redeemTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) 
         .encodeABI()
 
     // send transaction to the blockchain and get receipt
-    const { receipt, filteredEvents } = await sendTransaction(web3, valueToSend, estimateGas, encodedCall, MocCAWrapperAddress)
+    const { receipt, filteredEvents } = await sendTransaction(web3, valueToSend, estimateGas, encodedCall, MoCContractAddress)
 
     console.log(`Transaction hash: ${receipt.transactionHash}`)
 
@@ -345,12 +392,20 @@ const redeemTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) 
 const swapTPforTP = async (web3, dContracts, configProject, iFromTP, iToTP, qTP, caIndex) => {
     // caller sends a Pegged Token and receives another one support vendor
 
+    const collateral = configProject.collateral
+
     const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
     const vendorAddress = `${process.env.VENDOR_ADDRESS}`.toLowerCase()
     const slippage = `${process.env.REDEEM_SLIPPAGE}`
 
-    const MocCAWrapper = dContracts.contracts.MocCAWrapper
-    const MocCAWrapperAddress = MocCAWrapper.options.address
+    let MoCContract
+    if (collateral === 'bag') {
+        MoCContract = dContracts.contracts.MocWrapper
+    } else {
+        MoCContract = dContracts.contracts.Moc
+    }
+    const MoCContractAddress = MoCContract.options.address
+
     const caToken = dContracts.contracts.CA[caIndex]
     const caAddress = caToken.options.address
 
@@ -402,7 +457,7 @@ const swapTPforTP = async (web3, dContracts, configProject, iFromTP, iToTP, qTP,
     const valueToSend = null
 
     // Calculate estimate gas cost
-    const estimateGas = await MocCAWrapper.methods
+    const estimateGas = await MoCContract.methods
         .swapTPforTPViaVendor(
             caAddress,
             iFromTP,
@@ -414,7 +469,7 @@ const swapTPforTP = async (web3, dContracts, configProject, iFromTP, iToTP, qTP,
         ).estimateGas({ from: userAddress, value: '0x' })
 
     // encode function
-    const encodedCall = MocCAWrapper.methods
+    const encodedCall = MoCContract.methods
         .swapTPforTPViaVendor(
             caAddress,
             iFromTP,
@@ -427,7 +482,7 @@ const swapTPforTP = async (web3, dContracts, configProject, iFromTP, iToTP, qTP,
         .encodeABI()
 
     // send transaction to the blockchain and get receipt
-    const { receipt, filteredEvents } = await sendTransaction(web3, valueToSend, estimateGas, encodedCall, MocCAWrapperAddress)
+    const { receipt, filteredEvents } = await sendTransaction(web3, valueToSend, estimateGas, encodedCall, MoCContractAddress)
 
     console.log(`Transaction hash: ${receipt.transactionHash}`)
 
@@ -437,12 +492,20 @@ const swapTPforTP = async (web3, dContracts, configProject, iFromTP, iToTP, qTP,
 const swapTPforTC = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) => {
     // caller sends a Pegged Token and receives Collateral Token support vendor
 
+    const collateral = configProject.collateral
+
     const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
     const vendorAddress = `${process.env.VENDOR_ADDRESS}`.toLowerCase()
     const slippage = `${process.env.REDEEM_SLIPPAGE}`
 
-    const MocCAWrapper = dContracts.contracts.MocCAWrapper
-    const MocCAWrapperAddress = MocCAWrapper.options.address
+    let MoCContract
+    if (collateral === 'bag') {
+        MoCContract = dContracts.contracts.MocWrapper
+    } else {
+        MoCContract = dContracts.contracts.Moc
+    }
+    const MoCContractAddress = MoCContract.options.address
+
     const caToken = dContracts.contracts.CA[caIndex]
     const caAddress = caToken.options.address
 
@@ -496,7 +559,7 @@ const swapTPforTC = async (web3, dContracts, configProject, caIndex, tpIndex, qT
         throw new Error('Insufficient spendable balance... please make an allowance to the MoC contract')
 
     // Calculate estimate gas cost
-    const estimateGas = await MocCAWrapper.methods
+    const estimateGas = await MoCContract.methods
         .swapTPforTCViaVendor(
             caAddress,
             tpIndex,
@@ -508,7 +571,7 @@ const swapTPforTC = async (web3, dContracts, configProject, caIndex, tpIndex, qT
         .estimateGas({ from: userAddress, value: '0x' })
 
     // encode function
-    const encodedCall = MocCAWrapper.methods
+    const encodedCall = MoCContract.methods
         .swapTPforTCViaVendor(
             caAddress,
             tpIndex,
@@ -520,7 +583,7 @@ const swapTPforTC = async (web3, dContracts, configProject, caIndex, tpIndex, qT
         .encodeABI()
 
     // send transaction to the blockchain and get receipt
-    const { receipt, filteredEvents } = await sendTransaction(web3, valueToSend, estimateGas, encodedCall, MocCAWrapperAddress)
+    const { receipt, filteredEvents } = await sendTransaction(web3, valueToSend, estimateGas, encodedCall, MoCContractAddress)
 
     console.log(`Transaction hash: ${receipt.transactionHash}`)
 
@@ -530,12 +593,20 @@ const swapTPforTC = async (web3, dContracts, configProject, caIndex, tpIndex, qT
 const swapTCforTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTC) => {
     // caller sends Collateral Token and receives Pegged Token support vendor
 
+    const collateral = configProject.collateral
+
     const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
     const vendorAddress = `${process.env.VENDOR_ADDRESS}`.toLowerCase()
     const slippage = `${process.env.REDEEM_SLIPPAGE}`
 
-    const MocCAWrapper = dContracts.contracts.MocCAWrapper
-    const MocCAWrapperAddress = MocCAWrapper.options.address
+    let MoCContract
+    if (collateral === 'bag') {
+        MoCContract = dContracts.contracts.MocWrapper
+    } else {
+        MoCContract = dContracts.contracts.Moc
+    }
+    const MoCContractAddress = MoCContract.options.address
+
     const caToken = dContracts.contracts.CA[caIndex]
     const caAddress = caToken.options.address
 
@@ -591,7 +662,7 @@ const swapTCforTP = async (web3, dContracts, configProject, caIndex, tpIndex, qT
     const valueToSend = null
 
     // Calculate estimate gas cost
-    const estimateGas = await MocCAWrapper.methods
+    const estimateGas = await MoCContract.methods
         .swapTCforTPViaVendor(
             caAddress,
             tpIndex,
@@ -602,7 +673,7 @@ const swapTCforTP = async (web3, dContracts, configProject, caIndex, tpIndex, qT
         ).estimateGas({ from: userAddress, value: '0x' })
 
     // encode function
-    const encodedCall = MocCAWrapper.methods
+    const encodedCall = MoCContract.methods
         .swapTCforTPViaVendor(
             caAddress,
             tpIndex,
@@ -618,7 +689,7 @@ const swapTCforTP = async (web3, dContracts, configProject, caIndex, tpIndex, qT
         valueToSend,
         estimateGas,
         encodedCall,
-        MocCAWrapperAddress)
+        MoCContractAddress)
 
     console.log(`Transaction hash: ${receipt.transactionHash}`)
 
@@ -629,12 +700,20 @@ const swapTCforTP = async (web3, dContracts, configProject, caIndex, tpIndex, qT
 const mintTCandTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) => {
     // caller sends Asset and receives Collateral Token and Pegged Token support vendor
 
+    const collateral = configProject.collateral
+
     const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
     const vendorAddress = `${process.env.VENDOR_ADDRESS}`.toLowerCase()
     const slippage = `${process.env.MINT_SLIPPAGE}`
 
-    const MocCAWrapper = dContracts.contracts.MocCAWrapper
-    const MocCAWrapperAddress = MocCAWrapper.options.address
+    let MoCContract
+    if (collateral === 'bag') {
+        MoCContract = dContracts.contracts.MocWrapper
+    } else {
+        MoCContract = dContracts.contracts.Moc
+    }
+    const MoCContractAddress = MoCContract.options.address
+
     const caToken = dContracts.contracts.CA[caIndex]
     const caAddress = caToken.options.address
 
@@ -682,7 +761,7 @@ const mintTCandTP = async (web3, dContracts, configProject, caIndex, tpIndex, qT
     const valueToSend = null
 
     // Calculate estimate gas cost
-    const estimateGas = await MocCAWrapper.methods
+    const estimateGas = await MoCContract.methods
         .mintTCandTPViaVendor(
             caAddress,
             tpIndex,
@@ -692,7 +771,7 @@ const mintTCandTP = async (web3, dContracts, configProject, caIndex, tpIndex, qT
         ).estimateGas({ from: userAddress, value: '0x' })
 
     // encode function
-    const encodedCall = MocCAWrapper.methods
+    const encodedCall = MoCContract.methods
         .mintTCandTPViaVendor(
             caAddress,
             tpIndex,
@@ -702,7 +781,7 @@ const mintTCandTP = async (web3, dContracts, configProject, caIndex, tpIndex, qT
         ).encodeABI()
 
     // send transaction to the blockchain and get receipt
-    const { receipt, filteredEvents } = await sendTransaction(web3, valueToSend, estimateGas, encodedCall, MocCAWrapperAddress)
+    const { receipt, filteredEvents } = await sendTransaction(web3, valueToSend, estimateGas, encodedCall, MoCContractAddress)
 
     console.log(`Transaction hash: ${receipt.transactionHash}`)
 
@@ -712,12 +791,20 @@ const mintTCandTP = async (web3, dContracts, configProject, caIndex, tpIndex, qT
 const redeemTCandTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTC) => {
     // caller sends Collateral Token and Pegged Token and receives Assets support vendor
 
+    const collateral = configProject.collateral
+
     const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
     const vendorAddress = `${process.env.VENDOR_ADDRESS}`.toLowerCase()
     const slippage = `${process.env.REDEEM_SLIPPAGE}`
 
-    const MocCAWrapper = dContracts.contracts.MocCAWrapper
-    const MocCAWrapperAddress = MocCAWrapper.options.address
+    let MoCContract
+    if (collateral === 'bag') {
+        MoCContract = dContracts.contracts.MocWrapper
+    } else {
+        MoCContract = dContracts.contracts.Moc
+    }
+    const MoCContractAddress = MoCContract.options.address
+
     const caToken = dContracts.contracts.CA[caIndex]
     const caAddress = caToken.options.address
 
@@ -780,7 +867,7 @@ const redeemTCandTP = async (web3, dContracts, configProject, caIndex, tpIndex, 
     const valueToSend = null
 
     // Calculate estimate gas cost
-    const estimateGas = await MocCAWrapper.methods
+    const estimateGas = await MoCContract.methods
         .redeemTCandTPViaVendor(
             caAddress,
             tpIndex,
@@ -791,7 +878,7 @@ const redeemTCandTP = async (web3, dContracts, configProject, caIndex, tpIndex, 
         ).estimateGas({ from: userAddress, value: '0x' })
 
     // encode function
-    const encodedCall = MocCAWrapper.methods
+    const encodedCall = MoCContract.methods
         .redeemTCandTPViaVendor(
             caAddress,
             tpIndex,
@@ -807,7 +894,7 @@ const redeemTCandTP = async (web3, dContracts, configProject, caIndex, tpIndex, 
         valueToSend,
         estimateGas,
         encodedCall,
-        MocCAWrapperAddress)
+        MoCContractAddress)
 
     console.log(`Transaction hash: ${receipt.transactionHash}`)
 
