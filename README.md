@@ -31,20 +31,20 @@ Money on chain token operations (backend to contracts)
 
 #### Money on Chain projects and tokens 
 
-| Token      | Token name       | Project       | Token Name | Collateral   |
-|------------|------------------|---------------|------------|--------------|
-| TP         | Pegged Token 1:1 | MOC           | DOC        | RBTC         |
-| TC         | Collateral Token | MOC           | BPRO       | RBTC         |
-| Fee Token  | Fee Token        | MOC           | MOC        | -            |
-| TP         | Pegged Token 1:1 | ROC           | USDRIF     | RIF          |
-| TC         | Collateral Token | ROC           | RIFP       | RIF          |
-| Fee Token  | Fee Token        | ROC           | MOC        | -            |
-| TP         | Pegged Token 1:1 | Flipago RC20  | FARS, FMXN | DOC, USDRIF  |
-| TC         | Collateral Token | Flipago RC20  | GoTurbo    | DOC, USDRIF  |
-| Fee Token  | Fee Token        | Flipago RC20  | FLIP       | -            |
-| TP         | Pegged Token 1:1 | Flipago       | FARS, FMXN | DOC, USDRIF  |
-| TC         | Collateral Token | Flipago       | GoTurbo    | DOC, USDRIF  |
-| Fee Token  | Fee Token        | Flipago       | FLIP       | -            |
+| Token      | Token name       | Project       | Token Name | Collateral  |
+|------------|------------------|---------------|------------|-------------|
+| TP         | Pegged Token 1:1 | MOC           | DOC        | RBTC        |
+| TC         | Collateral Token | MOC           | BPRO       | RBTC        |
+| Fee Token  | Fee Token        | MOC           | MOC        | -           |
+| TP         | Pegged Token 1:1 | ROC           | USDRIF     | RIF         |
+| TC         | Collateral Token | ROC           | RIFP       | RIF         |
+| Fee Token  | Fee Token        | ROC           | MOC        | -           |
+| TP         | Pegged Token 1:1 | Flipago RC20  | FARS, FMXN | DOC         |
+| TC         | Collateral Token | Flipago RC20  | GoTurbo    | DOC         |
+| Fee Token  | Fee Token        | Flipago RC20  | FLIP       | -           |
+| TP         | Pegged Token 1:1 | Flipago       | FARS, FMXN | DOC, USDRIF |
+| TC         | Collateral Token | Flipago       | GoTurbo    | DOC, USDRIF |
+| Fee Token  | Fee Token        | Flipago       | FLIP       | -           |
 
 
 #### Money on Chain projects and Collateral types
@@ -63,9 +63,11 @@ Money on chain token operations (backend to contracts)
 
 Environment is our already deployed contracts. 
 
-| Network Name      | Project | Environment          | Network    |
-|-------------------|---------|----------------------|------------|
-| flipagoRskTestnet | Flipago | Flipago Testnet RSK  | Testnet    |
+| Network Name                   | Project | Environment                          | Network    |
+|--------------------------------|---------|--------------------------------------|------------|
+| flipagoRskTestnet              | Flipago | Flipago Testnet RSK                  | Testnet    |
+| rocRskTestnet                  | ROC     | Rif on Chain Testnet RSK             | Testnet    |
+| flipagoCollateralBagRskTestnet | Flipago | Flipago Collateral Bag Testnet RSK   | Testnet    |
 
 
 ### Faucets
