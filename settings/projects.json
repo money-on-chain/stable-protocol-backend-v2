@@ -1,8 +1,42 @@
 {
   "projects": {
     "flipago": {
-      "collateral": "bag",
+      "collateral": "rc20",
       "appProject": "flipago",
+      "tokens": {
+        "COINBASE": {
+          "name": "RBTC",
+          "decimals": 18
+        },
+        "CA": [
+          {
+            "name": "DOC",
+            "decimals": 18
+          }
+        ],
+        "TP": [
+          {
+            "name": "GoARS",
+            "decimals": 18
+          },
+          {
+            "name": "GoMXN",
+            "decimals": 18
+          }
+        ],
+        "TC": {
+          "name": "GoTURBO",
+          "decimals": 18
+        },
+        "FeeToken": {
+          "name": "FLIP",
+          "decimals": 18
+        }
+      }
+    },
+    "flipago_bag": {
+      "collateral": "bag",
+      "appProject": "flipago_bag",
       "tokens": {
         "COINBASE": {
           "name": "RBTC",
@@ -34,6 +68,36 @@
         },
         "FeeToken": {
           "name": "FLIP",
+          "decimals": 18
+        }
+      }
+    },
+    "roc": {
+      "collateral": "rc20",
+      "appProject": "roc",
+      "tokens": {
+        "COINBASE": {
+          "name": "RBTC",
+          "decimals": 18
+        },
+        "CA": [
+          {
+            "name": "RIF",
+            "decimals": 18
+          }
+        ],
+        "TP": [
+          {
+            "name": "USDRIF",
+            "decimals": 18
+          }
+        ],
+        "TC": {
+          "name": "RIFPRO",
+          "decimals": 18
+        },
+        "FeeToken": {
+          "name": "MOC",
           "decimals": 18
         }
       }

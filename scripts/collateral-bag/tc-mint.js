@@ -2,9 +2,9 @@
 
 import * as dotenv from 'dotenv'
 
-import { readJsonFile, getWeb3 } from '../src/utils.js'
-import { readContracts } from '../src/moc-v2/contracts.js'
-import { mintTC } from '../src/moc-v2/moc-collateral-bag.js'
+import { readJsonFile, getWeb3 } from '../../src/utils.js'
+import { readContracts } from '../../src/moc-v2/contracts.js'
+import { mintTC } from '../../src/moc-v2/moc-collateral-bag.js'
 
 dotenv.config()
 

@@ -2,9 +2,9 @@
 
 import * as dotenv from 'dotenv'
 
-import { readJsonFile, getWeb3 } from '../src/utils.js'
-import { readContracts } from '../src/moc-v2/contracts.js'
-import { swapTPforTC } from '../src/moc-v2/moc-collateral-bag.js'
+import { readJsonFile, getWeb3 } from '../../src/utils.js'
+import { readContracts } from '../../src/moc-v2/contracts.js'
+import { swapTPforTP } from '../../src/moc-v2/moc-rc20.js'
 
 dotenv.config()
 
@@ -19,11 +19,11 @@ const main = async () => {
     const dContracts = await readContracts(web3, configProject)
 
     // Get amount from environment
-    const tpIndex = 0
-    const qTP = `${process.env.OPERATION_AMOUNT_SWAP_TP_FOR_TC}`
-    const caIndex = 0
+    const iFromTP = 0
+    const iToTP = 1
+    const qTP = `${process.env.OPERATION_AMOUNT_SWAP_TP_FOR_TP}`
 
-    const { receipt, filteredEvents } = await swapTPforTC(web3, dContracts, configProject, caIndex, tpIndex, qTP)
+    const { receipt, filteredEvents } = await swapTPforTP(web3, dContracts, configProject, iFromTP, iToTP, qTP)
 
 }
 

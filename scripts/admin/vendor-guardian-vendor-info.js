@@ -18,7 +18,7 @@ const main = async () => {
 
     const vendorAddress = '0xCD8A1c9aCc980ae031456573e34dC05cD7daE6e3';
 
-    const MocVendors = dContracts.contracts.MocVendorsCABag
+    const MocVendors = dContracts.contracts.MocVendors
     const markup = await MocVendors.methods.vendorMarkup(vendorAddress).call()
 
     console.log(`Markup: ${markup.toString()}`)
