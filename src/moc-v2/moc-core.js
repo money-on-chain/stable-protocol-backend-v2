@@ -280,7 +280,8 @@ const mintTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) =>
 
     // There are sufficient PEGGED in the contracts to mint?
     const tpAvailableToMint = new BigNumber(fromContractPrecisionDecimals(dataContractStatus.getTPAvailableToMint[tpIndex], configProject.tokens.TP[tpIndex].decimals))
-    if (new BigNumber(qAssetMax).gt(tpAvailableToMint))
+    const qAssetAvailableToMint = new BigNumber(tpAvailableToMint).div(tpPrice)
+    if (new BigNumber(qAssetMax).gt(qAssetAvailableToMint))
         throw new Error(`Insufficient ${configProject.tokens.TP.name} available to mint`)
 
     const valueToSend = null
@@ -309,19 +310,6 @@ const mintTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) =>
             ).encodeABI()
 
     } else {
-        // console.log("DEBUG")
-        // console.log(tpIndex)
-        // console.log(toContractPrecisionDecimals(new BigNumber(qTP), configProject.tokens.TP[tpIndex].decimals))
-        // console.log(toContractPrecisionDecimals(qAssetMax, configProject.tokens.CA[caIndex].decimals))
-        // console.log(vendorAddress)
-
-        //DEBUG
-        //0
-        //1000000000000000000
-        //1030200000000000000
-        //0xcd8a1c9acc980ae031456573e34dc05cd7dae6e3
-
-
         // Calculate estimate gas cost
         estimateGas = await MoCContract.methods
             .mintTPViaVendor(tpIndex,
