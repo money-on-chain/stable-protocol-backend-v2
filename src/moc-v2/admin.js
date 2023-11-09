@@ -14,7 +14,7 @@ const SettlementExecute = async (web3, dContracts, configProject) => {
 
     // Get if block to settlement > 0 to continue
     const getBts = new BigNumber(dataContractStatus.getBts)
-    if (getBts.gt(0)) throw new Error(`Not time to execute settlement`)
+    if (getBts.lte(0)) throw new Error(`Not time to execute settlement`)
 
     const valueToSend = null
 
