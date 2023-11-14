@@ -7,9 +7,8 @@ BigNumber.config({
   FORMAT: { decimalSeparator: '.', groupSeparator: ',' }
 })
 
-
 const readJsonFile = (path) => {
-  //console.log('Read json path: ', path)
+  // console.log('Read json path: ', path)
   let config
 
   if (fs.existsSync(path)) {
@@ -29,7 +28,7 @@ const getWeb3 = (hostUri) => {
 const getGasPrice = async (web3) => {
   try {
     const gasPrice = await web3.eth.getGasPrice()
-    //gasPrice = web3.utils.fromWei(gasPrice);
+    // gasPrice = web3.utils.fromWei(gasPrice);
     return gasPrice
   } catch (e) {
     console.log(e)
@@ -50,7 +49,6 @@ const toContractPrecisionDecimals = (amount, decimals) => {
   const result = new BigNumber(amount.toFormat(decimals, BigNumber.ROUND_DOWN)).times(precision(decimals)).toFixed(0)
   return result
 }
-
 
 const formatVisibleValue = (amount, decimals) => {
   return BigNumber(amount).div(precision(18)).toFormat(decimals, BigNumber.ROUND_UP, {

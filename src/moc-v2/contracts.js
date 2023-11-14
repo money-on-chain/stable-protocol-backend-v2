@@ -87,7 +87,7 @@ const readContracts = async (web3, configProject) => {
 }
 
 const totalSupplyTP = (contractStatus, config) => {
-  let result = '';
+  let result = ''
   for (let i = 0; i < config.tokens.TP.length; i++) {
     result += `Total supply of ${config.tokens.TP[i].name}:  ${Web3.utils.fromWei(contractStatus.pegContainer[i])} `
     if (i + 1 < config.tokens.TP.length) {
@@ -98,7 +98,7 @@ const totalSupplyTP = (contractStatus, config) => {
 }
 
 const totalSupplyCA = (contractStatus, config) => {
-  let result = '';
+  let result = ''
   for (let i = 0; i < config.tokens.CA.length; i++) {
     result += `Total supply of ${config.tokens.CA[i].name}:  ${fromContractPrecisionDecimals(contractStatus.getACBalance[i], config.tokens.CA[i].decimals).toString()} `
     if (i + 1 < config.tokens.CA.length) {
@@ -109,7 +109,7 @@ const totalSupplyCA = (contractStatus, config) => {
 }
 
 const pricesTP = (contractStatus, config) => {
-  let result = '';
+  let result = ''
   for (let i = 0; i < config.tokens.TP.length; i++) {
     result += `Price ${config.tokens.TP[i].name}:  ${Web3.utils.fromWei(contractStatus.PP_TP[i])} `
     if (i + 1 < config.tokens.TP.length) {
@@ -120,7 +120,7 @@ const pricesTP = (contractStatus, config) => {
 }
 
 const pricesCA = (contractStatus, config) => {
-  let result = '';
+  let result = ''
   for (let i = 0; i < config.tokens.CA.length; i++) {
     result += `Price ${config.tokens.CA[i].name}:  ${Web3.utils.fromWei(contractStatus.PP_CA[i])} `
     if (i + 1 < config.tokens.CA.length) {
@@ -131,7 +131,7 @@ const pricesCA = (contractStatus, config) => {
 }
 
 const targetCoverageTP = (contractStatus, config) => {
-  let result = '';
+  let result = ''
   for (let i = 0; i < config.tokens.TP.length; i++) {
     result += `${config.tokens.TP[i].name} Target Coverage:  ${Web3.utils.fromWei(contractStatus.tpCtarg[i])} `
     if (i + 1 < config.tokens.TP.length) {
@@ -142,7 +142,7 @@ const targetCoverageTP = (contractStatus, config) => {
 }
 
 const availableToMintTP = (contractStatus, config) => {
-  let result = '';
+  let result = ''
   for (let i = 0; i < config.tokens.TP.length; i++) {
     result += `${config.tokens.TP[i].name} available to mint:  ${Web3.utils.fromWei(contractStatus.getTPAvailableToMint[i])} `
 
@@ -154,7 +154,7 @@ const availableToMintTP = (contractStatus, config) => {
 }
 
 const emaTP = (contractStatus, config) => {
-  let result = '';
+  let result = ''
   for (let i = 0; i < config.tokens.TP.length; i++) {
     result += `${config.tokens.TP[i].name} EMA:  ${Web3.utils.fromWei(contractStatus.tpEma[i])} `
     if (i + 1 < config.tokens.TP.length) {
@@ -165,7 +165,7 @@ const emaTP = (contractStatus, config) => {
 }
 
 const feeTP = (contractStatus, config) => {
-  let result = '';
+  let result = ''
   for (let i = 0; i < config.tokens.TP.length; i++) {
     result += `Mint ${config.tokens.TP[i].name} Fee:  ${Web3.utils.fromWei(contractStatus.tpMintFee[i])} \n`
     result += `Redeem ${config.tokens.TP[i].name} Fee:  ${Web3.utils.fromWei(contractStatus.tpRedeemFee[i])} `
@@ -278,11 +278,11 @@ Interest Rate: ${Web3.utils.fromWei(contractStatus.tcInterestRate)}
 Block Span: ${contractStatus.tcInterestPaymentBlockSpan}
 Next Payment Block: ${contractStatus.nextTCInterestPayment}
           `
-        return render
-      }
+  return render
+}
 
 const userBalanceAllowanceCA = (userBalance, config) => {
-  let result = '';
+  let result = ''
   for (let i = 0; i < config.tokens.CA.length; i++) {
     result += `${config.tokens.CA[i].name} Balance: ${fromContractPrecisionDecimals(userBalance.CA[i].balance, config.tokens.CA[i].decimals).toString()} ${config.tokens.CA[i].name} \n`
     result += `${config.tokens.CA[i].name} Allowance: ${fromContractPrecisionDecimals(userBalance.CA[i].allowance, config.tokens.CA[i].decimals).toString()} ${config.tokens.CA[i].name} `
@@ -295,13 +295,13 @@ const userBalanceAllowanceCA = (userBalance, config) => {
 }
 
 const userBalanceAllowanceTP = (userBalance, config) => {
-  let result = '';
+  let result = ''
   for (let i = 0; i < config.tokens.TP.length; i++) {
     result += `${config.tokens.TP[i].name} Balance: ${fromContractPrecisionDecimals(userBalance.TP[i], config.tokens.TP[i].decimals).toString()} ${config.tokens.TP[i].name} `
     if (i + 1 < config.tokens.TP.length) {
       result += '\n'
     }
-    //result += `${config.tokens.TP[i].name} Allowance: ${fromContractPrecisionDecimals(userBalance.TP[i].allowance, config.tokens.TP[i].decimals).toString()} ${config.tokens.TP[i].name} \n`
+    // result += `${config.tokens.TP[i].name} Allowance: ${fromContractPrecisionDecimals(userBalance.TP[i].allowance, config.tokens.TP[i].decimals).toString()} ${config.tokens.TP[i].name} \n`
   }
   return result
 }

@@ -9,21 +9,20 @@ import { swapTCforTP } from '../../src/moc-v2/moc-rc20.js'
 dotenv.config()
 
 const main = async () => {
-    const configPath = './settings/projects.json'
-    const configProject = readJsonFile(configPath).projects[process.env.MOC_PROJECT.toLowerCase()]
+  const configPath = './settings/projects.json'
+  const configProject = readJsonFile(configPath).projects[process.env.MOC_PROJECT.toLowerCase()]
 
-    // get web3 connection
-    const web3 = getWeb3(process.env.HOST_URI)
+  // get web3 connection
+  const web3 = getWeb3(process.env.HOST_URI)
 
-    // Obtain connection to all contracts
-    const dContracts = await readContracts(web3, configProject)
+  // Obtain connection to all contracts
+  const dContracts = await readContracts(web3, configProject)
 
-    // Get amount from environment
-    const tpIndex = 0
-    const qTC = `${process.env.OPERATION_AMOUNT_SWAP_TC_FOR_TP}`
+  // Get amount from environment
+  const tpIndex = 0
+  const qTC = `${process.env.OPERATION_AMOUNT_SWAP_TC_FOR_TP}`
 
-    const { receipt, filteredEvents } = await swapTCforTP(web3, dContracts, configProject, tpIndex, qTC)
-
+  const { receipt, filteredEvents } = await swapTCforTP(web3, dContracts, configProject, tpIndex, qTC)
 }
 
 main()

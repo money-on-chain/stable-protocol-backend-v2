@@ -5,7 +5,8 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "eslint": "eslint . --ext .jsx --ext .js"
+    "eslint": "eslint . --ext .jsx --ext .js",
+    "eslint-fix": "eslint . --ext .jsx --ext .js --fix"
   },
   "repository": {
     "type": "git",

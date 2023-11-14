@@ -1,7 +1,6 @@
-import BigNumber from "bignumber.js";
+import BigNumber from 'bignumber.js'
 
 const contractStatus = async (web3, dContracts, configProject) => {
-
   const collateral = configProject.collateral
 
   const multicall = dContracts.contracts.multicall
@@ -20,22 +19,22 @@ const contractStatus = async (web3, dContracts, configProject) => {
 
   const listMethods = []
   listMethods.push([Moc.options.address, Moc.methods.protThrld().encodeABI(), 'uint256']) // 0
-  listMethods.push([Moc.options.address, Moc.methods.liqThrld().encodeABI(), 'uint256'])  // 1
+  listMethods.push([Moc.options.address, Moc.methods.liqThrld().encodeABI(), 'uint256']) // 1
   listMethods.push([Moc.options.address, Moc.methods.liqEnabled().encodeABI(), 'bool']) // 2
   listMethods.push([Moc.options.address, Moc.methods.liquidated().encodeABI(), 'bool']) // 3
-  listMethods.push([Moc.options.address, Moc.methods.nACcb().encodeABI(), 'uint256'])  // 4
+  listMethods.push([Moc.options.address, Moc.methods.nACcb().encodeABI(), 'uint256']) // 4
   listMethods.push([Moc.options.address, Moc.methods.tcToken().encodeABI(), 'address']) // 5
-  listMethods.push([Moc.options.address, Moc.methods.nTCcb().encodeABI(), 'uint256'])  // 6
+  listMethods.push([Moc.options.address, Moc.methods.nTCcb().encodeABI(), 'uint256']) // 6
   listMethods.push([Moc.options.address, Moc.methods.successFee().encodeABI(), 'uint256']) // 7
-  listMethods.push([Moc.options.address, Moc.methods.appreciationFactor().encodeABI(), 'uint256'])  // 8
-  listMethods.push([Moc.options.address, Moc.methods.feeRetainer().encodeABI(), 'uint256'])  // 9
-  listMethods.push([Moc.options.address, Moc.methods.tcMintFee().encodeABI(), 'uint256'])  // 10
-  listMethods.push([Moc.options.address, Moc.methods.tcRedeemFee().encodeABI(), 'uint256'])  // 11
+  listMethods.push([Moc.options.address, Moc.methods.appreciationFactor().encodeABI(), 'uint256']) // 8
+  listMethods.push([Moc.options.address, Moc.methods.feeRetainer().encodeABI(), 'uint256']) // 9
+  listMethods.push([Moc.options.address, Moc.methods.tcMintFee().encodeABI(), 'uint256']) // 10
+  listMethods.push([Moc.options.address, Moc.methods.tcRedeemFee().encodeABI(), 'uint256']) // 11
   listMethods.push([Moc.options.address, Moc.methods.swapTPforTPFee().encodeABI(), 'uint256']) // 12
   listMethods.push([Moc.options.address, Moc.methods.swapTPforTCFee().encodeABI(), 'uint256']) // 13
   listMethods.push([Moc.options.address, Moc.methods.swapTCforTPFee().encodeABI(), 'uint256']) // 14
   listMethods.push([Moc.options.address, Moc.methods.redeemTCandTPFee().encodeABI(), 'uint256']) // 15
-  listMethods.push([Moc.options.address, Moc.methods.mintTCandTPFee().encodeABI(), 'uint256'])  // 16
+  listMethods.push([Moc.options.address, Moc.methods.mintTCandTPFee().encodeABI(), 'uint256']) // 16
   listMethods.push([Moc.options.address, Moc.methods.mocFeeFlowAddress().encodeABI(), 'address']) // 17
   listMethods.push([Moc.options.address, Moc.methods.mocAppreciationBeneficiaryAddress().encodeABI(), 'address']) // 18
   listMethods.push([Moc.options.address, Moc.methods.isLiquidationReached().encodeABI(), 'bool']) // 19
@@ -91,7 +90,7 @@ const contractStatus = async (web3, dContracts, configProject) => {
   // Remove decode result parameter
   const cleanListMethods = listMethods.map(x => [x[0], x[1]])
 
-  //const multicallResult = await multicall.methods.tryBlockAndAggregate(false, cleanListMethods).call({}, 3807699)
+  // const multicallResult = await multicall.methods.tryBlockAndAggregate(false, cleanListMethods).call({}, 3807699)
   const multicallResult = await multicall.methods.tryBlockAndAggregate(false, cleanListMethods).call()
 
   const listReturnData = multicallResult[2].map((item, itemIndex) => web3.eth.abi.decodeParameter(listMethods[itemIndex][2], item.returnData))
@@ -194,7 +193,6 @@ const contractStatus = async (web3, dContracts, configProject) => {
 }
 
 const userBalance = async (web3, dContracts, userAddress, configProject) => {
-
   const collateral = configProject.collateral
 
   const multicall = dContracts.contracts.multicall
@@ -258,7 +256,7 @@ const userBalance = async (web3, dContracts, userAddress, configProject) => {
 
   CA = []
   for (let i = 0; i < configProject.tokens.CA.length; i++) {
-    CA.push({balance: listReturnData[last_index + 1], allowance: listReturnData[last_index + 2]})
+    CA.push({ balance: listReturnData[last_index + 1], allowance: listReturnData[last_index + 2] })
     last_index = last_index + 1
   }
   userBalance.CA = CA
