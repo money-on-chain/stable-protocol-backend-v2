@@ -13,6 +13,7 @@ const mintTC = async (web3, dContracts, configProject, caIndex, qTC) => {
     const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
     const vendorAddress = `${process.env.VENDOR_ADDRESS}`.toLowerCase()
     const slippage = `${process.env.MINT_SLIPPAGE}`
+    const vendorMarkup = `${process.env.VENDOR_MARKUP}`
 
     let MoCContract
     if (collateral === 'bag') {
@@ -38,11 +39,35 @@ const mintTC = async (web3, dContracts, configProject, caIndex, qTC) => {
     // TC amount in CA
     const qCAtc = new BigNumber(qTC).times(tcPrice)
 
+    // Fee
     const feeOperation = qCAtc.times(feeParam)
-    const qCAtcwFee = qCAtc.plus(feeOperation)
+
+    // Fee Paying with Token
+    const feeTokenPrice = new BigNumber(Web3.utils.fromWei(dataContractStatus.PP_FeeToken))
+    const feeTokenPct = new BigNumber(Web3.utils.fromWei(dataContractStatus.feeTokenPct))
+    const qFeeToken = qCAtc.times(feeParam.times(feeTokenPct)).div(feeTokenPrice)
+
+    // Markup Vendors
+    const markOperation = qCAtc.times(vendorMarkup)
+    const markOperationToken = qCAtc.times(vendorMarkup).div(feeTokenPrice)
+
+    // Total fee token
+    const totalFeeToken = qFeeToken.plus(markOperationToken)
+
+    const feeTokenAllowance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats.FeeToken.allowance, configProject.tokens.FeeToken.decimals))
+    const feeTokenBalance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats.FeeToken.balance, configProject.tokens.FeeToken.decimals))
+    let qCAtcwFee;
+    if (feeTokenAllowance.gt(totalFeeToken) && feeTokenBalance.gt(totalFeeToken)) {
+        // Pay fee with token
+        qCAtcwFee = qCAtc
+        console.log(`Commissions: ${totalFeeToken.toString()} ${configProject.tokens.FeeToken.name}`)
+    } else {
+        // Pay fee with CA
+        qCAtcwFee = qCAtc.plus(feeOperation).plus(markOperation)
+        console.log(`Commissions: ${feeOperation.plus(markOperation).toString()} ${configProject.tokens.CA[caIndex].name}`)
+    }
 
     console.log(`Operation w/commissions: ${qCAtcwFee.toString()} ${configProject.tokens.CA[caIndex].name}`)
-    console.log(`Commissions: ${feeOperation.toString()} ${configProject.tokens.CA[caIndex].name}`)
 
     // Add Slippage plus %
     const qAssetMax = new BigNumber(slippage).div(100).times(qCAtcwFee).plus(qCAtcwFee)
@@ -113,6 +138,7 @@ const redeemTC = async (web3, dContracts, configProject, caIndex, qTC) => {
     const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
     const vendorAddress = `${process.env.VENDOR_ADDRESS}`.toLowerCase()
     const slippage = `${process.env.REDEEM_SLIPPAGE}`
+    const vendorMarkup = `${process.env.VENDOR_MARKUP}`
 
     let MoCContract
     if (collateral === 'bag') {
@@ -138,11 +164,35 @@ const redeemTC = async (web3, dContracts, configProject, caIndex, qTC) => {
     // TC amount in reserve
     const qCAtc = new BigNumber(qTC).times(tcPrice)
 
+    // Fee
     const feeOperation = qCAtc.times(feeParam)
-    const qCAtcwFee = qCAtc.minus(feeOperation)
+
+    // Fee Paying with Token
+    const feeTokenPrice = new BigNumber(Web3.utils.fromWei(dataContractStatus.PP_FeeToken))
+    const feeTokenPct = new BigNumber(Web3.utils.fromWei(dataContractStatus.feeTokenPct))
+    const qFeeToken = qCAtc.times(feeParam.times(feeTokenPct)).div(feeTokenPrice)
+
+    // Markup Vendors
+    const markOperation = qCAtc.times(vendorMarkup)
+    const markOperationToken = qCAtc.times(vendorMarkup).div(feeTokenPrice)
+
+    // Total fee token
+    const totalFeeToken = qFeeToken.plus(markOperationToken)
+
+    const feeTokenAllowance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats.FeeToken.allowance, configProject.tokens.FeeToken.decimals))
+    const feeTokenBalance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats.FeeToken.balance, configProject.tokens.FeeToken.decimals))
+    let qCAtcwFee;
+    if (feeTokenAllowance.gt(totalFeeToken) && feeTokenBalance.gt(totalFeeToken)) {
+        // Pay fee with token
+        qCAtcwFee = qCAtc
+        console.log(`Commissions: ${totalFeeToken.toString()} ${configProject.tokens.FeeToken.name}`)
+    } else {
+        // Pay fee with CA
+        qCAtcwFee = qCAtc.minus(feeOperation).minus(markOperation)
+        console.log(`Commissions: ${feeOperation.minus(markOperation).toString()} ${configProject.tokens.CA[caIndex].name}`)
+    }
 
     console.log(`Operation w/commissions: ${qCAtcwFee.toString()} ${configProject.tokens.CA[caIndex].name}`)
-    console.log(`Commissions: ${feeOperation.toString()} ${configProject.tokens.CA[caIndex].name}`)
 
     // Minimum AC to receive, or fail the tx
     const qAssetMin = new BigNumber(qCAtcwFee).minus(new BigNumber(slippage).div(100).times(qCAtcwFee))
@@ -228,6 +278,7 @@ const mintTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) =>
     const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
     const vendorAddress = `${process.env.VENDOR_ADDRESS}`.toLowerCase()
     const slippage = `${process.env.MINT_SLIPPAGE}`
+    const vendorMarkup = `${process.env.VENDOR_MARKUP}`
 
     let MoCContract
     if (collateral === 'bag') {
@@ -253,11 +304,35 @@ const mintTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) =>
     // Pegged amount in CA
     const qCAtp = new BigNumber(qTP).div(tpPrice)
 
+    // Fee
     const feeOperation = qCAtp.times(feeParam)
-    const qCAtpwFee = qCAtp.plus(feeOperation)
+
+    // Fee Paying with Token
+    const feeTokenPrice = new BigNumber(Web3.utils.fromWei(dataContractStatus.PP_FeeToken))
+    const feeTokenPct = new BigNumber(Web3.utils.fromWei(dataContractStatus.feeTokenPct))
+    const qFeeToken = qCAtp.times(feeParam.times(feeTokenPct)).div(feeTokenPrice)
+
+    // Markup Vendors
+    const markOperation = qCAtp.times(vendorMarkup)
+    const markOperationToken = qCAtp.times(vendorMarkup).div(feeTokenPrice)
+
+    // Total fee token
+    const totalFeeToken = qFeeToken.plus(markOperationToken)
+
+    const feeTokenAllowance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats.FeeToken.allowance, configProject.tokens.FeeToken.decimals))
+    const feeTokenBalance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats.FeeToken.balance, configProject.tokens.FeeToken.decimals))
+    let qCAtpwFee;
+    if (feeTokenAllowance.gt(totalFeeToken) && feeTokenBalance.gt(totalFeeToken)) {
+        // Pay fee with token
+        qCAtpwFee = qCAtp
+        console.log(`Commissions: ${totalFeeToken.toString()} ${configProject.tokens.FeeToken.name}`)
+    } else {
+        // Pay fee with CA
+        qCAtpwFee = qCAtp.plus(feeOperation).plus(markOperation)
+        console.log(`Commissions: ${feeOperation.plus(markOperation).toString()} ${configProject.tokens.CA[caIndex].name}`)
+    }
 
     console.log(`Operation w/commissions: ${qCAtpwFee.toString()} ${configProject.tokens.CA[caIndex].name}`)
-    console.log(`Commissions: ${feeOperation.toString()} ${configProject.tokens.CA[caIndex].name}`)
 
     // Add Slippage plus %
     const qAssetMax = new BigNumber(slippage).div(100).times(qCAtpwFee).plus(qCAtpwFee)
@@ -342,6 +417,7 @@ const redeemTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) 
     const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
     const vendorAddress = `${process.env.VENDOR_ADDRESS}`.toLowerCase()
     const slippage = `${process.env.REDEEM_SLIPPAGE}`
+    const vendorMarkup = `${process.env.VENDOR_MARKUP}`
 
     let MoCContract
     if (collateral === 'bag') {
@@ -367,11 +443,35 @@ const redeemTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) 
     // TP amount in CA
     const qCAtp = new BigNumber(qTP).div(tpPrice)
 
+    // Fee
     const feeOperation = qCAtp.times(feeParam)
-    const qCAtpwFee = qCAtp.minus(feeOperation)
+
+    // Fee Paying with Token
+    const feeTokenPrice = new BigNumber(Web3.utils.fromWei(dataContractStatus.PP_FeeToken))
+    const feeTokenPct = new BigNumber(Web3.utils.fromWei(dataContractStatus.feeTokenPct))
+    const qFeeToken = qCAtp.times(feeParam.times(feeTokenPct)).div(feeTokenPrice)
+
+    // Markup Vendors
+    const markOperation = qCAtp.times(vendorMarkup)
+    const markOperationToken = qCAtp.times(vendorMarkup).div(feeTokenPrice)
+
+    // Total fee token
+    const totalFeeToken = qFeeToken.plus(markOperationToken)
+
+    const feeTokenAllowance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats.FeeToken.allowance, configProject.tokens.FeeToken.decimals))
+    const feeTokenBalance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats.FeeToken.balance, configProject.tokens.FeeToken.decimals))
+    let qCAtpwFee;
+    if (feeTokenAllowance.gt(totalFeeToken) && feeTokenBalance.gt(totalFeeToken)) {
+        // Pay fee with token
+        qCAtpwFee = qCAtp
+        console.log(`Commissions: ${totalFeeToken.toString()} ${configProject.tokens.FeeToken.name}`)
+    } else {
+        // Pay fee with CA
+        qCAtpwFee = qCAtp.minus(feeOperation).minus(markOperation)
+        console.log(`Commissions: ${feeOperation.minus(markOperation).toString()} ${configProject.tokens.CA[caIndex].name}`)
+    }
 
     console.log(`Operation w/commissions: ${qCAtpwFee.toString()} ${configProject.tokens.CA[caIndex].name}`)
-    console.log(`Commissions: ${feeOperation.toString()} ${configProject.tokens.CA[caIndex].name}`)
 
     // Minimum AC to receive, or fail the tx
     const qAssetMin = new BigNumber(qCAtpwFee).minus(new BigNumber(slippage).div(100).times(qCAtpwFee))
@@ -444,8 +544,6 @@ const redeemTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) 
             .encodeABI()
 
     }
-
-
 
     // send transaction to the blockchain and get receipt
     const { receipt, filteredEvents } = await sendTransaction(web3, valueToSend, estimateGas, encodedCall, MoCContractAddress)
