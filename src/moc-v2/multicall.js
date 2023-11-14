@@ -2,6 +2,7 @@ import BigNumber from 'bignumber.js'
 
 const contractStatus = async (web3, dContracts, configProject) => {
   const collateral = configProject.collateral
+  const vendorAddress = `${process.env.VENDOR_ADDRESS}`.toLowerCase()
 
   const multicall = dContracts.contracts.multicall
   const Moc = dContracts.contracts.Moc
@@ -59,6 +60,7 @@ const contractStatus = async (web3, dContracts, configProject) => {
   listMethods.push([Moc.options.address, Moc.methods.tcInterestPaymentBlockSpan().encodeABI(), 'uint256']) // 38
   listMethods.push([Moc.options.address, Moc.methods.nextTCInterestPayment().encodeABI(), 'uint256']) // 39
   listMethods.push([PP_FeeToken.options.address, PP_FeeToken.methods.peek().encodeABI(), 'uint256']) // 40
+  listMethods.push([MocVendors.options.address, MocVendors.methods.vendorMarkup(vendorAddress).encodeABI(), 'uint256']) // 41
 
   let PP_TP
   for (let i = 0; i < configProject.tokens.TP.length; i++) {
@@ -138,6 +140,7 @@ const contractStatus = async (web3, dContracts, configProject) => {
   status.tcInterestPaymentBlockSpan = listReturnData[38]
   status.nextTCInterestPayment = listReturnData[39]
   status.PP_FeeToken = listReturnData[40]
+  status.vendorMarkup = listReturnData[41]
 
   const tpMintFee = []
   const tpRedeemFee = []
@@ -148,7 +151,7 @@ const contractStatus = async (web3, dContracts, configProject) => {
   const getTPAvailableToMint = []
   const tpEma = []
 
-  let last_index = 40 // this is the last used array index
+  let last_index = 41 // this is the last used array index
   for (let i = 0; i < configProject.tokens.TP.length; i++) {
     tpMintFee.push(listReturnData[last_index + 1])
     tpRedeemFee.push(listReturnData[last_index + 2])

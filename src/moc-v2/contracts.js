@@ -259,6 +259,7 @@ Vendors
 =======
 
 Guardian Address: ${contractStatus.vendorGuardianAddress}
+Vendor Markup: ${Web3.utils.fromWei(contractStatus.vendorMarkup)}
 
 
 Fee Token

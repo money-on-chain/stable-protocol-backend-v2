@@ -12,7 +12,6 @@ const mintTC = async (web3, dContracts, configProject, caIndex, qTC) => {
   const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
   const vendorAddress = `${process.env.VENDOR_ADDRESS}`.toLowerCase()
   const slippage = `${process.env.MINT_SLIPPAGE}`
-  const vendorMarkup = `${process.env.VENDOR_MARKUP}`
 
   let MoCContract
   if (collateral === 'bag') {
@@ -47,6 +46,7 @@ const mintTC = async (web3, dContracts, configProject, caIndex, qTC) => {
   const qFeeToken = qCAtc.times(feeParam.times(feeTokenPct)).div(feeTokenPrice)
 
   // Markup Vendors
+  const vendorMarkup = new BigNumber(Web3.utils.fromWei(dataContractStatus.vendorMarkup))
   const markOperation = qCAtc.times(vendorMarkup)
   const markOperationToken = qCAtc.times(vendorMarkup).div(feeTokenPrice)
 
@@ -137,7 +137,6 @@ const redeemTC = async (web3, dContracts, configProject, caIndex, qTC) => {
   const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
   const vendorAddress = `${process.env.VENDOR_ADDRESS}`.toLowerCase()
   const slippage = `${process.env.REDEEM_SLIPPAGE}`
-  const vendorMarkup = `${process.env.VENDOR_MARKUP}`
 
   let MoCContract
   if (collateral === 'bag') {
@@ -172,6 +171,7 @@ const redeemTC = async (web3, dContracts, configProject, caIndex, qTC) => {
   const qFeeToken = qCAtc.times(feeParam.times(feeTokenPct)).div(feeTokenPrice)
 
   // Markup Vendors
+  const vendorMarkup = new BigNumber(Web3.utils.fromWei(dataContractStatus.vendorMarkup))
   const markOperation = qCAtc.times(vendorMarkup)
   const markOperationToken = qCAtc.times(vendorMarkup).div(feeTokenPrice)
 
@@ -274,7 +274,6 @@ const mintTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) =>
   const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
   const vendorAddress = `${process.env.VENDOR_ADDRESS}`.toLowerCase()
   const slippage = `${process.env.MINT_SLIPPAGE}`
-  const vendorMarkup = `${process.env.VENDOR_MARKUP}`
 
   let MoCContract
   if (collateral === 'bag') {
@@ -309,6 +308,7 @@ const mintTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) =>
   const qFeeToken = qCAtp.times(feeParam.times(feeTokenPct)).div(feeTokenPrice)
 
   // Markup Vendors
+  const vendorMarkup = new BigNumber(Web3.utils.fromWei(dataContractStatus.vendorMarkup))
   const markOperation = qCAtp.times(vendorMarkup)
   const markOperationToken = qCAtp.times(vendorMarkup).div(feeTokenPrice)
 
@@ -409,7 +409,6 @@ const redeemTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) 
   const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
   const vendorAddress = `${process.env.VENDOR_ADDRESS}`.toLowerCase()
   const slippage = `${process.env.REDEEM_SLIPPAGE}`
-  const vendorMarkup = `${process.env.VENDOR_MARKUP}`
 
   let MoCContract
   if (collateral === 'bag') {
@@ -444,6 +443,7 @@ const redeemTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) 
   const qFeeToken = qCAtp.times(feeParam.times(feeTokenPct)).div(feeTokenPrice)
 
   // Markup Vendors
+  const vendorMarkup = new BigNumber(Web3.utils.fromWei(dataContractStatus.vendorMarkup))
   const markOperation = qCAtp.times(vendorMarkup)
   const markOperationToken = qCAtp.times(vendorMarkup).div(feeTokenPrice)
 
