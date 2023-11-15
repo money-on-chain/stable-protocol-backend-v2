@@ -37,27 +37,31 @@ const readContracts = async (web3, configProject) => {
   dContracts.contracts.multicall = new web3.eth.Contract(dContracts.json.Multicall2.abi, process.env.CONTRACT_MULTICALL2)
 
   dContracts.contracts.TP = []
+  const contractTP = process.env.CONTRACT_TP.split(",")
   for (let i = 0; i < configProject.tokens.TP.length; i++) {
-    console.log(`Reading ${configProject.tokens.TP[i].name} Token Contract... address: `, process.env[`CONTRACT_TP_${i}`])
-    dContracts.contracts.TP.push(new web3.eth.Contract(dContracts.json.TokenPegged.abi, process.env[`CONTRACT_TP_${i}`]))
+    console.log(`Reading ${configProject.tokens.TP[i].name} Token Contract... address: `, contractTP[i])
+    dContracts.contracts.TP.push(new web3.eth.Contract(dContracts.json.TokenPegged.abi, contractTP[i]))
   }
 
   dContracts.contracts.CA = []
+  const contractCA = process.env.CONTRACT_CA.split(",")
   for (let i = 0; i < configProject.tokens.CA.length; i++) {
-    console.log(`Reading ${configProject.tokens.CA[i].name} Token Contract... address: `, process.env[`CONTRACT_CA_${i}`])
-    dContracts.contracts.CA.push(new web3.eth.Contract(dContracts.json.WrappedCollateralAsset.abi, process.env[`CONTRACT_CA_${i}`]))
+    console.log(`Reading ${configProject.tokens.CA[i].name} Token Contract... address: `, contractCA[i])
+    dContracts.contracts.CA.push(new web3.eth.Contract(dContracts.json.WrappedCollateralAsset.abi, contractCA[i]))
   }
 
   dContracts.contracts.PP_TP = []
+  const contractPPTP = process.env.CONTRACT_PRICE_PROVIDER_TP.split(",")
   for (let i = 0; i < configProject.tokens.TP.length; i++) {
-    console.log(`Reading Price Provider ${configProject.tokens.TP[i].name} Contract... address: `, process.env[`CONTRACT_PRICE_PROVIDER_TP_${i}`])
-    dContracts.contracts.PP_TP.push(new web3.eth.Contract(dContracts.json.IPriceProvider.abi, process.env[`CONTRACT_PRICE_PROVIDER_TP_${i}`]))
+    console.log(`Reading Price Provider ${configProject.tokens.TP[i].name} Contract... address: `, contractPPTP[i])
+    dContracts.contracts.PP_TP.push(new web3.eth.Contract(dContracts.json.IPriceProvider.abi, contractPPTP[i]))
   }
 
   dContracts.contracts.PP_CA = []
+  const contractPPCA = process.env.CONTRACT_PRICE_PROVIDER_CA.split(",")
   for (let i = 0; i < configProject.tokens.CA.length; i++) {
-    console.log(`Reading Price Provider ${configProject.tokens.CA[i].name} Tokens Contract... address: `, process.env[`CONTRACT_PRICE_PROVIDER_CA_${i}`])
-    dContracts.contracts.PP_CA.push(new web3.eth.Contract(dContracts.json.IPriceProvider.abi, process.env[`CONTRACT_PRICE_PROVIDER_CA_${i}`]))
+    console.log(`Reading Price Provider ${configProject.tokens.CA[i].name} Tokens Contract... address: `, contractPPCA[i])
+    dContracts.contracts.PP_CA.push(new web3.eth.Contract(dContracts.json.IPriceProvider.abi, contractPPCA[i]))
   }
 
   console.log('Reading Moc Contract... address: ', process.env.CONTRACT_MOC)
