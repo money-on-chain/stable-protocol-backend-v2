@@ -79,6 +79,9 @@ const readContracts = async (web3, configProject) => {
   console.log('Reading Fee Token PP Contract... address: ', process.env.CONTRACT_PRICE_PROVIDER_FEE_TOKEN)
   dContracts.contracts.PP_FeeToken = new web3.eth.Contract(dContracts.json.IPriceProvider.abi, process.env.CONTRACT_PRICE_PROVIDER_FEE_TOKEN)
 
+  console.log('Reading Coinbase PP Contract... address: ', process.env.CONTRACT_PRICE_PROVIDER_COINBASE)
+  dContracts.contracts.PP_COINBASE = new web3.eth.Contract(dContracts.json.IPriceProvider.abi, process.env.CONTRACT_PRICE_PROVIDER_COINBASE)
+
   if (collateral === 'bag') {
     console.log('Reading MocWrapper Contract... address: ', process.env.CONTRACT_MOC_WRAPPER)
     dContracts.contracts.MocWrapper = new web3.eth.Contract(dContracts.json.MocWrapper.abi, process.env.CONTRACT_MOC_WRAPPER)
@@ -302,7 +305,7 @@ const userBalanceAllowanceCA = (userBalance, config) => {
 const userBalanceAllowanceTP = (userBalance, config) => {
   let result = ''
   for (let i = 0; i < config.tokens.TP.length; i++) {
-    result += `${config.tokens.TP[i].name} Balance: ${fromContractPrecisionDecimals(userBalance.TP[i], config.tokens.TP[i].decimals).toString()} ${config.tokens.TP[i].name} `
+    result += `${config.tokens.TP[i].name} Balance: ${fromContractPrecisionDecimals(userBalance.TP[i].balance, config.tokens.TP[i].decimals).toString()} ${config.tokens.TP[i].name} `
     if (i + 1 < config.tokens.TP.length) {
       result += '\n'
     }

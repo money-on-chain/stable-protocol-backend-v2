@@ -474,7 +474,7 @@ const redeemTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) 
 
   // User have sufficient PEGGED Token in balance?
   console.log(`Redeeming ${qTP} ${configProject.tokens.TP[tpIndex].name} ... getting approx: ${qCAtpwFee} ${configProject.tokens.CA[caIndex].name}... `)
-  const userTPBalance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats.TP[tpIndex], configProject.tokens.TP[tpIndex].decimals))
+  const userTPBalance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats.TP[tpIndex].balance, configProject.tokens.TP[tpIndex].decimals))
   if (new BigNumber(qTP).gt(userTPBalance)) { throw new Error(`Insufficient ${configProject.tokens.TP[tpIndex].name}  user balance`) }
 
   // There are sufficient Free Pegged Token in the contracts to redeem?
@@ -589,7 +589,7 @@ const swapTPforTP = async (web3, dContracts, configProject, iFromTP, iToTP, qTP,
 
   // User have sufficient PEGGED Token in balance?
   console.log(`Swap ${qTP} ${configProject.tokens.TP[iFromTP].name} ... getting approx: ${qCAtp_To} ${configProject.tokens.TP[iToTP].name}... `)
-  const userTPBalance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats.TP[iFromTP], configProject.tokens.TP[iFromTP].decimals))
+  const userTPBalance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats.TP[iFromTP].balance, configProject.tokens.TP[iFromTP].decimals))
   if (new BigNumber(qTP).gt(userTPBalance)) { throw new Error(`Insufficient ${configProject.tokens.TP[iFromTP].name}  user balance`) }
 
   // Fees user have sufficient reserve to pay?
@@ -715,7 +715,7 @@ const swapTPforTC = async (web3, dContracts, configProject, caIndex, tpIndex, qT
 
   // User have sufficient PEGGED Token in balance?
   console.log(`Swap ${qTP} ${configProject.tokens.TP[tpIndex].name} ... getting approx: ${qTC} ${configProject.tokens.TC.name}... `)
-  const userTPBalance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats.TP[tpIndex], configProject.tokens.TP[tpIndex].decimals))
+  const userTPBalance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats.TP[tpIndex].balance, configProject.tokens.TP[tpIndex].decimals))
   if (new BigNumber(qTP).gt(userTPBalance)) { throw new Error(`Insufficient ${configProject.tokens.TP[tpIndex].name}  user balance`) }
 
   // Fees user have sufficient reserve to pay?
@@ -1082,7 +1082,7 @@ const redeemTCandTP = async (web3, dContracts, configProject, caIndex, tpIndex, 
 
   // User have sufficient PEGGED Token in balance?
   console.log(`Redeeming ${qTP} ${configProject.tokens.TP[tpIndex].name} ... getting approx: ${qCAtp} ${configProject.tokens.CA[caIndex].name}... `)
-  const userTPBalance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats.TP[tpIndex], configProject.tokens.TP[tpIndex].decimals))
+  const userTPBalance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats.TP[tpIndex].balance, configProject.tokens.TP[tpIndex].decimals))
   if (new BigNumber(qTP).gt(userTPBalance)) { throw new Error(`Insufficient ${configProject.tokens.TP[tpIndex].name}  user balance`) }
 
   // There are sufficient CA in the contract

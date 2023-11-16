@@ -1,4 +1,5 @@
 import BigNumber from 'bignumber.js'
+import { fromContractPrecisionDecimals } from '../utils.js'
 
 const contractStatus = async (web3, dContracts, configProject) => {
   const collateral = configProject.collateral
@@ -8,6 +9,7 @@ const contractStatus = async (web3, dContracts, configProject) => {
   const Moc = dContracts.contracts.Moc
   const MocVendors = dContracts.contracts.MocVendors
   const PP_FeeToken = dContracts.contracts.PP_FeeToken
+  const PP_COINBASE = dContracts.contracts.PP_COINBASE
 
   let MoCContract
   if (collateral === 'bag') {
@@ -18,7 +20,7 @@ const contractStatus = async (web3, dContracts, configProject) => {
 
   console.log('Reading contract status ...')
 
-  const listMethods = []
+  let listMethods = []
   listMethods.push([Moc.options.address, Moc.methods.protThrld().encodeABI(), 'uint256']) // 0
   listMethods.push([Moc.options.address, Moc.methods.liqThrld().encodeABI(), 'uint256']) // 1
   listMethods.push([Moc.options.address, Moc.methods.liqEnabled().encodeABI(), 'bool']) // 2
@@ -61,6 +63,7 @@ const contractStatus = async (web3, dContracts, configProject) => {
   listMethods.push([Moc.options.address, Moc.methods.nextTCInterestPayment().encodeABI(), 'uint256']) // 39
   listMethods.push([PP_FeeToken.options.address, PP_FeeToken.methods.peek().encodeABI(), 'uint256']) // 40
   listMethods.push([MocVendors.options.address, MocVendors.methods.vendorMarkup(vendorAddress).encodeABI(), 'uint256']) // 41
+  listMethods.push([PP_COINBASE.options.address, PP_COINBASE.methods.peek().encodeABI(), 'uint256']) // 42
 
   let PP_TP
   for (let i = 0; i < configProject.tokens.TP.length; i++) {
@@ -141,6 +144,7 @@ const contractStatus = async (web3, dContracts, configProject) => {
   status.nextTCInterestPayment = listReturnData[39]
   status.PP_FeeToken = listReturnData[40]
   status.vendorMarkup = listReturnData[41]
+  status.PP_COINBASE = listReturnData[42]
 
   const tpMintFee = []
   const tpRedeemFee = []
@@ -151,7 +155,7 @@ const contractStatus = async (web3, dContracts, configProject) => {
   const getTPAvailableToMint = []
   const tpEma = []
 
-  let last_index = 41 // this is the last used array index
+  let last_index = 42 // this is the last used array index
   for (let i = 0; i < configProject.tokens.TP.length; i++) {
     tpMintFee.push(listReturnData[last_index + 1])
     tpRedeemFee.push(listReturnData[last_index + 2])
@@ -192,6 +196,65 @@ const contractStatus = async (web3, dContracts, configProject) => {
 
   last_index = last_index + 1
 
+  const calcCtargemaCA = new BigNumber(
+      fromContractPrecisionDecimals(
+          status.calcCtargemaCA,
+          18
+      )
+  );
+
+  status.canOperate = !calcCtargemaCA.gt(1000000);
+
+  // History Price (24hs ago)
+  const d24BlockHeights = status.blockHeight - 2880;
+  listMethods = []
+  listMethods.push([Moc.options.address, Moc.methods.getPTCac().encodeABI(), 'uint256']) // 0
+  listMethods.push([PP_COINBASE.options.address, PP_COINBASE.methods.peek().encodeABI(), 'uint256']) // 1
+
+  for (let i = 0; i < configProject.tokens.TP.length; i++) {
+    PP_TP = dContracts.contracts.PP_TP[i]
+    listMethods.push([PP_TP.options.address, PP_TP.methods.peek().encodeABI(), 'uint256'])
+  }
+
+  for (let i = 0; i < configProject.tokens.CA.length; i++) {
+    PP_CA = dContracts.contracts.PP_CA[i]
+    listMethods.push([PP_CA.options.address, PP_CA.methods.peek().encodeABI(), 'uint256'])
+  }
+
+  const cleanListMethodsHistoric = listMethods.map((x) => [x[0], x[1]]);
+  const multicallResultHistoric = await multicall.methods
+      .tryBlockAndAggregate(false, cleanListMethodsHistoric)
+      .call({}, d24BlockHeights);
+  const listReturnDataHistoric = multicallResultHistoric[2].map(
+      (item, itemIndex) =>
+          web3.eth.abi.decodeParameter(
+              listMethods[itemIndex][2],
+              item.returnData
+          )
+  );
+
+  const historic = {};
+
+  PP_TP = []
+  last_index = 2 // this is the last used array index
+  for (let i = 0; i < configProject.tokens.TP.length; i++) {
+    PP_TP.push(listReturnData[last_index + 1])
+    last_index = last_index + 1
+  }
+
+  PP_CA = []
+  for (let i = 0; i < configProject.tokens.CA.length; i++) {
+    PP_CA.push(listReturnData[last_index + 1])
+    last_index = last_index + 1
+  }
+
+  historic.blockHeight = d24BlockHeights;
+  historic.getPTCac = listReturnDataHistoric[0];
+  historic.PP_COINBASE = listReturnDataHistoric[1];
+  historic.PP_TP = PP_TP;
+  historic.PP_CA = PP_CA;
+  status.historic = historic;
+
   return status
 }
 
@@ -222,13 +285,14 @@ const userBalance = async (web3, dContracts, userAddress, configProject) => {
   for (let i = 0; i < configProject.tokens.TP.length; i++) {
     TP = dContracts.contracts.TP[i]
     listMethods.push([TP.options.address, TP.methods.balanceOf(userAddress).encodeABI(), 'uint256'])
+    listMethods.push([TP.options.address, TP.methods.allowance(userAddress, MoCContract.options.address).encodeABI(), 'uint256'])
   }
 
   let CA
   for (let i = 0; i < configProject.tokens.CA.length; i++) {
     CA = dContracts.contracts.CA[i]
     listMethods.push([CA.options.address, CA.methods.balanceOf(userAddress).encodeABI(), 'uint256'])
-    listMethods.push([CA.options.address, CA.methods.allowance(userAddress, MoCContract.options.address).encodeABI(), 'uint256']) // 2
+    listMethods.push([CA.options.address, CA.methods.allowance(userAddress, MoCContract.options.address).encodeABI(), 'uint256'])
   }
 
   // Remove decode result parameter
@@ -252,15 +316,15 @@ const userBalance = async (web3, dContracts, userAddress, configProject) => {
   let last_index = 4 // this is the last used array index
   TP = []
   for (let i = 0; i < configProject.tokens.TP.length; i++) {
-    TP.push(listReturnData[last_index + 1])
-    last_index = last_index + 1
+    TP.push({ balance: listReturnData[last_index + 1], allowance: listReturnData[last_index + 2] })
+    last_index = last_index + 2
   }
   userBalance.TP = TP
 
   CA = []
   for (let i = 0; i < configProject.tokens.CA.length; i++) {
     CA.push({ balance: listReturnData[last_index + 1], allowance: listReturnData[last_index + 2] })
-    last_index = last_index + 1
+    last_index = last_index + 2
   }
   userBalance.CA = CA
 
