@@ -9,7 +9,7 @@ const AllowanceUseWrapper = async (web3, dContracts, configProject, token, allow
 
   let contractAllowAddress
   if (collateral === 'bag') {
-    contractAllowAddress = dContracts.contracts.MocCAWrapper.options.address
+    contractAllowAddress = dContracts.contracts.MocWrapper.options.address
   } else {
     contractAllowAddress = dContracts.contracts.Moc.options.address
   }

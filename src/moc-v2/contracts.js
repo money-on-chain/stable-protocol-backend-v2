@@ -64,6 +64,9 @@ const readContracts = async (web3, configProject) => {
     dContracts.contracts.PP_CA.push(new web3.eth.Contract(dContracts.json.IPriceProvider.abi, contractPPCA[i]))
   }
 
+  console.log('Reading Coinbase PP Contract... address: ', process.env.CONTRACT_PRICE_PROVIDER_COINBASE)
+  dContracts.contracts.PP_COINBASE = new web3.eth.Contract(dContracts.json.IPriceProvider.abi, process.env.CONTRACT_PRICE_PROVIDER_COINBASE)
+
   console.log('Reading Moc Contract... address: ', process.env.CONTRACT_MOC)
   dContracts.contracts.Moc = new web3.eth.Contract(dContracts.json.Moc.abi, process.env.CONTRACT_MOC)
 
@@ -78,9 +81,6 @@ const readContracts = async (web3, configProject) => {
 
   console.log('Reading Fee Token PP Contract... address: ', process.env.CONTRACT_PRICE_PROVIDER_FEE_TOKEN)
   dContracts.contracts.PP_FeeToken = new web3.eth.Contract(dContracts.json.IPriceProvider.abi, process.env.CONTRACT_PRICE_PROVIDER_FEE_TOKEN)
-
-  console.log('Reading Coinbase PP Contract... address: ', process.env.CONTRACT_PRICE_PROVIDER_COINBASE)
-  dContracts.contracts.PP_COINBASE = new web3.eth.Contract(dContracts.json.IPriceProvider.abi, process.env.CONTRACT_PRICE_PROVIDER_COINBASE)
 
   if (collateral === 'bag') {
     console.log('Reading MocWrapper Contract... address: ', process.env.CONTRACT_MOC_WRAPPER)
