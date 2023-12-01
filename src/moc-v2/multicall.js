@@ -10,6 +10,7 @@ const contractStatus = async (web3, dContracts, configProject) => {
   const MocVendors = dContracts.contracts.MocVendors
   const PP_FeeToken = dContracts.contracts.PP_FeeToken
   const PP_COINBASE = dContracts.contracts.PP_COINBASE
+  const MocQueue = dContracts.contracts.MocQueue
 
   let MoCContract
   if (collateral === 'bag') {
@@ -64,17 +65,38 @@ const contractStatus = async (web3, dContracts, configProject) => {
   listMethods.push([PP_FeeToken.options.address, PP_FeeToken.methods.peek().encodeABI(), 'uint256']) // 40
   listMethods.push([MocVendors.options.address, MocVendors.methods.vendorMarkup(vendorAddress).encodeABI(), 'uint256']) // 41
   listMethods.push([PP_COINBASE.options.address, PP_COINBASE.methods.peek().encodeABI(), 'uint256']) // 42
+  listMethods.push([Moc.options.address, Moc.methods.maxAbsoluteOpProvider().encodeABI(), 'address']) // 43
+  listMethods.push([Moc.options.address, Moc.methods.maxOpDiffProvider().encodeABI(), 'address']) // 44
+  listMethods.push([Moc.options.address, Moc.methods.decayBlockSpan().encodeABI(), 'uint256']) // 45
+  listMethods.push([Moc.options.address, Moc.methods.absoluteAccumulator().encodeABI(), 'uint256']) // 46
+  listMethods.push([Moc.options.address, Moc.methods.differentialAccumulator().encodeABI(), 'uint256']) // 47
+  listMethods.push([Moc.options.address, Moc.methods.lastOperationBlockNumber().encodeABI(), 'uint256']) // 48
+  listMethods.push([Moc.options.address, Moc.methods.qACLockedInPending().encodeABI(), 'uint256']) // 49
+  listMethods.push([MocQueue.options.address, MocQueue.methods.operIdCount().encodeABI(), 'uint256']) // 50
+  listMethods.push([MocQueue.options.address, MocQueue.methods.firstOperId().encodeABI(), 'uint256']) // 51
+  listMethods.push([MocQueue.options.address, MocQueue.methods.minOperWaitingBlk().encodeABI(), 'uint256']) // 52
+  listMethods.push([MocQueue.options.address, MocQueue.methods.tcMintExecFee().encodeABI(), 'uint256']) // 53
+  listMethods.push([MocQueue.options.address, MocQueue.methods.tcRedeemExecFee().encodeABI(), 'uint256']) // 54
+  listMethods.push([MocQueue.options.address, MocQueue.methods.tpMintExecFee().encodeABI(), 'uint256']) // 55
+  listMethods.push([MocQueue.options.address, MocQueue.methods.tpRedeemExecFee().encodeABI(), 'uint256']) // 56
+  listMethods.push([MocQueue.options.address, MocQueue.methods.swapTPforTPExecFee().encodeABI(), 'uint256']) // 57
+  listMethods.push([MocQueue.options.address, MocQueue.methods.swapTPforTCExecFee().encodeABI(), 'uint256']) // 58
+  listMethods.push([MocQueue.options.address, MocQueue.methods.swapTCforTPExecFee().encodeABI(), 'uint256']) // 59
+  listMethods.push([MocQueue.options.address, MocQueue.methods.redeemTCandTPExecFee().encodeABI(), 'uint256']) // 60
+  listMethods.push([MocQueue.options.address, MocQueue.methods.mintTCandTPExecFee().encodeABI(), 'uint256']) // 61
 
   let PP_TP
+  let tpAddress
   for (let i = 0; i < configProject.tokens.TP.length; i++) {
+    tpAddress = dContracts.contracts.TP[i].options.address
     PP_TP = dContracts.contracts.PP_TP[i]
-    listMethods.push([Moc.options.address, Moc.methods.tpMintFee(i).encodeABI(), 'uint256'])
-    listMethods.push([Moc.options.address, Moc.methods.tpRedeemFee(i).encodeABI(), 'uint256'])
+    listMethods.push([Moc.options.address, Moc.methods.tpMintFees(tpAddress).encodeABI(), 'uint256'])
+    listMethods.push([Moc.options.address, Moc.methods.tpRedeemFees(tpAddress).encodeABI(), 'uint256'])
     listMethods.push([Moc.options.address, Moc.methods.tpCtarg(i).encodeABI(), 'uint256'])
     listMethods.push([Moc.options.address, Moc.methods.pegContainer(i).encodeABI(), 'uint256'])
     listMethods.push([PP_TP.options.address, PP_TP.methods.peek().encodeABI(), 'uint256'])
-    listMethods.push([Moc.options.address, Moc.methods.getPACtp(i).encodeABI(), 'uint256'])
-    listMethods.push([Moc.options.address, Moc.methods.getTPAvailableToMint(i).encodeABI(), 'uint256'])
+    listMethods.push([Moc.options.address, Moc.methods.getPACtp(tpAddress).encodeABI(), 'uint256'])
+    listMethods.push([Moc.options.address, Moc.methods.getTPAvailableToMint(tpAddress).encodeABI(), 'uint256'])
     listMethods.push([Moc.options.address, Moc.methods.tpEma(i).encodeABI(), 'uint256'])
   }
 
@@ -145,9 +167,28 @@ const contractStatus = async (web3, dContracts, configProject) => {
   status.PP_FeeToken = listReturnData[40]
   status.vendorMarkup = listReturnData[41]
   status.PP_COINBASE = listReturnData[42]
+  status.maxAbsoluteOpProvider = listReturnData[43]
+  status.maxOpDiffProvider = listReturnData[44]
+  status.decayBlockSpan = listReturnData[45]
+  status.absoluteAccumulator = listReturnData[46]
+  status.differentialAccumulator = listReturnData[47]
+  status.lastOperationBlockNumber = listReturnData[48]
+  status.qACLockedInPending = listReturnData[49]
+  status.operIdCount = listReturnData[50]
+  status.firstOperId = listReturnData[51]
+  status.minOperWaitingBlk = listReturnData[52]
+  status.tcMintExecFee = listReturnData[53]
+  status.tcRedeemExecFee = listReturnData[54]
+  status.tpMintExecFee = listReturnData[55]
+  status.tpRedeemExecFee = listReturnData[56]
+  status.swapTPforTPExecFee = listReturnData[57]
+  status.swapTPforTCExecFee = listReturnData[58]
+  status.swapTCforTPExecFee = listReturnData[59]
+  status.redeemTCandTPExecFee = listReturnData[60]
+  status.mintTCandTPExecFee = listReturnData[61]
 
-  const tpMintFee = []
-  const tpRedeemFee = []
+  const tpMintFees = []
+  const tpRedeemFees = []
   const tpCtarg = []
   const pegContainer = []
   PP_TP = []
@@ -155,10 +196,10 @@ const contractStatus = async (web3, dContracts, configProject) => {
   const getTPAvailableToMint = []
   const tpEma = []
 
-  let last_index = 42 // this is the last used array index
+  let last_index = 61 // this is the last used array index
   for (let i = 0; i < configProject.tokens.TP.length; i++) {
-    tpMintFee.push(listReturnData[last_index + 1])
-    tpRedeemFee.push(listReturnData[last_index + 2])
+    tpMintFees.push(listReturnData[last_index + 1])
+    tpRedeemFees.push(listReturnData[last_index + 2])
     tpCtarg.push(listReturnData[last_index + 3])
     pegContainer.push(listReturnData[last_index + 4])
     PP_TP.push(listReturnData[last_index + 5])
@@ -168,8 +209,8 @@ const contractStatus = async (web3, dContracts, configProject) => {
     last_index = last_index + 8
   }
 
-  status.tpMintFee = tpMintFee
-  status.tpRedeemFee = tpRedeemFee
+  status.tpMintFees = tpMintFees
+  status.tpRedeemFees = tpRedeemFees
   status.tpCtarg = tpCtarg
   status.pegContainer = pegContainer
   status.PP_TP = PP_TP

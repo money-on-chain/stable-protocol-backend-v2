@@ -17,6 +17,8 @@ const addABIv2 = (dContracts, configProject) => {
   abiDecoder.addABI(dContracts.json.TokenPegged.abi)
   abiDecoder.addABI(dContracts.json.CollateralToken.abi)
   abiDecoder.addABI(dContracts.json.Moc.abi)
+  abiDecoder.addABI(dContracts.json.MocVendors.abi)
+  abiDecoder.addABI(dContracts.json.MocQueue.abi)
 
   if (configProject.collateral === 'bag') {
     abiDecoder.addABI(dContracts.json.MocWrapper.abi)
@@ -87,7 +89,13 @@ const decodeEvents = (receipt) => {
     'SuccessFeeDistributed',
     'TCInterestPayment',
     'AssetModified',
-    'VendorMarkupChanged'
+    'VendorMarkupChanged',
+    'OperationError',
+    'UnhandledError',
+    'OperationQueued',
+    'OperationExecuted',
+    'LiqTPRedeemed',
+    'PeggedTokenChange'
   ]
 
   const filteredEvents = decodedLogs.filter(event =>

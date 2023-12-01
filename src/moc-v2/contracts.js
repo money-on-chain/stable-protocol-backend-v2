@@ -26,6 +26,7 @@ const readContracts = async (web3, configProject) => {
   dContracts.json.IPriceProvider = readJsonFile(`./abis/${appProject}/IPriceProvider.json`)
   dContracts.json.Moc = readJsonFile(`./abis/${appProject}/Moc.json`)
   dContracts.json.MocVendors = readJsonFile(`./abis/${appProject}/MocVendors.json`)
+  dContracts.json.MocQueue = readJsonFile(`./abis/${appProject}/MocQueue.json`)
   dContracts.json.FeeToken = readJsonFile(`./abis/${appProject}/FeeToken.json`)
   dContracts.json.WrappedCollateralAsset = readJsonFile(`./abis/${appProject}/WrappedCollateralAsset.json`)
 
@@ -75,6 +76,9 @@ const readContracts = async (web3, configProject) => {
 
   console.log('Reading MocVendors Contract... address: ', process.env.CONTRACT_MOC_VENDORS)
   dContracts.contracts.MocVendors = new web3.eth.Contract(dContracts.json.MocVendors.abi, process.env.CONTRACT_MOC_VENDORS)
+
+  console.log('Reading MocQueue Contract... address: ', process.env.CONTRACT_MOC_QUEUE)
+  dContracts.contracts.MocQueue = new web3.eth.Contract(dContracts.json.MocQueue.abi, process.env.CONTRACT_MOC_QUEUE)
 
   console.log('Reading Fee Token Contract... address: ', process.env.CONTRACT_FEE_TOKEN)
   dContracts.contracts.FeeToken = new web3.eth.Contract(dContracts.json.FeeToken.abi, process.env.CONTRACT_FEE_TOKEN)
@@ -174,8 +178,8 @@ const emaTP = (contractStatus, config) => {
 const feeTP = (contractStatus, config) => {
   let result = ''
   for (let i = 0; i < config.tokens.TP.length; i++) {
-    result += `Mint ${config.tokens.TP[i].name} Fee:  ${Web3.utils.fromWei(contractStatus.tpMintFee[i])} \n`
-    result += `Redeem ${config.tokens.TP[i].name} Fee:  ${Web3.utils.fromWei(contractStatus.tpRedeemFee[i])} `
+    result += `Mint ${config.tokens.TP[i].name} Fee:  ${Web3.utils.fromWei(contractStatus.tpMintFees[i])} \n`
+    result += `Redeem ${config.tokens.TP[i].name} Fee:  ${Web3.utils.fromWei(contractStatus.tpRedeemFees[i])} `
     if (i + 1 < config.tokens.TP.length) {
       result += '\n'
     }
@@ -285,6 +289,41 @@ Collector Address: ${contractStatus.tcInterestCollectorAddress}
 Interest Rate: ${Web3.utils.fromWei(contractStatus.tcInterestRate)}
 Block Span: ${contractStatus.tcInterestPaymentBlockSpan}
 Next Payment Block: ${contractStatus.nextTCInterestPayment}
+
+
+Flux Capacitor
+==============
+
+Max Absolute Op Provider: ${contractStatus.maxAbsoluteOpProvider}
+Max Op Diff Provider: ${contractStatus.maxOpDiffProvider}
+Decay Block Span: ${contractStatus.decayBlockSpan}
+Absolute Accumulator: ${Web3.utils.fromWei(contractStatus.absoluteAccumulator)}
+Differential Accumulator: ${Web3.utils.fromWei(contractStatus.differentialAccumulator)}
+Last operational Block Number: ${contractStatus.lastOperationBlockNumber}
+
+
+Queue
+=====
+
+Locked in pending: ${Web3.utils.fromWei(contractStatus.qACLockedInPending)}
+Operation Id Count: ${contractStatus.operIdCount}
+First Operation ID: ${contractStatus.firstOperId}
+Min Operation Waiting Blk: ${contractStatus.minOperWaitingBlk}
+
+
+Queue Fees
+==========
+
+tcMintExecFee: ${Web3.utils.fromWei(contractStatus.tcMintExecFee)}
+tcRedeemExecFee: ${Web3.utils.fromWei(contractStatus.tcRedeemExecFee)}
+tpMintExecFee: ${Web3.utils.fromWei(contractStatus.tpMintExecFee)}
+tpRedeemExecFee: ${Web3.utils.fromWei(contractStatus.tpRedeemExecFee)}
+swapTPforTPExecFee: ${Web3.utils.fromWei(contractStatus.swapTPforTPExecFee)}
+swapTPforTCExecFee: ${Web3.utils.fromWei(contractStatus.swapTPforTCExecFee)}
+swapTCforTPExecFee: ${Web3.utils.fromWei(contractStatus.swapTCforTPExecFee)}
+redeemTCandTPExecFee: ${Web3.utils.fromWei(contractStatus.redeemTCandTPExecFee)}
+mintTCandTPExecFee: ${Web3.utils.fromWei(contractStatus.mintTCandTPExecFee)}
+
           `
   return render
 }

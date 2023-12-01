@@ -85,7 +85,7 @@ const mintTC = async (web3, dContracts, configProject, caIndex, qTC) => {
   const userSpendableBalance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats.CA[caIndex].allowance, configProject.tokens.CA[caIndex].decimals))
   if (qAssetMax.gt(userSpendableBalance)) throw new Error('Insufficient spendable balance... please make an allowance to the MoC contract')
 
-  const valueToSend = null
+  const valueToSend = dataContractStatus.tcMintExecFee
 
   let estimateGas
   let encodedCall
@@ -111,7 +111,7 @@ const mintTC = async (web3, dContracts, configProject, caIndex, qTC) => {
       .mintTCViaVendor(toContractPrecisionDecimals(new BigNumber(qTC), configProject.tokens.TC.decimals),
         toContractPrecisionDecimals(qAssetMax, configProject.tokens.CA[caIndex].decimals),
         vendorAddress
-      ).estimateGas({ from: userAddress, value: '0x' })
+      ).estimateGas({ from: userAddress, value: valueToSend })
 
     // encode function
     encodedCall = MoCContract.methods
@@ -122,7 +122,13 @@ const mintTC = async (web3, dContracts, configProject, caIndex, qTC) => {
   }
 
   // send transaction to the blockchain and get receipt
-  const { receipt, filteredEvents } = await sendTransaction(web3, valueToSend, estimateGas, encodedCall, MoCContractAddress)
+  const { receipt, filteredEvents } = await sendTransaction(
+      web3,
+      new BigNumber(fromContractPrecisionDecimals(valueToSend, 18)),
+      estimateGas,
+      encodedCall,
+      MoCContractAddress
+  )
 
   console.log(`Transaction hash: ${receipt.transactionHash}`)
 
@@ -215,8 +221,8 @@ const redeemTC = async (web3, dContracts, configProject, caIndex, qTC) => {
     configProject.tokens.CA[caIndex].decimals))
   if (new BigNumber(qCAtcwFee).gt(caBalance)) { throw new Error(`Insufficient ${configProject.tokens.CA[caIndex].name} in the contract. Balance: ${caBalance} ${configProject.tokens.CA[caIndex].name}`) }
 
-  // Redeem function... no values sent
-  const valueToSend = null
+  // Send value of redeem exec fee
+  const valueToSend = dataContractStatus.tcRedeemExecFee
 
   let estimateGas
   let encodedCall
@@ -228,7 +234,7 @@ const redeemTC = async (web3, dContracts, configProject, caIndex, qTC) => {
         toContractPrecisionDecimals(new BigNumber(qTC), configProject.tokens.TC.decimals),
         toContractPrecisionDecimals(qAssetMin, configProject.tokens.CA[caIndex].decimals),
         vendorAddress
-      ).estimateGas({ from: userAddress, value: '0x' })
+      ).estimateGas({ from: userAddress, value: valueToSend })
 
     // encode function
     encodedCall = MoCContract.methods
@@ -244,7 +250,7 @@ const redeemTC = async (web3, dContracts, configProject, caIndex, qTC) => {
       .redeemTCViaVendor(toContractPrecisionDecimals(new BigNumber(qTC), configProject.tokens.TC.decimals),
         toContractPrecisionDecimals(qAssetMin, configProject.tokens.CA[caIndex].decimals),
         vendorAddress
-      ).estimateGas({ from: userAddress, value: '0x' })
+      ).estimateGas({ from: userAddress, value: valueToSend })
 
     // encode function
     encodedCall = MoCContract.methods
@@ -257,7 +263,7 @@ const redeemTC = async (web3, dContracts, configProject, caIndex, qTC) => {
   // send transaction to the blockchain and get receipt
   const { receipt, filteredEvents } = await sendTransaction(
     web3,
-    valueToSend,
+    new BigNumber(fromContractPrecisionDecimals(valueToSend, 18)),
     estimateGas,
     encodedCall,
     MoCContractAddress)
@@ -294,7 +300,7 @@ const mintTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) =>
 
   // get TP price from contract
   const tpPrice = new BigNumber(Web3.utils.fromWei(dataContractStatus.PP_TP[tpIndex]))
-  const feeParam = new BigNumber(Web3.utils.fromWei(dataContractStatus.tpMintFee[tpIndex]))
+  const feeParam = new BigNumber(Web3.utils.fromWei(dataContractStatus.tpMintFees[tpIndex]))
 
   // Pegged amount in CA
   const qCAtp = new BigNumber(qTP).div(tpPrice)
@@ -352,7 +358,7 @@ const mintTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) =>
   const qAssetAvailableToMint = new BigNumber(tpAvailableToMint).div(tpPrice)
   if (new BigNumber(qAssetMax).gt(qAssetAvailableToMint)) { throw new Error(`Insufficient ${configProject.tokens.TP.name} available to mint`) }
 
-  const valueToSend = null
+  const valueToSend = dataContractStatus.tpMintExecFee
 
   let estimateGas
   let encodedCall
@@ -365,7 +371,7 @@ const mintTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) =>
         toContractPrecisionDecimals(new BigNumber(qTP), configProject.tokens.TP[tpIndex].decimals),
         toContractPrecisionDecimals(qAssetMax, configProject.tokens.CA[caIndex].decimals),
         vendorAddress
-      ).estimateGas({ from: userAddress, value: '0x' })
+      ).estimateGas({ from: userAddress, value: valueToSend })
 
     // encode function
     encodedCall = MoCContract.methods
@@ -383,7 +389,7 @@ const mintTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) =>
         toContractPrecisionDecimals(new BigNumber(qTP), configProject.tokens.TP[tpIndex].decimals),
         toContractPrecisionDecimals(qAssetMax, configProject.tokens.CA[caIndex].decimals),
         vendorAddress
-      ).estimateGas({ from: userAddress, value: '0x' })
+      ).estimateGas({ from: userAddress, value: valueToSend })
 
     // encode function
     encodedCall = MoCContract.methods
@@ -395,7 +401,13 @@ const mintTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) =>
   }
 
   // send transaction to the blockchain and get receipt
-  const { receipt, filteredEvents } = await sendTransaction(web3, valueToSend, estimateGas, encodedCall, MoCContractAddress)
+  const { receipt, filteredEvents } = await sendTransaction(
+      web3,
+      new BigNumber(fromContractPrecisionDecimals(valueToSend, 18)),
+      estimateGas,
+      encodedCall,
+      MoCContractAddress
+  )
 
   console.log(`Transaction hash: ${receipt.transactionHash}`)
 
@@ -429,7 +441,7 @@ const redeemTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) 
 
   // get TP price from contract
   const tpPrice = new BigNumber(Web3.utils.fromWei(dataContractStatus.PP_TP[tpIndex]))
-  const feeParam = new BigNumber(Web3.utils.fromWei(dataContractStatus.tpRedeemFee[tpIndex]))
+  const feeParam = new BigNumber(Web3.utils.fromWei(dataContractStatus.tpRedeemFees[tpIndex]))
 
   // TP amount in CA
   const qCAtp = new BigNumber(qTP).div(tpPrice)
@@ -485,8 +497,7 @@ const redeemTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) 
   const caBalance = new BigNumber(fromContractPrecisionDecimals(dataContractStatus.getACBalance[caIndex], configProject.tokens.CA[caIndex].decimals))
   if (new BigNumber(qCAtpwFee).gt(caBalance)) { throw new Error(`Insufficient ${configProject.tokens.CA[caIndex].name} in the contract. Balance: ${caBalance} ${configProject.tokens.CA[caIndex].name}`) }
 
-  // Redeem function... no values sent
-  const valueToSend = null
+  const valueToSend = dataContractStatus.tpRedeemExecFee
 
   let estimateGas
   let encodedCall
@@ -500,7 +511,7 @@ const redeemTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) 
         toContractPrecisionDecimals(qAssetMin, configProject.tokens.CA[caIndex].decimals),
         vendorAddress
       )
-      .estimateGas({ from: userAddress, value: '0x' })
+      .estimateGas({ from: userAddress, value: valueToSend })
 
     // encode function
     encodedCall = MoCContract.methods
@@ -520,7 +531,7 @@ const redeemTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) 
         toContractPrecisionDecimals(qAssetMin, configProject.tokens.CA[caIndex].decimals),
         vendorAddress
       )
-      .estimateGas({ from: userAddress, value: '0x' })
+      .estimateGas({ from: userAddress, value: valueToSend })
 
     // encode function
     encodedCall = MoCContract.methods
@@ -533,7 +544,13 @@ const redeemTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) 
   }
 
   // send transaction to the blockchain and get receipt
-  const { receipt, filteredEvents } = await sendTransaction(web3, valueToSend, estimateGas, encodedCall, MoCContractAddress)
+  const { receipt, filteredEvents } = await sendTransaction(
+      web3,
+      new BigNumber(fromContractPrecisionDecimals(valueToSend, 18)),
+      estimateGas,
+      encodedCall,
+      MoCContractAddress
+  )
 
   console.log(`Transaction hash: ${receipt.transactionHash}`)
 
@@ -602,7 +619,7 @@ const swapTPforTP = async (web3, dContracts, configProject, iFromTP, iToTP, qTP,
   const userSpendableBalance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats.CA[caIndex].allowance, configProject.tokens.CA[caIndex].decimals))
   if (qAssetMaxFees.gt(userSpendableBalance)) { throw new Error('Insufficient spendable balance... please make an allowance to the MoC contract') }
 
-  const valueToSend = null
+  const valueToSend = dataContractStatus.swapTPforTPExecFee
 
   let estimateGas
   let encodedCall
@@ -617,7 +634,7 @@ const swapTPforTP = async (web3, dContracts, configProject, iFromTP, iToTP, qTP,
         toContractPrecisionDecimals(new BigNumber(qTPMin), configProject.tokens.TP[iToTP].decimals),
         toContractPrecisionDecimals(qAssetMaxFees, configProject.tokens.CA[caIndex].decimals),
         vendorAddress
-      ).estimateGas({ from: userAddress, value: '0x' })
+      ).estimateGas({ from: userAddress, value: valueToSend })
 
     // encode function
     encodedCall = MoCContract.methods
@@ -640,7 +657,7 @@ const swapTPforTP = async (web3, dContracts, configProject, iFromTP, iToTP, qTP,
         toContractPrecisionDecimals(new BigNumber(qTPMin), configProject.tokens.TP[iToTP].decimals),
         toContractPrecisionDecimals(qAssetMaxFees, configProject.tokens.CA[caIndex].decimals),
         vendorAddress
-      ).estimateGas({ from: userAddress, value: '0x' })
+      ).estimateGas({ from: userAddress, value: valueToSend })
 
     // encode function
     encodedCall = MoCContract.methods
@@ -655,7 +672,13 @@ const swapTPforTP = async (web3, dContracts, configProject, iFromTP, iToTP, qTP,
   }
 
   // send transaction to the blockchain and get receipt
-  const { receipt, filteredEvents } = await sendTransaction(web3, valueToSend, estimateGas, encodedCall, MoCContractAddress)
+  const { receipt, filteredEvents } = await sendTransaction(
+      web3,
+      new BigNumber(fromContractPrecisionDecimals(valueToSend, 18)),
+      estimateGas,
+      encodedCall,
+      MoCContractAddress
+  )
 
   console.log(`Transaction hash: ${receipt.transactionHash}`)
 
@@ -709,7 +732,7 @@ const swapTPforTC = async (web3, dContracts, configProject, caIndex, tpIndex, qT
   console.log(`Slippage using ${slippage} %. Maximum amount of asset can be spent in fees: ${qAssetMaxFees.toString()} ${configProject.tokens.CA[caIndex].name} `)
 
   // Redeem function... no values sent
-  const valueToSend = null
+  const valueToSend = dataContractStatus.swapTPforTCExecFee
 
   // Verifications
 
@@ -741,7 +764,7 @@ const swapTPforTC = async (web3, dContracts, configProject, caIndex, tpIndex, qT
         toContractPrecisionDecimals(qAssetMaxFees, configProject.tokens.CA[caIndex].decimals),
         vendorAddress
       )
-      .estimateGas({ from: userAddress, value: '0x' })
+      .estimateGas({ from: userAddress, value: valueToSend })
 
     // encode function
     encodedCall = MoCContract.methods
@@ -763,7 +786,7 @@ const swapTPforTC = async (web3, dContracts, configProject, caIndex, tpIndex, qT
         toContractPrecisionDecimals(qAssetMaxFees, configProject.tokens.CA[caIndex].decimals),
         vendorAddress
       )
-      .estimateGas({ from: userAddress, value: '0x' })
+      .estimateGas({ from: userAddress, value: valueToSend })
 
     // encode function
     encodedCall = MoCContract.methods
@@ -777,7 +800,13 @@ const swapTPforTC = async (web3, dContracts, configProject, caIndex, tpIndex, qT
   }
 
   // send transaction to the blockchain and get receipt
-  const { receipt, filteredEvents } = await sendTransaction(web3, valueToSend, estimateGas, encodedCall, MoCContractAddress)
+  const { receipt, filteredEvents } = await sendTransaction(
+      web3,
+      new BigNumber(fromContractPrecisionDecimals(valueToSend, 18)),
+      estimateGas,
+      encodedCall,
+      MoCContractAddress
+  )
 
   console.log(`Transaction hash: ${receipt.transactionHash}`)
 
@@ -850,7 +879,7 @@ const swapTCforTP = async (web3, dContracts, configProject, caIndex, tpIndex, qT
   if (qAssetMaxFees.gt(userSpendableBalance)) { throw new Error('Insufficient spendable balance... please make an allowance to the MoC contract') }
 
   // Redeem function... no values sent
-  const valueToSend = null
+  const valueToSend = dataContractStatus.swapTCforTPExecFee
 
   let estimateGas
   let encodedCall
@@ -864,7 +893,7 @@ const swapTCforTP = async (web3, dContracts, configProject, caIndex, tpIndex, qT
         toContractPrecisionDecimals(qTPMin, configProject.tokens.TP[tpIndex].decimals),
         toContractPrecisionDecimals(qAssetMaxFees, configProject.tokens.CA[caIndex].decimals),
         vendorAddress
-      ).estimateGas({ from: userAddress, value: '0x' })
+      ).estimateGas({ from: userAddress, value: valueToSend })
 
     // encode function
     encodedCall = MoCContract.methods
@@ -884,7 +913,7 @@ const swapTCforTP = async (web3, dContracts, configProject, caIndex, tpIndex, qT
         toContractPrecisionDecimals(qTPMin, configProject.tokens.TP[tpIndex].decimals),
         toContractPrecisionDecimals(qAssetMaxFees, configProject.tokens.CA[caIndex].decimals),
         vendorAddress
-      ).estimateGas({ from: userAddress, value: '0x' })
+      ).estimateGas({ from: userAddress, value: valueToSend })
 
     // encode function
     encodedCall = MoCContract.methods
@@ -899,7 +928,7 @@ const swapTCforTP = async (web3, dContracts, configProject, caIndex, tpIndex, qT
   // send transaction to the blockchain and get receipt
   const { receipt, filteredEvents } = await sendTransaction(
     web3,
-    valueToSend,
+    new BigNumber(fromContractPrecisionDecimals(valueToSend, 18)),
     estimateGas,
     encodedCall,
     MoCContractAddress)
@@ -968,7 +997,7 @@ const mintTCandTP = async (web3, dContracts, configProject, caIndex, tpIndex, qT
   const userSpendableBalance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats.CA[caIndex].allowance, configProject.tokens.CA[caIndex].decimals))
   if (qAssetMax.gt(userSpendableBalance)) { throw new Error('Insufficient spendable balance... please make an allowance to the MoC contract') }
 
-  const valueToSend = null
+  const valueToSend = dataContractStatus.mintTCandTPExecFee
 
   let estimateGas
   let encodedCall
@@ -981,7 +1010,7 @@ const mintTCandTP = async (web3, dContracts, configProject, caIndex, tpIndex, qT
         toContractPrecisionDecimals(new BigNumber(qTP), configProject.tokens.TP[tpIndex].decimals),
         toContractPrecisionDecimals(qAssetMax, configProject.tokens.CA[caIndex].decimals),
         vendorAddress
-      ).estimateGas({ from: userAddress, value: '0x' })
+      ).estimateGas({ from: userAddress, value: valueToSend })
 
     // encode function
     encodedCall = MoCContract.methods
@@ -999,7 +1028,7 @@ const mintTCandTP = async (web3, dContracts, configProject, caIndex, tpIndex, qT
         toContractPrecisionDecimals(new BigNumber(qTP), configProject.tokens.TP[tpIndex].decimals),
         toContractPrecisionDecimals(qAssetMax, configProject.tokens.CA[caIndex].decimals),
         vendorAddress
-      ).estimateGas({ from: userAddress, value: '0x' })
+      ).estimateGas({ from: userAddress, value: valueToSend })
 
     // encode function
     encodedCall = MoCContract.methods
@@ -1011,7 +1040,13 @@ const mintTCandTP = async (web3, dContracts, configProject, caIndex, tpIndex, qT
   }
 
   // send transaction to the blockchain and get receipt
-  const { receipt, filteredEvents } = await sendTransaction(web3, valueToSend, estimateGas, encodedCall, MoCContractAddress)
+  const { receipt, filteredEvents } = await sendTransaction(
+      web3,
+      new BigNumber(fromContractPrecisionDecimals(valueToSend, 18)),
+      estimateGas,
+      encodedCall,
+      MoCContractAddress
+  )
 
   console.log(`Transaction hash: ${receipt.transactionHash}`)
 
@@ -1091,7 +1126,7 @@ const redeemTCandTP = async (web3, dContracts, configProject, caIndex, tpIndex, 
   if (new BigNumber(qCAwFee).gt(caBalance)) { throw new Error(`Insufficient ${configProject.tokens.CA[caIndex].name} in the contract. Balance: ${caBalance} ${configProject.tokens.CA[caIndex].name}`) }
 
   // Redeem function... no values sent
-  const valueToSend = null
+  const valueToSend = dataContractStatus.redeemTCandTPExecFee
 
   let estimateGas
   let encodedCall
@@ -1105,7 +1140,7 @@ const redeemTCandTP = async (web3, dContracts, configProject, caIndex, tpIndex, 
         toContractPrecisionDecimals(new BigNumber(qTPMax), configProject.tokens.TP[tpIndex].decimals),
         toContractPrecisionDecimals(qAssetMin, configProject.tokens.CA[caIndex].decimals),
         vendorAddress
-      ).estimateGas({ from: userAddress, value: '0x' })
+      ).estimateGas({ from: userAddress, value: valueToSend })
 
     // encode function
     encodedCall = MoCContract.methods
@@ -1125,7 +1160,7 @@ const redeemTCandTP = async (web3, dContracts, configProject, caIndex, tpIndex, 
         toContractPrecisionDecimals(new BigNumber(qTPMax), configProject.tokens.TP[tpIndex].decimals),
         toContractPrecisionDecimals(qAssetMin, configProject.tokens.CA[caIndex].decimals),
         vendorAddress
-      ).estimateGas({ from: userAddress, value: '0x' })
+      ).estimateGas({ from: userAddress, value: valueToSend })
 
     // encode function
     encodedCall = MoCContract.methods
@@ -1140,7 +1175,7 @@ const redeemTCandTP = async (web3, dContracts, configProject, caIndex, tpIndex, 
   // send transaction to the blockchain and get receipt
   const { receipt, filteredEvents } = await sendTransaction(
     web3,
-    valueToSend,
+    new BigNumber(fromContractPrecisionDecimals(valueToSend, 18)),
     estimateGas,
     encodedCall,
     MoCContractAddress)
