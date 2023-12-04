@@ -280,6 +280,7 @@ const mintTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) =>
   const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
   const vendorAddress = `${process.env.VENDOR_ADDRESS}`.toLowerCase()
   const slippage = `${process.env.MINT_SLIPPAGE}`
+  const tpAddress = dContracts.contracts.TP[tpIndex].options.address
 
   let MoCContract
   if (collateral === 'bag') {
@@ -367,7 +368,7 @@ const mintTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) =>
     estimateGas = await MoCContract.methods
       .mintTPViaVendor(
         caAddress,
-        tpIndex,
+        tpAddress,
         toContractPrecisionDecimals(new BigNumber(qTP), configProject.tokens.TP[tpIndex].decimals),
         toContractPrecisionDecimals(qAssetMax, configProject.tokens.CA[caIndex].decimals),
         vendorAddress
@@ -377,7 +378,7 @@ const mintTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) =>
     encodedCall = MoCContract.methods
       .mintTPViaVendor(
         caAddress,
-        tpIndex,
+        tpAddress,
         toContractPrecisionDecimals(new BigNumber(qTP), configProject.tokens.TP[tpIndex].decimals),
         toContractPrecisionDecimals(qAssetMax, configProject.tokens.CA[caIndex].decimals),
         vendorAddress
@@ -385,7 +386,8 @@ const mintTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) =>
   } else {
     // Calculate estimate gas cost
     estimateGas = await MoCContract.methods
-      .mintTPViaVendor(tpIndex,
+      .mintTPViaVendor(
+        tpAddress,
         toContractPrecisionDecimals(new BigNumber(qTP), configProject.tokens.TP[tpIndex].decimals),
         toContractPrecisionDecimals(qAssetMax, configProject.tokens.CA[caIndex].decimals),
         vendorAddress
@@ -393,7 +395,8 @@ const mintTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) =>
 
     // encode function
     encodedCall = MoCContract.methods
-      .mintTPViaVendor(tpIndex,
+      .mintTPViaVendor(
+        tpAddress,
         toContractPrecisionDecimals(new BigNumber(qTP), configProject.tokens.TP[tpIndex].decimals),
         toContractPrecisionDecimals(qAssetMax, configProject.tokens.CA[caIndex].decimals),
         vendorAddress
@@ -421,6 +424,7 @@ const redeemTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) 
   const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
   const vendorAddress = `${process.env.VENDOR_ADDRESS}`.toLowerCase()
   const slippage = `${process.env.REDEEM_SLIPPAGE}`
+  const tpAddress = dContracts.contracts.TP[tpIndex].options.address
 
   let MoCContract
   if (collateral === 'bag') {
@@ -506,7 +510,7 @@ const redeemTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) 
     estimateGas = await MoCContract.methods
       .redeemTPViaVendor(
         caAddress,
-        tpIndex,
+        tpAddress,
         toContractPrecisionDecimals(new BigNumber(qTP), configProject.tokens.TP[tpIndex].decimals),
         toContractPrecisionDecimals(qAssetMin, configProject.tokens.CA[caIndex].decimals),
         vendorAddress
@@ -517,7 +521,7 @@ const redeemTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) 
     encodedCall = MoCContract.methods
       .redeemTPViaVendor(
         caAddress,
-        tpIndex,
+        tpAddress,
         toContractPrecision(new BigNumber(qTP), configProject.tokens.TP[tpIndex].decimals),
         toContractPrecision(qAssetMin, configProject.tokens.CA[caIndex].decimals),
         vendorAddress
@@ -526,7 +530,8 @@ const redeemTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) 
   } else {
     // Calculate estimate gas cost
     estimateGas = await MoCContract.methods
-      .redeemTPViaVendor(tpIndex,
+      .redeemTPViaVendor(
+        tpAddress,
         toContractPrecisionDecimals(new BigNumber(qTP), configProject.tokens.TP[tpIndex].decimals),
         toContractPrecisionDecimals(qAssetMin, configProject.tokens.CA[caIndex].decimals),
         vendorAddress
@@ -535,7 +540,8 @@ const redeemTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) 
 
     // encode function
     encodedCall = MoCContract.methods
-      .redeemTPViaVendor(tpIndex,
+      .redeemTPViaVendor(
+        tpAddress,
         toContractPrecision(new BigNumber(qTP), configProject.tokens.TP[tpIndex].decimals),
         toContractPrecision(qAssetMin, configProject.tokens.CA[caIndex].decimals),
         vendorAddress

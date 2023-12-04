@@ -86,6 +86,12 @@ const readContracts = async (web3, configProject) => {
   console.log('Reading Fee Token PP Contract... address: ', process.env.CONTRACT_PRICE_PROVIDER_FEE_TOKEN)
   dContracts.contracts.PP_FeeToken = new web3.eth.Contract(dContracts.json.IPriceProvider.abi, process.env.CONTRACT_PRICE_PROVIDER_FEE_TOKEN)
 
+  console.log('Reading FC_MAX_ABSOLUTE_OP_PROVIDER... address: ', process.env.CONTRACT_FC_MAX_ABSOLUTE_OP_PROVIDER)
+  dContracts.contracts.FC_MAX_ABSOLUTE_OP_PROVIDER = new web3.eth.Contract(dContracts.json.IPriceProvider.abi, process.env.CONTRACT_FC_MAX_ABSOLUTE_OP_PROVIDER)
+
+  console.log('Reading FC_MAX_OP_DIFFERENCE_PROVIDER... address: ', process.env.CONTRACT_FC_MAX_OP_DIFFERENCE_PROVIDER)
+  dContracts.contracts.FC_MAX_OP_DIFFERENCE_PROVIDER = new web3.eth.Contract(dContracts.json.IPriceProvider.abi, process.env.CONTRACT_FC_MAX_OP_DIFFERENCE_PROVIDER)
+
   if (collateral === 'bag') {
     console.log('Reading MocWrapper Contract... address: ', process.env.CONTRACT_MOC_WRAPPER)
     dContracts.contracts.MocWrapper = new web3.eth.Contract(dContracts.json.MocWrapper.abi, process.env.CONTRACT_MOC_WRAPPER)
@@ -295,7 +301,9 @@ Flux Capacitor
 ==============
 
 Max Absolute Op Provider: ${contractStatus.maxAbsoluteOpProvider}
+Max Absolute Op: ${Web3.utils.fromWei(contractStatus.FC_MAX_ABSOLUTE_OP)}
 Max Op Diff Provider: ${contractStatus.maxOpDiffProvider}
+Max Op Diff: ${Web3.utils.fromWei(contractStatus.FC_MAX_OP_DIFFERENCE)}
 Decay Block Span: ${contractStatus.decayBlockSpan}
 Absolute Accumulator: ${Web3.utils.fromWei(contractStatus.absoluteAccumulator)}
 Differential Accumulator: ${Web3.utils.fromWei(contractStatus.differentialAccumulator)}

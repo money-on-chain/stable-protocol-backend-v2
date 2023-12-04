@@ -11,6 +11,8 @@ const contractStatus = async (web3, dContracts, configProject) => {
   const PP_FeeToken = dContracts.contracts.PP_FeeToken
   const PP_COINBASE = dContracts.contracts.PP_COINBASE
   const MocQueue = dContracts.contracts.MocQueue
+  const FC_MAX_ABSOLUTE_OP_PROVIDER = dContracts.contracts.FC_MAX_ABSOLUTE_OP_PROVIDER
+  const FC_MAX_OP_DIFFERENCE_PROVIDER = dContracts.contracts.FC_MAX_OP_DIFFERENCE_PROVIDER
 
   let MoCContract
   if (collateral === 'bag') {
@@ -84,6 +86,8 @@ const contractStatus = async (web3, dContracts, configProject) => {
   listMethods.push([MocQueue.options.address, MocQueue.methods.swapTCforTPExecFee().encodeABI(), 'uint256']) // 59
   listMethods.push([MocQueue.options.address, MocQueue.methods.redeemTCandTPExecFee().encodeABI(), 'uint256']) // 60
   listMethods.push([MocQueue.options.address, MocQueue.methods.mintTCandTPExecFee().encodeABI(), 'uint256']) // 61
+  listMethods.push([FC_MAX_ABSOLUTE_OP_PROVIDER.options.address, FC_MAX_ABSOLUTE_OP_PROVIDER.methods.peek().encodeABI(), 'uint256']) // 62
+  listMethods.push([FC_MAX_OP_DIFFERENCE_PROVIDER.options.address, FC_MAX_OP_DIFFERENCE_PROVIDER.methods.peek().encodeABI(), 'uint256']) // 63
 
   let PP_TP
   let tpAddress
@@ -186,6 +190,8 @@ const contractStatus = async (web3, dContracts, configProject) => {
   status.swapTCforTPExecFee = listReturnData[59]
   status.redeemTCandTPExecFee = listReturnData[60]
   status.mintTCandTPExecFee = listReturnData[61]
+  status.FC_MAX_ABSOLUTE_OP = listReturnData[62]
+  status.FC_MAX_OP_DIFFERENCE = listReturnData[63]
 
   const tpMintFees = []
   const tpRedeemFees = []
@@ -196,7 +202,7 @@ const contractStatus = async (web3, dContracts, configProject) => {
   const getTPAvailableToMint = []
   const tpEma = []
 
-  let last_index = 61 // this is the last used array index
+  let last_index = 63 // this is the last used array index
   for (let i = 0; i < configProject.tokens.TP.length; i++) {
     tpMintFees.push(listReturnData[last_index + 1])
     tpRedeemFees.push(listReturnData[last_index + 2])
