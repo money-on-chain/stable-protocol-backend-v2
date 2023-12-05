@@ -138,8 +138,8 @@ const QueueExecute = async (web3, dContracts, configProject, feeRecipient) => {
   // Get information from contracts
   const dataContractStatus = await statusFromContracts(web3, dContracts, configProject)
 
-  const isEmpty = await MocQueue.methods.isEmpty().call()
-  if (isEmpty) throw new Error('Queue is empty!')
+  const readyToExecute = await MocQueue.methods.readyToExecute().call()
+  if (!readyToExecute) throw new Error('Is not ready to execute the queue!')
 
   const valueToSend = null
 

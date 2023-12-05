@@ -2,6 +2,11 @@
   "abi": [
     {
       "inputs": [],
+      "name": "BucketAlreadyRegistered",
+      "type": "error"
+    },
+    {
+      "inputs": [],
       "name": "ExecutionFeePaymentFailed",
       "type": "error"
     },
@@ -980,19 +985,6 @@
       "type": "function"
     },
     {
-      "inputs": [],
-      "name": "MAX_OPER_PER_BATCH",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
       "inputs": [
         {
           "internalType": "contract IGovernor",
@@ -1118,9 +1110,14 @@
           "type": "address"
         },
         {
-          "internalType": "uint256",
+          "internalType": "uint128",
           "name": "minOperWaitingBlk_",
-          "type": "uint256"
+          "type": "uint128"
+        },
+        {
+          "internalType": "uint128",
+          "name": "maxOperPerBatch_",
+          "type": "uint128"
         },
         {
           "components": [
@@ -1209,12 +1206,25 @@
     },
     {
       "inputs": [],
+      "name": "maxOperPerBatch",
+      "outputs": [
+        {
+          "internalType": "uint128",
+          "name": "",
+          "type": "uint128"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
       "name": "minOperWaitingBlk",
       "outputs": [
         {
-          "internalType": "uint256",
+          "internalType": "uint128",
           "name": "",
-          "type": "uint256"
+          "type": "uint128"
         }
       ],
       "stateMutability": "view",
@@ -2216,6 +2226,19 @@
     },
     {
       "inputs": [],
+      "name": "readyToExecute",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
       "name": "redeemTCandTPExecFee",
       "outputs": [
         {
@@ -2231,7 +2254,7 @@
       "inputs": [
         {
           "internalType": "contract MocCARC20Deferred",
-          "name": "bucket",
+          "name": "bucket_",
           "type": "address"
         }
       ],
@@ -2279,9 +2302,22 @@
     {
       "inputs": [
         {
-          "internalType": "uint256",
+          "internalType": "uint128",
+          "name": "maxOperPerBatch_",
+          "type": "uint128"
+        }
+      ],
+      "name": "setMaxOperPerBatch",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint128",
           "name": "minOperWaitingBlk_",
-          "type": "uint256"
+          "type": "uint128"
         }
       ],
       "name": "setMinOperWaitingBlk",

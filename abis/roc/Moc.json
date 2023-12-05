@@ -2115,11 +2115,6 @@
         },
         {
           "internalType": "uint256",
-          "name": "tpEma_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
           "name": "nextEmaCalculation_",
           "type": "uint256"
         },

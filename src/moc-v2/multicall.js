@@ -253,7 +253,7 @@ const contractStatus = async (web3, dContracts, configProject) => {
   status.canOperate = !calcCtargemaCA.gt(1000000);
 
   // History Price (24hs ago)
-  const d24BlockHeights = status.blockHeight - 2880;
+  const d24BlockHeights = status.blockHeight - process.env.BLOCK_SPAN_HISTORIC;
   listMethods = []
   listMethods.push([Moc.options.address, Moc.methods.getPTCac().encodeABI(), 'uint256']) // 0
   listMethods.push([PP_COINBASE.options.address, PP_COINBASE.methods.peek().encodeABI(), 'uint256']) // 1
