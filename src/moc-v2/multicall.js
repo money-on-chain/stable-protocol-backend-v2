@@ -14,12 +14,6 @@ const contractStatus = async (web3, dContracts, configProject) => {
   const FC_MAX_ABSOLUTE_OP_PROVIDER = dContracts.contracts.FC_MAX_ABSOLUTE_OP_PROVIDER
   const FC_MAX_OP_DIFFERENCE_PROVIDER = dContracts.contracts.FC_MAX_OP_DIFFERENCE_PROVIDER
 
-  let MoCContract
-  if (collateral === 'bag') {
-    MoCContract = dContracts.contracts.MocWrapper
-  } else {
-    MoCContract = dContracts.contracts.Moc
-  }
 
   console.log('Reading contract status ...')
 
@@ -109,13 +103,8 @@ const contractStatus = async (web3, dContracts, configProject) => {
   for (let i = 0; i < configProject.tokens.CA.length; i++) {
     PP_CA = dContracts.contracts.PP_CA[i]
     CA = dContracts.contracts.CA[i]
-    listMethods.push([CA.options.address, CA.methods.balanceOf(MoCContract.options.address).encodeABI(), 'uint256'])
+    listMethods.push([CA.options.address, CA.methods.balanceOf(Moc.options.address).encodeABI(), 'uint256'])
     listMethods.push([PP_CA.options.address, PP_CA.methods.peek().encodeABI(), 'uint256'])
-  }
-
-  if (collateral === 'bag') {
-    const MocWrapper = dContracts.contracts.MocWrapper
-    listMethods.push([MocWrapper.options.address, MocWrapper.methods.getTokenPrice().encodeABI(), 'uint256'])
   }
 
   // Remove decode result parameter
@@ -234,12 +223,7 @@ const contractStatus = async (web3, dContracts, configProject) => {
 
   status.getACBalance = getACBalance
   status.PP_CA = PP_CA
-
-  if (collateral === 'bag') {
-    status.getTokenPrice = listReturnData[last_index + 1]
-  } else {
-    status.getTokenPrice = new BigNumber('0')
-  }
+  status.getTokenPrice = new BigNumber('0')
 
   last_index = last_index + 1
 
@@ -311,13 +295,7 @@ const userBalance = async (web3, dContracts, userAddress, configProject) => {
   const multicall = dContracts.contracts.multicall
   const CollateralToken = dContracts.contracts.CollateralToken
   const FeeToken = dContracts.contracts.FeeToken
-
-  let MoCContract
-  if (collateral === 'bag') {
-    MoCContract = dContracts.contracts.MocWrapper
-  } else {
-    MoCContract = dContracts.contracts.Moc
-  }
+  const MoCContract = dContracts.contracts.Moc
 
   console.log(`Reading user balance ... account: ${userAddress}`)
 

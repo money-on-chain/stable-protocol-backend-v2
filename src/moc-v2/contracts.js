@@ -13,7 +13,6 @@ BigNumber.config({ ROUNDING_MODE: BigNumber.ROUND_DOWN })
 
 const readContracts = async (web3, configProject) => {
   const appProject = configProject.appProject
-  const collateral = configProject.collateral
 
   const dContracts = {}
   dContracts.json = {}
@@ -28,11 +27,7 @@ const readContracts = async (web3, configProject) => {
   dContracts.json.MocVendors = readJsonFile(`./abis/${appProject}/MocVendors.json`)
   dContracts.json.MocQueue = readJsonFile(`./abis/${appProject}/MocQueue.json`)
   dContracts.json.FeeToken = readJsonFile(`./abis/${appProject}/FeeToken.json`)
-  dContracts.json.WrappedCollateralAsset = readJsonFile(`./abis/${appProject}/WrappedCollateralAsset.json`)
-
-  if (collateral === 'bag') {
-    dContracts.json.MocWrapper = readJsonFile(`./abis/${appProject}/MocWrapper.json`)
-  }
+  dContracts.json.CollateralAsset = readJsonFile(`./abis/${appProject}/CollateralAsset.json`)
 
   console.log('Reading Multicall2 Contract... address: ', process.env.CONTRACT_MULTICALL2)
   dContracts.contracts.multicall = new web3.eth.Contract(dContracts.json.Multicall2.abi, process.env.CONTRACT_MULTICALL2)
@@ -48,7 +43,7 @@ const readContracts = async (web3, configProject) => {
   const contractCA = process.env.CONTRACT_CA.split(",")
   for (let i = 0; i < configProject.tokens.CA.length; i++) {
     console.log(`Reading ${configProject.tokens.CA[i].name} Token Contract... address: `, contractCA[i])
-    dContracts.contracts.CA.push(new web3.eth.Contract(dContracts.json.WrappedCollateralAsset.abi, contractCA[i]))
+    dContracts.contracts.CA.push(new web3.eth.Contract(dContracts.json.CollateralAsset.abi, contractCA[i]))
   }
 
   dContracts.contracts.PP_TP = []
@@ -91,11 +86,6 @@ const readContracts = async (web3, configProject) => {
 
   console.log('Reading FC_MAX_OP_DIFFERENCE_PROVIDER... address: ', process.env.CONTRACT_FC_MAX_OP_DIFFERENCE_PROVIDER)
   dContracts.contracts.FC_MAX_OP_DIFFERENCE_PROVIDER = new web3.eth.Contract(dContracts.json.IPriceProvider.abi, process.env.CONTRACT_FC_MAX_OP_DIFFERENCE_PROVIDER)
-
-  if (collateral === 'bag') {
-    console.log('Reading MocWrapper Contract... address: ', process.env.CONTRACT_MOC_WRAPPER)
-    dContracts.contracts.MocWrapper = new web3.eth.Contract(dContracts.json.MocWrapper.abi, process.env.CONTRACT_MOC_WRAPPER)
-  }
 
   // Add to abi decoder
   addABIv2(dContracts, configProject)
@@ -232,6 +222,7 @@ Total Collateral available:  ${Web3.utils.fromWei(contractStatus.getTotalACavail
 
 EMA
 ====
+
 ${emaTP(contractStatus, config)}
 Block next calculation: ${contractStatus.nextEmaCalculation}
 EMA Block Span: ${contractStatus.emaCalculationBlockSpan}

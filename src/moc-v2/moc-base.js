@@ -2,17 +2,12 @@ import { sendTransaction } from '../transaction.js'
 import { toContractPrecisionDecimals } from '../utils.js'
 import BigNumber from 'bignumber.js'
 
-const AllowanceUseWrapper = async (web3, dContracts, configProject, token, allow, tokenDecimals) => {
+const AllowanceUse = async (web3, dContracts, configProject, token, allow, tokenDecimals) => {
   const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
   const tokenAddress = token.options.address
-  const collateral = configProject.collateral
 
   let contractAllowAddress
-  if (collateral === 'bag') {
-    contractAllowAddress = dContracts.contracts.MocWrapper.options.address
-  } else {
-    contractAllowAddress = dContracts.contracts.Moc.options.address
-  }
+  contractAllowAddress = dContracts.contracts.Moc.options.address
 
   let amountAllowance = new BigNumber('0')
   const valueToSend = null
@@ -39,5 +34,5 @@ const AllowanceUseWrapper = async (web3, dContracts, configProject, token, allow
 }
 
 export {
-  AllowanceUseWrapper
+  AllowanceUse
 }

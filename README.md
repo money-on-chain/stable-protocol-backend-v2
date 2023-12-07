@@ -42,9 +42,6 @@ Money on chain token operations (backend to contracts)
 | TP         | Pegged Token 1:1 | Flipago RC20  | FARS, FMXN | DOC         |
 | TC         | Collateral Token | Flipago RC20  | GoTurbo    | DOC         |
 | Fee Token  | Fee Token        | Flipago RC20  | FLIP       | -           |
-| TP         | Pegged Token 1:1 | Flipago       | FARS, FMXN | DOC, USDRIF |
-| TC         | Collateral Token | Flipago       | GoTurbo    | DOC, USDRIF |
-| Fee Token  | Fee Token        | Flipago       | FLIP       | -           |
 
 
 #### Money on Chain projects and Collateral types
@@ -53,9 +50,7 @@ Money on chain token operations (backend to contracts)
 | Project   | Name           | Collateral Type | Collateral  |
 |-----------|----------------|-----------------|-------------|
 | Flipago   | Flipago RC20   | RC20            | DOC         |
-| Flipago   | Flipago C. Bag | Token bag       | DOC, USDRIF |
 | ROC       | RoC            | RC20            | RIF         |
-| MOC       | MoC            | Coinbase        | RBTC        |
 
 
 
@@ -67,7 +62,6 @@ Environment is our already deployed contracts.
 |--------------------------------|---------|--------------------------------------|------------|
 | flipagoRskTestnet              | Flipago | Flipago Testnet RSK                  | Testnet    |
 | rocRskTestnet                  | ROC     | Rif on Chain Testnet RSK             | Testnet    |
-| flipagoCollateralBagRskTestnet | Flipago | Flipago Collateral Bag Testnet RSK   | Testnet    |
 
 
 ### Faucets
@@ -114,6 +108,3 @@ Example Mint TC in Flipago RC20 project:
 
 `node scripts/rc20/tc-mint.js`
 
-Example Mint TC in Flipago c/bag project:
-
-`node scripts/collateral-bag/tc-mint.js`

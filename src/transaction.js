@@ -20,10 +20,6 @@ const addABIv2 = (dContracts, configProject) => {
   abiDecoder.addABI(dContracts.json.MocVendors.abi)
   abiDecoder.addABI(dContracts.json.MocQueue.abi)
 
-  if (configProject.collateral === 'bag') {
-    abiDecoder.addABI(dContracts.json.MocWrapper.abi)
-    abiDecoder.addABI(dContracts.json.WrappedCollateralAsset.abi)
-  }
 }
 
 const renderEventField = (eveName, eveValue) => {
@@ -72,15 +68,6 @@ const decodeEvents = (receipt) => {
     'PeggedTokenChange',
     'SuccessFeeDistributed',
     'TPemaUpdated',
-    'TCMintedWithWrapper',
-    'TCRedeemedWithWrapper',
-    'TPMintedWithWrapper',
-    'TPRedeemedWithWrapper',
-    'TCandTPMintedWithWrapper',
-    'TCandTPRedeemedWithWrapper',
-    'TPSwappedForTPWithWrapper',
-    'TPSwappedForTCWithWrapper',
-    'TCSwappedForTPWithWrapper',
     'BeaconUpgraded',
     'ContractLiquidated',
     'Paused',
