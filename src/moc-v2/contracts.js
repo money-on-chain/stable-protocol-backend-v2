@@ -13,7 +13,6 @@ BigNumber.config({ ROUNDING_MODE: BigNumber.ROUND_DOWN })
 
 const readContracts = async (web3, configProject) => {
   const appProject = configProject.appProject
-  const collateral = configProject.collateral
 
   const dContracts = {}
   dContracts.json = {}
@@ -26,12 +25,9 @@ const readContracts = async (web3, configProject) => {
   dContracts.json.IPriceProvider = readJsonFile(`./abis/${appProject}/IPriceProvider.json`)
   dContracts.json.Moc = readJsonFile(`./abis/${appProject}/Moc.json`)
   dContracts.json.MocVendors = readJsonFile(`./abis/${appProject}/MocVendors.json`)
+  dContracts.json.MocQueue = readJsonFile(`./abis/${appProject}/MocQueue.json`)
   dContracts.json.FeeToken = readJsonFile(`./abis/${appProject}/FeeToken.json`)
-  dContracts.json.WrappedCollateralAsset = readJsonFile(`./abis/${appProject}/WrappedCollateralAsset.json`)
-
-  if (collateral === 'bag') {
-    dContracts.json.MocWrapper = readJsonFile(`./abis/${appProject}/MocWrapper.json`)
-  }
+  dContracts.json.CollateralAsset = readJsonFile(`./abis/${appProject}/CollateralAsset.json`)
 
   console.log('Reading Multicall2 Contract... address: ', process.env.CONTRACT_MULTICALL2)
   dContracts.contracts.multicall = new web3.eth.Contract(dContracts.json.Multicall2.abi, process.env.CONTRACT_MULTICALL2)
@@ -47,7 +43,7 @@ const readContracts = async (web3, configProject) => {
   const contractCA = process.env.CONTRACT_CA.split(",")
   for (let i = 0; i < configProject.tokens.CA.length; i++) {
     console.log(`Reading ${configProject.tokens.CA[i].name} Token Contract... address: `, contractCA[i])
-    dContracts.contracts.CA.push(new web3.eth.Contract(dContracts.json.WrappedCollateralAsset.abi, contractCA[i]))
+    dContracts.contracts.CA.push(new web3.eth.Contract(dContracts.json.CollateralAsset.abi, contractCA[i]))
   }
 
   dContracts.contracts.PP_TP = []
@@ -76,16 +72,20 @@ const readContracts = async (web3, configProject) => {
   console.log('Reading MocVendors Contract... address: ', process.env.CONTRACT_MOC_VENDORS)
   dContracts.contracts.MocVendors = new web3.eth.Contract(dContracts.json.MocVendors.abi, process.env.CONTRACT_MOC_VENDORS)
 
+  console.log('Reading MocQueue Contract... address: ', process.env.CONTRACT_MOC_QUEUE)
+  dContracts.contracts.MocQueue = new web3.eth.Contract(dContracts.json.MocQueue.abi, process.env.CONTRACT_MOC_QUEUE)
+
   console.log('Reading Fee Token Contract... address: ', process.env.CONTRACT_FEE_TOKEN)
   dContracts.contracts.FeeToken = new web3.eth.Contract(dContracts.json.FeeToken.abi, process.env.CONTRACT_FEE_TOKEN)
 
   console.log('Reading Fee Token PP Contract... address: ', process.env.CONTRACT_PRICE_PROVIDER_FEE_TOKEN)
   dContracts.contracts.PP_FeeToken = new web3.eth.Contract(dContracts.json.IPriceProvider.abi, process.env.CONTRACT_PRICE_PROVIDER_FEE_TOKEN)
 
-  if (collateral === 'bag') {
-    console.log('Reading MocWrapper Contract... address: ', process.env.CONTRACT_MOC_WRAPPER)
-    dContracts.contracts.MocWrapper = new web3.eth.Contract(dContracts.json.MocWrapper.abi, process.env.CONTRACT_MOC_WRAPPER)
-  }
+  console.log('Reading FC_MAX_ABSOLUTE_OP_PROVIDER... address: ', process.env.CONTRACT_FC_MAX_ABSOLUTE_OP_PROVIDER)
+  dContracts.contracts.FC_MAX_ABSOLUTE_OP_PROVIDER = new web3.eth.Contract(dContracts.json.IPriceProvider.abi, process.env.CONTRACT_FC_MAX_ABSOLUTE_OP_PROVIDER)
+
+  console.log('Reading FC_MAX_OP_DIFFERENCE_PROVIDER... address: ', process.env.CONTRACT_FC_MAX_OP_DIFFERENCE_PROVIDER)
+  dContracts.contracts.FC_MAX_OP_DIFFERENCE_PROVIDER = new web3.eth.Contract(dContracts.json.IPriceProvider.abi, process.env.CONTRACT_FC_MAX_OP_DIFFERENCE_PROVIDER)
 
   // Add to abi decoder
   addABIv2(dContracts, configProject)
@@ -174,8 +174,8 @@ const emaTP = (contractStatus, config) => {
 const feeTP = (contractStatus, config) => {
   let result = ''
   for (let i = 0; i < config.tokens.TP.length; i++) {
-    result += `Mint ${config.tokens.TP[i].name} Fee:  ${Web3.utils.fromWei(contractStatus.tpMintFee[i])} \n`
-    result += `Redeem ${config.tokens.TP[i].name} Fee:  ${Web3.utils.fromWei(contractStatus.tpRedeemFee[i])} `
+    result += `Mint ${config.tokens.TP[i].name} Fee:  ${Web3.utils.fromWei(contractStatus.tpMintFees[i])} \n`
+    result += `Redeem ${config.tokens.TP[i].name} Fee:  ${Web3.utils.fromWei(contractStatus.tpRedeemFees[i])} `
     if (i + 1 < config.tokens.TP.length) {
       result += '\n'
     }
@@ -222,6 +222,7 @@ Total Collateral available:  ${Web3.utils.fromWei(contractStatus.getTotalACavail
 
 EMA
 ====
+
 ${emaTP(contractStatus, config)}
 Block next calculation: ${contractStatus.nextEmaCalculation}
 EMA Block Span: ${contractStatus.emaCalculationBlockSpan}
@@ -285,6 +286,43 @@ Collector Address: ${contractStatus.tcInterestCollectorAddress}
 Interest Rate: ${Web3.utils.fromWei(contractStatus.tcInterestRate)}
 Block Span: ${contractStatus.tcInterestPaymentBlockSpan}
 Next Payment Block: ${contractStatus.nextTCInterestPayment}
+
+
+Flux Capacitor
+==============
+
+Max Absolute Op Provider: ${contractStatus.maxAbsoluteOpProvider}
+Max Absolute Op: ${Web3.utils.fromWei(contractStatus.FC_MAX_ABSOLUTE_OP)}
+Max Op Diff Provider: ${contractStatus.maxOpDiffProvider}
+Max Op Diff: ${Web3.utils.fromWei(contractStatus.FC_MAX_OP_DIFFERENCE)}
+Decay Block Span: ${contractStatus.decayBlockSpan}
+Absolute Accumulator: ${Web3.utils.fromWei(contractStatus.absoluteAccumulator)}
+Differential Accumulator: ${Web3.utils.fromWei(contractStatus.differentialAccumulator)}
+Last operational Block Number: ${contractStatus.lastOperationBlockNumber}
+
+
+Queue
+=====
+
+Locked in pending: ${Web3.utils.fromWei(contractStatus.qACLockedInPending)}
+Operation Id Count: ${contractStatus.operIdCount}
+First Operation ID: ${contractStatus.firstOperId}
+Min Operation Waiting Blk: ${contractStatus.minOperWaitingBlk}
+
+
+Queue Fees
+==========
+
+tcMintExecFee: ${Web3.utils.fromWei(contractStatus.tcMintExecFee)}
+tcRedeemExecFee: ${Web3.utils.fromWei(contractStatus.tcRedeemExecFee)}
+tpMintExecFee: ${Web3.utils.fromWei(contractStatus.tpMintExecFee)}
+tpRedeemExecFee: ${Web3.utils.fromWei(contractStatus.tpRedeemExecFee)}
+swapTPforTPExecFee: ${Web3.utils.fromWei(contractStatus.swapTPforTPExecFee)}
+swapTPforTCExecFee: ${Web3.utils.fromWei(contractStatus.swapTPforTCExecFee)}
+swapTCforTPExecFee: ${Web3.utils.fromWei(contractStatus.swapTCforTPExecFee)}
+redeemTCandTPExecFee: ${Web3.utils.fromWei(contractStatus.redeemTCandTPExecFee)}
+mintTCandTPExecFee: ${Web3.utils.fromWei(contractStatus.mintTCandTPExecFee)}
+
           `
   return render
 }

@@ -34,44 +34,6 @@
         }
       }
     },
-    "flipago_bag": {
-      "collateral": "bag",
-      "appProject": "flipago_bag",
-      "tokens": {
-        "COINBASE": {
-          "name": "RBTC",
-          "decimals": 18
-        },
-        "CA": [
-          {
-            "name": "DOC",
-            "decimals": 18
-          },
-          {
-            "name": "USDRIF",
-            "decimals": 18
-          }
-        ],
-        "TP": [
-          {
-            "name": "GoARS",
-            "decimals": 18
-          },
-          {
-            "name": "GoMXN",
-            "decimals": 18
-          }
-        ],
-        "TC": {
-          "name": "GoTURBO",
-          "decimals": 18
-        },
-        "FeeToken": {
-          "name": "FLIP",
-          "decimals": 18
-        }
-      }
-    },
     "roc": {
       "collateral": "rc20",
       "appProject": "roc",

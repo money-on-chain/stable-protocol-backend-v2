@@ -1,7 +1,13 @@
 import {
-  mintTC as mintTC_, redeemTC as redeemTC_, mintTP as mintTP_, redeemTP as redeemTP_,
-  swapTPforTP as swapTPforTP_, swapTPforTC as swapTPforTC_, swapTCforTP as swapTCforTP_,
-  mintTCandTP as mintTCandTP_, redeemTCandTP as redeemTCandTP_
+  mintTC as mintTC_,
+  redeemTC as redeemTC_,
+  mintTP as mintTP_,
+  redeemTP as redeemTP_,
+  swapTPforTP as swapTPforTP_,
+  swapTPforTC as swapTPforTC_,
+  swapTCforTP as swapTCforTP_,
+  mintTCandTP as mintTCandTP_,
+  redeemTCandTP as redeemTCandTP_
 } from './moc-core.js'
 
 const mintTC = async (web3, dContracts, configProject, qTC) => {

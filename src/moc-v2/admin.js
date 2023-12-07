@@ -129,9 +129,49 @@ const VendorsGuardianSetMarkup = async (web3, dContracts, configProject, vendorA
   return { receipt, filteredEvents }
 }
 
+const QueueExecute = async (web3, dContracts, configProject, feeRecipient) => {
+  const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
+
+  const MocQueue = dContracts.contracts.MocQueue
+  const MocQueueAddress = MocQueue.options.address
+
+  // Get information from contracts
+  const dataContractStatus = await statusFromContracts(web3, dContracts, configProject)
+
+  const readyToExecute = await MocQueue.methods.readyToExecute().call()
+  if (!readyToExecute) throw new Error('Is not ready to execute the queue!')
+
+  const valueToSend = null
+
+  // Calculate estimate gas cost
+  const estimateGas = await MocQueue.methods
+      .execute(feeRecipient)
+      .estimateGas({ from: userAddress, value: '0x' })
+
+  // encode function
+  const encodedCall = MocQueue.methods
+      .execute(feeRecipient)
+      .encodeABI()
+
+  // send transaction to the blockchain and get receipt
+  const { receipt, filteredEvents } = await sendTransaction(
+      web3,
+      valueToSend,
+      estimateGas,
+      encodedCall,
+      MocQueueAddress
+  )
+
+  console.log(`Transaction hash: ${receipt.transactionHash}`)
+
+  return { receipt, filteredEvents }
+}
+
+
 export {
   SettlementExecute,
   UpdateEma,
   VendorsGuardianSetMarkup,
-  TCHoldersInterestPayment
+  TCHoldersInterestPayment,
+  QueueExecute
 }
