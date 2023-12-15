@@ -71,15 +71,15 @@ const contractStatus = async (web3, dContracts, configProject) => {
   listMethods.push([MocQueue.options.address, MocQueue.methods.operIdCount().encodeABI(), 'uint256']) // 50
   listMethods.push([MocQueue.options.address, MocQueue.methods.firstOperId().encodeABI(), 'uint256']) // 51
   listMethods.push([MocQueue.options.address, MocQueue.methods.minOperWaitingBlk().encodeABI(), 'uint256']) // 52
-  listMethods.push([MocQueue.options.address, MocQueue.methods.tcMintExecFee().encodeABI(), 'uint256']) // 53
-  listMethods.push([MocQueue.options.address, MocQueue.methods.tcRedeemExecFee().encodeABI(), 'uint256']) // 54
-  listMethods.push([MocQueue.options.address, MocQueue.methods.tpMintExecFee().encodeABI(), 'uint256']) // 55
-  listMethods.push([MocQueue.options.address, MocQueue.methods.tpRedeemExecFee().encodeABI(), 'uint256']) // 56
-  listMethods.push([MocQueue.options.address, MocQueue.methods.swapTPforTPExecFee().encodeABI(), 'uint256']) // 57
-  listMethods.push([MocQueue.options.address, MocQueue.methods.swapTPforTCExecFee().encodeABI(), 'uint256']) // 58
-  listMethods.push([MocQueue.options.address, MocQueue.methods.swapTCforTPExecFee().encodeABI(), 'uint256']) // 59
-  listMethods.push([MocQueue.options.address, MocQueue.methods.redeemTCandTPExecFee().encodeABI(), 'uint256']) // 60
-  listMethods.push([MocQueue.options.address, MocQueue.methods.mintTCandTPExecFee().encodeABI(), 'uint256']) // 61
+  listMethods.push([MocQueue.options.address, MocQueue.methods.execFee(1).encodeABI(), 'uint256']) // 53 mintTC
+  listMethods.push([MocQueue.options.address, MocQueue.methods.execFee(2).encodeABI(), 'uint256']) // 54 redeemTC
+  listMethods.push([MocQueue.options.address, MocQueue.methods.execFee(3).encodeABI(), 'uint256']) // 55 mintTP
+  listMethods.push([MocQueue.options.address, MocQueue.methods.execFee(4).encodeABI(), 'uint256']) // 56 redeemTP
+  listMethods.push([MocQueue.options.address, MocQueue.methods.execFee(9).encodeABI(), 'uint256']) // 57 swapTPforTP
+  listMethods.push([MocQueue.options.address, MocQueue.methods.execFee(8).encodeABI(), 'uint256']) // 58 swapTPforTC
+  listMethods.push([MocQueue.options.address, MocQueue.methods.execFee(7).encodeABI(), 'uint256']) // 59 swapTCforTP
+  listMethods.push([MocQueue.options.address, MocQueue.methods.execFee(6).encodeABI(), 'uint256']) // 60 redeemTCandTP
+  listMethods.push([MocQueue.options.address, MocQueue.methods.execFee(5).encodeABI(), 'uint256']) // 61 mintTCandTP
   listMethods.push([FC_MAX_ABSOLUTE_OP_PROVIDER.options.address, FC_MAX_ABSOLUTE_OP_PROVIDER.methods.peek().encodeABI(), 'uint256']) // 62
   listMethods.push([FC_MAX_OP_DIFFERENCE_PROVIDER.options.address, FC_MAX_OP_DIFFERENCE_PROVIDER.methods.peek().encodeABI(), 'uint256']) // 63
 

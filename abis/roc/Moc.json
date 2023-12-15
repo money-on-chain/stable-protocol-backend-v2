@@ -181,6 +181,11 @@
     },
     {
       "inputs": [],
+      "name": "OnlyQueue",
+      "type": "error"
+    },
+    {
+      "inputs": [],
       "name": "OnlyWhenLiquidated",
       "type": "error"
     },
@@ -1743,6 +1748,11 @@
                   "components": [
                     {
                       "internalType": "address",
+                      "name": "mocQueueAddress",
+                      "type": "address"
+                    },
+                    {
+                      "internalType": "address",
                       "name": "feeTokenAddress",
                       "type": "address"
                     },
@@ -1905,14 +1915,9 @@
               "internalType": "address",
               "name": "acTokenAddress",
               "type": "address"
-            },
-            {
-              "internalType": "address",
-              "name": "mocQueue",
-              "type": "address"
             }
           ],
-          "internalType": "struct MocCARC20Deferred.InitializeParams",
+          "internalType": "struct MocCARC20.InitializeParams",
           "name": "initializeParams_",
           "type": "tuple"
         }
@@ -2561,7 +2566,7 @@
       "name": "mocQueue",
       "outputs": [
         {
-          "internalType": "contract MocQueue",
+          "internalType": "address",
           "name": "",
           "type": "address"
         }
@@ -3394,7 +3399,7 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "mocQueue_",
+          "name": "mocQueueAddress_",
           "type": "address"
         }
       ],
