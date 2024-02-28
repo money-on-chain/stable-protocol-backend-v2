@@ -2,6 +2,11 @@
   "abi": [
     {
       "inputs": [],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [],
       "name": "BucketAlreadyRegistered",
       "type": "error"
     },
@@ -18,11 +23,6 @@
     {
       "inputs": [],
       "name": "InvalidValue",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "NotAllowOnNoneEmptyQueue",
       "type": "error"
     },
     {
@@ -634,7 +634,7 @@
         {
           "indexed": true,
           "internalType": "address",
-          "name": "tp",
+          "name": "tp_",
           "type": "address"
         },
         {
@@ -2484,6 +2484,10 @@
       "outputs": [],
       "stateMutability": "payable",
       "type": "function"
+    },
+    {
+      "stateMutability": "payable",
+      "type": "receive"
     }
   ]
 }

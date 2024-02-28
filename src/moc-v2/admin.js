@@ -104,10 +104,10 @@ const VendorsGuardianSetMarkup = async (web3, dContracts, configProject, vendorA
   const MocVendorsAddress = MocVendors.options.address
 
   // Get information from contracts
-  const dataContractStatus = await statusFromContracts(web3, dContracts, configProject)
+  //const dataContractStatus = await statusFromContracts(web3, dContracts, configProject)
 
   // You are vendors guardian?
-  if (vendorAddress.toLowerCase() !== dataContractStatus.vendorGuardianAddress.toLowerCase()) throw new Error('You are not Vendor guardian address')
+  //if (vendorAddress.toLowerCase() !== dataContractStatus.vendorGuardianAddress.toLowerCase()) throw new Error('You are not Vendor guardian address')
 
   const valueToSend = null
 

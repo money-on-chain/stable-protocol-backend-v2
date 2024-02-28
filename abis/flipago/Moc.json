@@ -1685,9 +1685,9 @@
       "name": "getTCAvailableToRedeem",
       "outputs": [
         {
-          "internalType": "int256",
+          "internalType": "uint256",
           "name": "tcAvailableToRedeem",
-          "type": "int256"
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -1727,6 +1727,19 @@
     },
     {
       "inputs": [],
+      "name": "getTpAmount",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
       "name": "governor",
       "outputs": [
         {
@@ -1747,7 +1760,7 @@
                 {
                   "components": [
                     {
-                      "internalType": "address",
+                      "internalType": "address payable",
                       "name": "mocQueueAddress",
                       "type": "address"
                     },
@@ -1972,25 +1985,6 @@
           "internalType": "address",
           "name": "tp_",
           "type": "address"
-        }
-      ],
-      "name": "liqRedeemTP",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "qACRedeemed",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "tp_",
-          "type": "address"
         },
         {
           "internalType": "address",
@@ -1998,7 +1992,7 @@
           "type": "address"
         }
       ],
-      "name": "liqRedeemTPto",
+      "name": "liqRedeemTP",
       "outputs": [
         {
           "internalType": "uint256",
@@ -2112,30 +2106,11 @@
           "internalType": "uint256",
           "name": "qACmax_",
           "type": "uint256"
-        }
-      ],
-      "name": "mintTC",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "operId",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "qTC_",
-          "type": "uint256"
         },
         {
-          "internalType": "uint256",
-          "name": "qACmax_",
-          "type": "uint256"
+          "internalType": "address",
+          "name": "recipient_",
+          "type": "address"
         },
         {
           "internalType": "address",
@@ -2143,7 +2118,7 @@
           "type": "address"
         }
       ],
-      "name": "mintTCViaVendor",
+      "name": "mintTC",
       "outputs": [
         {
           "internalType": "uint256",
@@ -2170,6 +2145,16 @@
           "internalType": "uint256",
           "name": "qACmax_",
           "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "recipient_",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "vendor_",
+          "type": "address"
         }
       ],
       "name": "mintTCandTP",
@@ -2215,74 +2200,6 @@
         },
         {
           "internalType": "address",
-          "name": "vendor_",
-          "type": "address"
-        }
-      ],
-      "name": "mintTCandTPViaVendor",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "operId",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "tp_",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qTP_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qACmax_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "recipient_",
-          "type": "address"
-        }
-      ],
-      "name": "mintTCandTPto",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "operId",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "tp_",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qTP_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qACmax_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address",
           "name": "recipient_",
           "type": "address"
         },
@@ -2290,208 +2207,9 @@
           "internalType": "address",
           "name": "vendor_",
           "type": "address"
-        }
-      ],
-      "name": "mintTCandTPtoViaVendor",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "operId",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "qTC_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qACmax_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "recipient_",
-          "type": "address"
-        }
-      ],
-      "name": "mintTCto",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "operId",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "qTC_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qACmax_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "recipient_",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "vendor_",
-          "type": "address"
-        }
-      ],
-      "name": "mintTCtoViaVendor",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "operId",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "tp_",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qTP_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qACmax_",
-          "type": "uint256"
         }
       ],
       "name": "mintTP",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "operId",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "tp_",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qTP_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qACmax_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "vendor_",
-          "type": "address"
-        }
-      ],
-      "name": "mintTPViaVendor",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "operId",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "tp_",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qTP_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qACmax_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "recipient_",
-          "type": "address"
-        }
-      ],
-      "name": "mintTPto",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "operId",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "tp_",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qTP_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qACmax_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "recipient_",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "vendor_",
-          "type": "address"
-        }
-      ],
-      "name": "mintTPtoViaVendor",
       "outputs": [
         {
           "internalType": "uint256",
@@ -2533,7 +2251,7 @@
       "name": "mocQueue",
       "outputs": [
         {
-          "internalType": "address",
+          "internalType": "address payable",
           "name": "",
           "type": "address"
         }
@@ -2737,30 +2455,11 @@
           "internalType": "uint256",
           "name": "qACmin_",
           "type": "uint256"
-        }
-      ],
-      "name": "redeemTC",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "operId",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "qTC_",
-          "type": "uint256"
         },
         {
-          "internalType": "uint256",
-          "name": "qACmin_",
-          "type": "uint256"
+          "internalType": "address",
+          "name": "recipient_",
+          "type": "address"
         },
         {
           "internalType": "address",
@@ -2768,7 +2467,7 @@
           "type": "address"
         }
       ],
-      "name": "redeemTCViaVendor",
+      "name": "redeemTC",
       "outputs": [
         {
           "internalType": "uint256",
@@ -2800,6 +2499,16 @@
           "internalType": "uint256",
           "name": "qACmin_",
           "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "recipient_",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "vendor_",
+          "type": "address"
         }
       ],
       "name": "redeemTCandTP",
@@ -2835,89 +2544,6 @@
         },
         {
           "internalType": "uint256",
-          "name": "qTC_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qTP_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qACmin_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "vendor_",
-          "type": "address"
-        }
-      ],
-      "name": "redeemTCandTPViaVendor",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "operId",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "tp_",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qTC_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qTP_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qACmin_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "recipient_",
-          "type": "address"
-        }
-      ],
-      "name": "redeemTCandTPto",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "operId",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "tp_",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qTC_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
           "name": "qTP_",
           "type": "uint256"
         },
@@ -2935,208 +2561,9 @@
           "internalType": "address",
           "name": "vendor_",
           "type": "address"
-        }
-      ],
-      "name": "redeemTCandTPtoViaVendor",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "operId",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "qTC_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qACmin_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "recipient_",
-          "type": "address"
-        }
-      ],
-      "name": "redeemTCto",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "operId",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "qTC_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qACmin_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "recipient_",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "vendor_",
-          "type": "address"
-        }
-      ],
-      "name": "redeemTCtoViaVendor",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "operId",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "tp_",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qTP_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qACmin_",
-          "type": "uint256"
         }
       ],
       "name": "redeemTP",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "operId",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "tp_",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qTP_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qACmin_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "vendor_",
-          "type": "address"
-        }
-      ],
-      "name": "redeemTPViaVendor",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "operId",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "tp_",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qTP_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qACmin_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "recipient_",
-          "type": "address"
-        }
-      ],
-      "name": "redeemTPto",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "operId",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "tp_",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qTP_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qACmin_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "recipient_",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "vendor_",
-          "type": "address"
-        }
-      ],
-      "name": "redeemTPtoViaVendor",
       "outputs": [
         {
           "internalType": "uint256",
@@ -3365,7 +2792,7 @@
     {
       "inputs": [
         {
-          "internalType": "address",
+          "internalType": "address payable",
           "name": "mocQueueAddress_",
           "type": "address"
         }
@@ -3604,6 +3031,16 @@
           "internalType": "uint256",
           "name": "qACmax_",
           "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "recipient_",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "vendor_",
+          "type": "address"
         }
       ],
       "name": "swapTCforTP",
@@ -3639,128 +3076,6 @@
         },
         {
           "internalType": "uint256",
-          "name": "qTC_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qTPmin_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qACmax_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "vendor_",
-          "type": "address"
-        }
-      ],
-      "name": "swapTCforTPViaVendor",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "operId",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "tp_",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qTC_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qTPmin_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qACmax_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "recipient_",
-          "type": "address"
-        }
-      ],
-      "name": "swapTCforTPto",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "operId",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "tp_",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qTC_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qTPmin_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qACmax_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "recipient_",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "vendor_",
-          "type": "address"
-        }
-      ],
-      "name": "swapTCforTPtoViaVendor",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "operId",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "tp_",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
           "name": "qTP_",
           "type": "uint256"
         },
@@ -3773,6 +3088,16 @@
           "internalType": "uint256",
           "name": "qACmax_",
           "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "recipient_",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "vendor_",
+          "type": "address"
         }
       ],
       "name": "swapTPforTC",
@@ -3803,128 +3128,6 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "tp_",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qTP_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qTCmin_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qACmax_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "vendor_",
-          "type": "address"
-        }
-      ],
-      "name": "swapTPforTCViaVendor",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "operId",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "tp_",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qTP_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qTCmin_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qACmax_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "recipient_",
-          "type": "address"
-        }
-      ],
-      "name": "swapTPforTCto",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "operId",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "tp_",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qTP_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qTCmin_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qACmax_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "recipient_",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "vendor_",
-          "type": "address"
-        }
-      ],
-      "name": "swapTPforTCtoViaVendor",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "operId",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
           "name": "tpFrom_",
           "type": "address"
         },
@@ -3947,6 +3150,16 @@
           "internalType": "uint256",
           "name": "qACmax_",
           "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "recipient_",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "vendor_",
+          "type": "address"
         }
       ],
       "name": "swapTPforTP",
@@ -3971,143 +3184,6 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "tpFrom_",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "tpTo_",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qTP_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qTPmin_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qACmax_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "vendor_",
-          "type": "address"
-        }
-      ],
-      "name": "swapTPforTPViaVendor",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "operId",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "tpFrom_",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "tpTo_",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qTP_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qTPmin_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qACmax_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "recipient_",
-          "type": "address"
-        }
-      ],
-      "name": "swapTPforTPto",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "operId",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "tpFrom_",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "tpTo_",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qTP_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qTPmin_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "qACmax_",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "recipient_",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "vendor_",
-          "type": "address"
-        }
-      ],
-      "name": "swapTPforTPtoViaVendor",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "operId",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "payable",
       "type": "function"
     },
     {
