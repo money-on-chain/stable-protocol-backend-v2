@@ -115,9 +115,6 @@ const contractStatus = async (web3, dContracts, configProject) => {
   // const multicallResult = await multicall.methods.tryBlockAndAggregate(false, cleanListMethods).call({}, 3807699)
   const multicallResult = await multicall.methods.tryBlockAndAggregate(false, cleanListMethods).call()
 
-  console.log("DEBUG")
-  console.log(multicallResult)
-
   status.canOperate = true
   const listReturnData = []
   multicallResult.returnData.forEach(function (item, itemIndex) {
@@ -152,7 +149,6 @@ const contractStatus = async (web3, dContracts, configProject) => {
         console.warn("WARN: Cannot operate!")
 
       }
-
 
     }
 
