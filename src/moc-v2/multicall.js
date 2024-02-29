@@ -107,15 +107,57 @@ const contractStatus = async (web3, dContracts, configProject) => {
     listMethods.push([PP_CA.options.address, PP_CA.methods.peek().encodeABI(), 'uint256'])
   }
 
+  const status = {}
+
   // Remove decode result parameter
   const cleanListMethods = listMethods.map(x => [x[0], x[1]])
 
   // const multicallResult = await multicall.methods.tryBlockAndAggregate(false, cleanListMethods).call({}, 3807699)
   const multicallResult = await multicall.methods.tryBlockAndAggregate(false, cleanListMethods).call()
 
-  const listReturnData = multicallResult[2].map((item, itemIndex) => web3.eth.abi.decodeParameter(listMethods[itemIndex][2], item.returnData))
+  console.log("DEBUG")
+  console.log(multicallResult)
 
-  const status = {}
+  status.canOperate = true
+  const listReturnData = []
+  multicallResult.returnData.forEach(function (item, itemIndex) {
+    // Ok success
+    if (item.success) {
+      listReturnData.push(web3.eth.abi.decodeParameter(
+          listMethods[itemIndex][2],
+          item.returnData)
+      )
+    } else {
+
+      // 24 getLeverageTC this is an exception
+      if (itemIndex === 24) {
+        // When there are an exception here is because leverage is infinity
+        // very big number (infinity+)
+        listReturnData.push(new BigNumber(115792089237316200000000000000000000000000000000000000))
+        console.warn("WARN: Leverage too high!")
+
+      } else {
+
+        // Not Ok Error on calling
+        if (listMethods[itemIndex][2] === 'uint256') {
+          listReturnData.push(0)
+        } else if (listMethods[itemIndex][2] === 'address') {
+          listReturnData.push('0x')
+        } else if (listMethods[itemIndex][2] === 'bool') {
+          listReturnData.push(false)
+        }
+
+        // If there are any problems can not operate
+        status.canOperate = false
+        console.warn("WARN: Cannot operate!")
+
+      }
+
+
+    }
+
+  })
+
   status.blockHeight = multicallResult[0]
   status.protThrld = listReturnData[0]
   status.liqThrld = listReturnData[1]
@@ -252,19 +294,39 @@ const contractStatus = async (web3, dContracts, configProject) => {
     listMethods.push([PP_CA.options.address, PP_CA.methods.peek().encodeABI(), 'uint256'])
   }
 
+  const historic = {};
+
   const cleanListMethodsHistoric = listMethods.map((x) => [x[0], x[1]]);
   const multicallResultHistoric = await multicall.methods
       .tryBlockAndAggregate(false, cleanListMethodsHistoric)
       .call({}, d24BlockHeights);
-  const listReturnDataHistoric = multicallResultHistoric[2].map(
-      (item, itemIndex) =>
-          web3.eth.abi.decodeParameter(
-              listMethods[itemIndex][2],
-              item.returnData
-          )
-  );
 
-  const historic = {};
+  status.canHistoric = true
+  const listReturnDataHistoric = []
+  multicallResultHistoric.returnData.forEach(function (item, itemIndex) {
+    // Ok success
+    if (item.success) {
+      listReturnDataHistoric.push(web3.eth.abi.decodeParameter(
+          listMethods[itemIndex][2],
+          item.returnData)
+      )
+    } else {
+
+      // Not Ok Error on calling
+      if (listMethods[itemIndex][2] === 'uint256') {
+        listReturnDataHistoric.push(0)
+      } else if (listMethods[itemIndex][2] === 'address') {
+        listReturnDataHistoric.push('0x')
+      } else if (listMethods[itemIndex][2] === 'bool') {
+        listReturnDataHistoric.push(false)
+      }
+
+      // If there are any problems can not have historic data
+      status.canHistoric = false
+      console.warn("WARN: Cannot have historic data!")
+    }
+
+  })
 
   PP_TP = []
   last_index = 2 // this is the last used array index

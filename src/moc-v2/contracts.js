@@ -151,7 +151,11 @@ const targetCoverageTP = (contractStatus, config) => {
 const availableToMintTP = (contractStatus, config) => {
   let result = ''
   for (let i = 0; i < config.tokens.TP.length; i++) {
-    result += `${config.tokens.TP[i].name} available to mint:  ${Web3.utils.fromWei(contractStatus.getTPAvailableToMint[i])} `
+
+    console.log("DB>>>")
+    console.log(contractStatus.getTPAvailableToMint[i])
+
+    result += `${config.tokens.TP[i].name} available to mint:  ${ contractStatus.getTPAvailableToMint[i] === 0 ? '--' : Web3.utils.fromWei(contractStatus.getTPAvailableToMint[i])} `
 
     if (i + 1 < config.tokens.TP.length) {
       result += '\n'
