@@ -146,7 +146,7 @@ const contractStatus = async (web3, dContracts, configProject) => {
 
         // If there are any problems can not operate
         status.canOperate = false
-        console.warn("WARN: Cannot operate!")
+        console.warn("WARN: Cannot operate! Index query:", itemIndex)
 
       }
 
