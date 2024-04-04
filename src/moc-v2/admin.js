@@ -129,6 +129,31 @@ const VendorsGuardianSetMarkup = async (web3, dContracts, configProject, vendorA
   return { receipt, filteredEvents }
 }
 
+const VendorsSetMarkup = async (web3, dContracts, configProject, vendorMarkup) => {
+  const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
+  const MocVendors = dContracts.contracts.MocVendors
+  const MocVendorsAddress = MocVendors.options.address
+
+  const valueToSend = null
+
+  // Calculate estimate gas cost
+  const estimateGas = await MocVendors.methods
+      .setMarkup(vendorMarkup)
+      .estimateGas({ from: userAddress, value: '0x' })
+
+  // encode function
+  const encodedCall = MocVendors.methods
+      .setMarkup(vendorMarkup)
+      .encodeABI()
+
+  // send transaction to the blockchain and get receipt
+  const { receipt, filteredEvents } = await sendTransaction(web3, valueToSend, 300000, encodedCall, MocVendorsAddress)
+
+  console.log(`Transaction hash: ${receipt.transactionHash}`)
+
+  return { receipt, filteredEvents }
+}
+
 const QueueExecute = async (web3, dContracts, configProject, feeRecipient) => {
   const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
 
@@ -173,5 +198,6 @@ export {
   UpdateEma,
   VendorsGuardianSetMarkup,
   TCHoldersInterestPayment,
-  QueueExecute
+  QueueExecute,
+  VendorsSetMarkup
 }

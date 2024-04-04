@@ -19,7 +19,9 @@ const main = async () => {
 
   const MocVendors = dContracts.contracts.MocVendors
   const markup = await MocVendors.methods.vendorMarkup(vendorAddress).call()
+  const guardian = await MocVendors.methods.vendorsGuardianAddress().call()
 
+  console.log(`Guardian: ${guardian.toString()}`)
   console.log(`Markup: ${markup.toString()}`)
 }
 
