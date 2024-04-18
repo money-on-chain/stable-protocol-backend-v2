@@ -80,15 +80,17 @@ const mintTC = async (web3, dContracts, configProject, caIndex, qTC) => {
 
   // Calculate estimate gas cost
   const estimateGas = await MoCContract.methods
-      .mintTCViaVendor(toContractPrecisionDecimals(new BigNumber(qTC), configProject.tokens.TC.decimals),
+      .mintTC(toContractPrecisionDecimals(new BigNumber(qTC), configProject.tokens.TC.decimals),
           toContractPrecisionDecimals(qAssetMax, configProject.tokens.CA[caIndex].decimals),
+          userAddress,
           vendorAddress
       ).estimateGas({ from: userAddress, value: valueToSend })
 
   // encode function
   const encodedCall = MoCContract.methods
-      .mintTCViaVendor(toContractPrecisionDecimals(new BigNumber(qTC), configProject.tokens.TC.decimals),
+      .mintTC(toContractPrecisionDecimals(new BigNumber(qTC), configProject.tokens.TC.decimals),
           toContractPrecisionDecimals(qAssetMax, configProject.tokens.CA[caIndex].decimals),
+          userAddress,
           vendorAddress
       ).encodeABI()
 
@@ -187,15 +189,17 @@ const redeemTC = async (web3, dContracts, configProject, caIndex, qTC) => {
 
   // Calculate estimate gas cost
   const estimateGas = await MoCContract.methods
-      .redeemTCViaVendor(toContractPrecisionDecimals(new BigNumber(qTC), configProject.tokens.TC.decimals),
+      .redeemTC(toContractPrecisionDecimals(new BigNumber(qTC), configProject.tokens.TC.decimals),
           toContractPrecisionDecimals(qAssetMin, configProject.tokens.CA[caIndex].decimals),
+          userAddress,
           vendorAddress
       ).estimateGas({ from: userAddress, value: valueToSend })
 
   // encode function
   const encodedCall = MoCContract.methods
-      .redeemTCViaVendor(toContractPrecisionDecimals(new BigNumber(qTC), configProject.tokens.TC.decimals),
+      .redeemTC(toContractPrecisionDecimals(new BigNumber(qTC), configProject.tokens.TC.decimals),
           toContractPrecisionDecimals(qAssetMin, configProject.tokens.CA[caIndex].decimals),
+          userAddress,
           vendorAddress
       ).encodeABI()
 
@@ -293,19 +297,21 @@ const mintTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) =>
 
   // Calculate estimate gas cost
   const estimateGas = await MoCContract.methods
-      .mintTPViaVendor(
+      .mintTP(
           tpAddress,
           toContractPrecisionDecimals(new BigNumber(qTP), configProject.tokens.TP[tpIndex].decimals),
           toContractPrecisionDecimals(qAssetMax, configProject.tokens.CA[caIndex].decimals),
+          userAddress,
           vendorAddress
       ).estimateGas({ from: userAddress, value: valueToSend })
 
   // encode function
   const encodedCall = MoCContract.methods
-      .mintTPViaVendor(
+      .mintTP(
           tpAddress,
           toContractPrecisionDecimals(new BigNumber(qTP), configProject.tokens.TP[tpIndex].decimals),
           toContractPrecisionDecimals(qAssetMax, configProject.tokens.CA[caIndex].decimals),
+          userAddress,
           vendorAddress
       ).encodeABI()
 
@@ -402,20 +408,22 @@ const redeemTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) 
 
   // Calculate estimate gas cost
   const estimateGas = await MoCContract.methods
-      .redeemTPViaVendor(
+      .redeemTP(
           tpAddress,
           toContractPrecisionDecimals(new BigNumber(qTP), configProject.tokens.TP[tpIndex].decimals),
           toContractPrecisionDecimals(qAssetMin, configProject.tokens.CA[caIndex].decimals),
+          userAddress,
           vendorAddress
       )
       .estimateGas({ from: userAddress, value: valueToSend })
 
   // encode function
   const encodedCall = MoCContract.methods
-      .redeemTPViaVendor(
+      .redeemTP(
           tpAddress,
           toContractPrecision(new BigNumber(qTP), configProject.tokens.TP[tpIndex].decimals),
           toContractPrecision(qAssetMin, configProject.tokens.CA[caIndex].decimals),
+          userAddress,
           vendorAddress
       )
       .encodeABI()
@@ -490,21 +498,23 @@ const swapTPforTP = async (web3, dContracts, configProject, iFromTP, iToTP, qTP,
 
   // Calculate estimate gas cost
   const estimateGas = await MoCContract.methods
-      .swapTPforTPViaVendor(iFromTP,
+      .swapTPforTP(iFromTP,
           iToTP,
           toContractPrecisionDecimals(new BigNumber(qTP), configProject.tokens.TP[iFromTP].decimals),
           toContractPrecisionDecimals(new BigNumber(qTPMin), configProject.tokens.TP[iToTP].decimals),
           toContractPrecisionDecimals(qAssetMaxFees, configProject.tokens.CA[caIndex].decimals),
+          userAddress,
           vendorAddress
       ).estimateGas({ from: userAddress, value: valueToSend })
 
   // encode function
   const encodedCall = MoCContract.methods
-      .swapTPforTPViaVendor(iFromTP,
+      .swapTPforTP(iFromTP,
           iToTP,
           toContractPrecisionDecimals(new BigNumber(qTP), configProject.tokens.TP[iFromTP].decimals),
           toContractPrecisionDecimals(new BigNumber(qTPMin), configProject.tokens.TP[iToTP].decimals),
           toContractPrecisionDecimals(qAssetMaxFees, configProject.tokens.CA[caIndex].decimals),
+          userAddress,
           vendorAddress
       )
       .encodeABI()
@@ -581,20 +591,22 @@ const swapTPforTC = async (web3, dContracts, configProject, caIndex, tpIndex, qT
 
   // Calculate estimate gas cost
   const estimateGas = await MoCContract.methods
-      .swapTPforTCViaVendor(tpIndex,
+      .swapTPforTC(tpIndex,
           toContractPrecisionDecimals(new BigNumber(qTP), configProject.tokens.TP[tpIndex].decimals),
           toContractPrecisionDecimals(qTCMin, configProject.tokens.TC.decimals),
           toContractPrecisionDecimals(qAssetMaxFees, configProject.tokens.CA[caIndex].decimals),
+          userAddress,
           vendorAddress
       )
       .estimateGas({ from: userAddress, value: valueToSend })
 
   // encode function
   const encodedCall = MoCContract.methods
-      .swapTPforTCViaVendor(tpIndex,
+      .swapTPforTC(tpIndex,
           toContractPrecisionDecimals(new BigNumber(qTP), configProject.tokens.TP[tpIndex].decimals),
           toContractPrecisionDecimals(qTCMin, configProject.tokens.TC.decimals),
           toContractPrecisionDecimals(qAssetMaxFees, configProject.tokens.CA[caIndex].decimals),
+          userAddress,
           vendorAddress
       )
       .encodeABI()
@@ -673,19 +685,21 @@ const swapTCforTP = async (web3, dContracts, configProject, caIndex, tpIndex, qT
 
   // Calculate estimate gas cost
   const estimateGas = await MoCContract.methods
-      .swapTCforTPViaVendor(tpIndex,
+      .swapTCforTP(tpIndex,
           toContractPrecisionDecimals(new BigNumber(qTC), configProject.tokens.TC.decimals),
           toContractPrecisionDecimals(qTPMin, configProject.tokens.TP[tpIndex].decimals),
           toContractPrecisionDecimals(qAssetMaxFees, configProject.tokens.CA[caIndex].decimals),
+          userAddress,
           vendorAddress
       ).estimateGas({ from: userAddress, value: valueToSend })
 
   // encode function
   const encodedCall = MoCContract.methods
-      .swapTCforTPViaVendor(tpIndex,
+      .swapTCforTP(tpIndex,
           toContractPrecisionDecimals(new BigNumber(qTC), configProject.tokens.TC.decimals),
           toContractPrecisionDecimals(qTPMin, configProject.tokens.TP[tpIndex].decimals),
           toContractPrecisionDecimals(qAssetMaxFees, configProject.tokens.CA[caIndex].decimals),
+          userAddress,
           vendorAddress
       ).encodeABI()
 
@@ -755,17 +769,19 @@ const mintTCandTP = async (web3, dContracts, configProject, caIndex, tpIndex, qT
 
   // Calculate estimate gas cost
   const estimateGas = await MoCContract.methods
-      .mintTCandTPViaVendor(tpIndex,
+      .mintTCandTP(tpIndex,
           toContractPrecisionDecimals(new BigNumber(qTP), configProject.tokens.TP[tpIndex].decimals),
           toContractPrecisionDecimals(qAssetMax, configProject.tokens.CA[caIndex].decimals),
+          userAddress,
           vendorAddress
       ).estimateGas({ from: userAddress, value: valueToSend })
 
   // encode function
   const encodedCall = MoCContract.methods
-      .mintTCandTPViaVendor(tpIndex,
+      .mintTCandTP(tpIndex,
           toContractPrecisionDecimals(new BigNumber(qTP), configProject.tokens.TP[tpIndex].decimals),
           toContractPrecisionDecimals(qAssetMax, configProject.tokens.CA[caIndex].decimals),
+          userAddress,
           vendorAddress
       ).encodeABI()
 
@@ -850,19 +866,21 @@ const redeemTCandTP = async (web3, dContracts, configProject, caIndex, tpIndex, 
 
   // Calculate estimate gas cost
   const estimateGas = await MoCContract.methods
-      .redeemTCandTPViaVendor(tpIndex,
+      .redeemTCandTP(tpIndex,
           toContractPrecisionDecimals(new BigNumber(qTC), configProject.tokens.TC.decimals),
           toContractPrecisionDecimals(new BigNumber(qTPMax), configProject.tokens.TP[tpIndex].decimals),
           toContractPrecisionDecimals(qAssetMin, configProject.tokens.CA[caIndex].decimals),
+          userAddress,
           vendorAddress
       ).estimateGas({ from: userAddress, value: valueToSend })
 
   // encode function
   const encodedCall = MoCContract.methods
-      .redeemTCandTPViaVendor(tpIndex,
+      .redeemTCandTP(tpIndex,
           toContractPrecisionDecimals(new BigNumber(qTC), configProject.tokens.TC.decimals),
           toContractPrecisionDecimals(new BigNumber(qTPMax), configProject.tokens.TP[tpIndex].decimals),
           toContractPrecisionDecimals(qAssetMin, configProject.tokens.CA[caIndex].decimals),
+          userAddress,
           vendorAddress
       ).encodeABI()
 

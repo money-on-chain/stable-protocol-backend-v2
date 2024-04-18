@@ -210,7 +210,7 @@ Coverage & Leverage
 Bucket global coverage: ${Web3.utils.fromWei(contractStatus.getCglb)}
 Target coverage adjusted by all Pegged Token's to Collateral Asset rate moving average (CtargemaCA): ${Web3.utils.fromWei(contractStatus.calcCtargemaCA)}
 ${targetCoverageTP(contractStatus, config)} 
-${config.tokens.TC.name} Leverage:  ${Web3.utils.fromWei(contractStatus.getLeverageTC)}
+${config.tokens.TC.name} Leverage:  ${new BigNumber(contractStatus.getLeverageTC).gt(10000000000000000000000) ? '+Inf' : Web3.utils.fromWei(contractStatus.getLeverageTC)}
 
 
 Available
