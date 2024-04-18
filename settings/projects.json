@@ -1,8 +1,8 @@
 {
   "projects": {
-    "flipago": {
+    "flipmoney": {
       "collateral": "rc20",
-      "appProject": "flipago",
+      "appProject": "flipmoney",
       "tokens": {
         "COINBASE": {
           "name": "RBTC",
