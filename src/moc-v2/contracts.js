@@ -251,6 +251,7 @@ Nº of blocks remaining for settlement: ${contractStatus.getBts}
 Fees
 ====
 
+Fee Flow Address: ${contractStatus.mocFeeFlowAddress}
 Success Fee: ${Web3.utils.fromWei(contractStatus.successFee)}
 Appreciation Factor: ${Web3.utils.fromWei(contractStatus.appreciationFactor)}
 Fee Retainer: ${Web3.utils.fromWei(contractStatus.feeRetainer)}
