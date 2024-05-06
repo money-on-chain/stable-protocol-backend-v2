@@ -1,8 +1,8 @@
 {
   "projects": {
-    "flipago": {
+    "flipmoney": {
       "collateral": "rc20",
-      "appProject": "flipago",
+      "appProject": "flipmoney",
       "tokens": {
         "COINBASE": {
           "name": "RBTC",
@@ -10,7 +10,7 @@
         },
         "CA": [
           {
-            "name": "DOC",
+            "name": "BPRO",
             "decimals": 18
           }
         ],
@@ -20,12 +20,12 @@
             "decimals": 18
           },
           {
-            "name": "GoMXN",
+            "name": "GoCOP",
             "decimals": 18
           }
         ],
         "TC": {
-          "name": "GoTURBO",
+          "name": "BPro Max",
           "decimals": 18
         },
         "FeeToken": {
