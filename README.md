@@ -55,13 +55,14 @@ Money on chain token operations (backend to contracts)
 
 Environment is our already deployed contracts. 
 
-| Network Name        | Project   | Environment                          | Network    |
-|---------------------|-----------|--------------------------------------|------------|
-| flipmoneyRskTestnet | Flipmoney | Flipmoney Testnet RSK                | Testnet    |
-| rocRskTestnet       | ROC       | Rif on Chain Testnet RSK             | Testnet    |
+| Network Name        | Project   | Environment                   | Network |
+|---------------------|-----------|-------------------------------|---------|
+| flipmoneyRskTestnet | Flipmoney | Flipmoney Testnet RSK         | Testnet |
+| rocRskTestnet       | ROC       | Rif on Chain Testnet RSK      | Testnet |
+| rocRskMainnet       | ROC       | Rif on Chain RSK              | Mainnet |
 
 
-### Faucets
+### Faucets (testnet)
 
 In testnet you may need some test tRIF o tRBTC
 
