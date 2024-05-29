@@ -29,7 +29,7 @@ Money on chain token operations (backend to contracts)
 
 
 
-#### Money on Chain projects and tokens 
+### Money on Chain projects and tokens 
 
 | Token      | Token name       | Project          | Token Name    | Collateral |
 |------------|------------------|------------------|---------------|------------|
@@ -41,17 +41,32 @@ Money on chain token operations (backend to contracts)
 | Fee Token  | Fee Token        | Flipmoney RC20   | FLIP          | -          |
 
 
-#### Money on Chain projects and Collateral types
+### Money on Chain projects and Collateral types
 
 
-| Project   | Name            | Collateral Type | Collateral |
-|-----------|-----------------|-----------------|------------|
-| Flipmoney | Flipmoney RC20  | RC20            | BPRO       |
-| ROC       | RoC             | RC20            | RIF        |
+| Project   | Name       | Collateral Type | Collateral |
+|-----------|------------|-----------------|------------|
+| Flipmoney | Flipmoney  | RC20            | BPRO       |
+| ROC       | RoC        | RC20            | RIF        |
 
 
+### Contracts
 
-#### Environment table
+
+**Stable protocol core v2**
+
+*[https://github.com/money-on-chain/stable-protocol-core-v2](https://github.com/money-on-chain/stable-protocol-core-v2)*
+
+**RIF on Chain implementation v2**
+
+*[https://github.com/money-on-chain/stable-protocol-roc-v2](https://github.com/money-on-chain/stable-protocol-roc-v2)*
+
+**Flipmoney implementation v2**
+
+*[https://github.com/money-on-chain/stable-protocol-roc-v2](https://github.com/money-on-chain/stable-protocol-roc-v2)*
+
+
+### Environment table
 
 Environment is our already deployed contracts. 
 
@@ -102,7 +117,7 @@ Example Mint TC in ROC project:
 
 `node scripts/rc20/tc-mint.js`
 
-Example Mint TC in Flipmoney RC20 project:
+Example Mint TC in Flipmoney project:
 
 `node scripts/rc20/tc-mint.js`
 
