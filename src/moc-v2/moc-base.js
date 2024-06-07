@@ -33,6 +33,33 @@ const AllowanceUse = async (web3, dContracts, configProject, token, allow, token
   return { receipt, filteredEvents }
 }
 
+
+const refreshACBalance = async (web3, dContracts) => {
+  const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
+
+  const MoCContract = dContracts.contracts.Moc
+  const MoCContractAddress = MoCContract.options.address
+
+  // Calculate estimate gas cost
+  const estimateGas = await MoCContract.methods
+      .refreshACBalance()
+      .estimateGas({ from: userAddress, value: '0x' })
+
+  // encode function
+  const encodedCall = MoCContract.methods
+      .refreshACBalance()
+      .encodeABI()
+
+  // send transaction to the blockchain and get receipt
+  const valueToSend = null
+  const { receipt, filteredEvents } = await sendTransaction(web3, valueToSend, estimateGas, encodedCall, MoCContractAddress)
+
+  console.log(`Transaction hash: ${receipt.transactionHash}`)
+
+  return { receipt, filteredEvents }
+}
+
 export {
-  AllowanceUse
+  AllowanceUse,
+  refreshACBalance
 }
