@@ -301,6 +301,8 @@ Decay Block Span: ${contractStatus.decayBlockSpan}
 Absolute Accumulator: ${Web3.utils.fromWei(contractStatus.absoluteAccumulator)}
 Differential Accumulator: ${Web3.utils.fromWei(contractStatus.differentialAccumulator)}
 Last operational Block Number: ${contractStatus.lastOperationBlockNumber}
+maxQACToMintTP: ${Web3.utils.fromWei(contractStatus.maxQACToMintTP)}
+maxQACToRedeemTP: ${Web3.utils.fromWei(contractStatus.maxQACToRedeemTP)}
 
 
 Queue

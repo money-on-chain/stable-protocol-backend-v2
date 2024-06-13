@@ -82,6 +82,9 @@ const contractStatus = async (web3, dContracts, configProject) => {
   listMethods.push([MocQueue.options.address, MocQueue.methods.execFee(5).encodeABI(), 'uint256']) // 61 mintTCandTP
   listMethods.push([FC_MAX_ABSOLUTE_OP_PROVIDER.options.address, FC_MAX_ABSOLUTE_OP_PROVIDER.methods.peek().encodeABI(), 'uint256']) // 62
   listMethods.push([FC_MAX_OP_DIFFERENCE_PROVIDER.options.address, FC_MAX_OP_DIFFERENCE_PROVIDER.methods.peek().encodeABI(), 'uint256']) // 63
+  listMethods.push([Moc.options.address, Moc.methods.maxQACToMintTP().encodeABI(), 'uint256']) // 64
+  listMethods.push([Moc.options.address, Moc.methods.maxQACToRedeemTP().encodeABI(), 'uint256']) // 65
+  listMethods.push([Moc.options.address, Moc.methods.paused().encodeABI(), 'bool']) // 66
 
   let PP_TP
   let tpAddress
@@ -219,6 +222,9 @@ const contractStatus = async (web3, dContracts, configProject) => {
   status.mintTCandTPExecFee = listReturnData[61]
   status.FC_MAX_ABSOLUTE_OP = listReturnData[62]
   status.FC_MAX_OP_DIFFERENCE = listReturnData[63]
+  status.maxQACToMintTP = listReturnData[64]
+  status.maxQACToRedeemTP = listReturnData[65]
+  status.paused = listReturnData[66]
 
   const tpMintFees = []
   const tpRedeemFees = []
@@ -229,7 +235,7 @@ const contractStatus = async (web3, dContracts, configProject) => {
   const getTPAvailableToMint = []
   const tpEma = []
 
-  let last_index = 63 // this is the last used array index
+  let last_index = 66 // this is the last used array index
   for (let i = 0; i < configProject.tokens.TP.length; i++) {
     tpMintFees.push(listReturnData[last_index + 1])
     tpRedeemFees.push(listReturnData[last_index + 2])
@@ -272,13 +278,16 @@ const contractStatus = async (web3, dContracts, configProject) => {
       )
   );
 
-  status.canOperate = !calcCtargemaCA.gt(1000000);
+  if (calcCtargemaCA.gt(1000000)) {
+    status.canOperate = false
+  }
 
   // History Price (24hs ago)
   const d24BlockHeights = status.blockHeight - process.env.BLOCK_SPAN_HISTORIC;
   listMethods = []
   listMethods.push([Moc.options.address, Moc.methods.getPTCac().encodeABI(), 'uint256']) // 0
   listMethods.push([PP_COINBASE.options.address, PP_COINBASE.methods.peek().encodeABI(), 'uint256']) // 1
+  listMethods.push([PP_FeeToken.options.address, PP_FeeToken.methods.peek().encodeABI(), 'uint256']) // 2
 
   for (let i = 0; i < configProject.tokens.TP.length; i++) {
     PP_TP = dContracts.contracts.PP_TP[i]
@@ -340,6 +349,7 @@ const contractStatus = async (web3, dContracts, configProject) => {
   historic.blockHeight = d24BlockHeights;
   historic.getPTCac = listReturnDataHistoric[0];
   historic.PP_COINBASE = listReturnDataHistoric[1];
+  historic.PP_FeeToken = listReturnDataHistoric[2];
   historic.PP_TP = PP_TP;
   historic.PP_CA = PP_CA;
   status.historic = historic;
