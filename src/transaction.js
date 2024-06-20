@@ -12,7 +12,7 @@ const addABIOMoC = (dContracts) => {
   abiDecoder.addABI(dContracts.json.IVotingMachine.abi)
 }
 
-const addABIv2 = (dContracts, configProject) => {
+const addABIv2 = (dContracts) => {
   // Abi decoder
   abiDecoder.addABI(dContracts.json.TokenPegged.abi)
   abiDecoder.addABI(dContracts.json.CollateralToken.abi)

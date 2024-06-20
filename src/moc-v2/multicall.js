@@ -1,6 +1,92 @@
 import BigNumber from 'bignumber.js'
 import { fromContractPrecisionDecimals } from '../utils.js'
 
+
+class MultiCall {
+  constructor(multicall, web3) {
+    this.multicall = multicall;
+    this.web3 = web3;
+    this.calls = [];
+    this.storage = {};
+  }
+  clear() {
+    this.calls = [];
+  }
+  aggregate(contract, encodeABI, resultType, keyName, keyIndex) {
+    this.calls.push([contract.options.address, encodeABI, resultType, keyName, keyIndex])
+  }
+  async tryBlockAndAggregate(blockNumber) {
+
+    // Remove decode result parameter
+    const cleanListMethods = this.calls.map(x => [x[0], x[1]])
+    const multiCallResult = await this.multicall.methods.tryBlockAndAggregate(false, cleanListMethods).call({}, blockNumber)
+
+    let canOperate = true
+
+    const calls = this.calls
+    const storage = this.storage
+    const web3 = this.web3
+
+    storage['blockHeight'] = multiCallResult[0]
+
+    multiCallResult.returnData.forEach(function (item, itemIndex) {
+
+      let value
+      const resultType = calls[itemIndex][2]
+      const keyName = calls[itemIndex][3]
+      const keyIndex = calls[itemIndex][4]
+
+      // Ok success
+      if (item.success) {
+        value = web3.eth.abi.decodeParameter(
+            resultType,
+            item.returnData)
+      } else {
+
+        // Exceptions
+        // getLeverageTC this is an exception
+        if (keyName === 'getLeverageTC') {
+          // When there are an exception here is because leverage is infinity
+          // very big number (infinity+)
+          value = new BigNumber(115792089237316200000000000000000000000000000000000000)
+          console.warn("WARN: Leverage too high!")
+        } else {
+          // Not Ok Error on calling
+          if (resultType === 'uint256') {
+            value = '0'
+          } else if (resultType === 'address') {
+            value = '0x'
+          } else if (resultType === 'bool') {
+            value = false
+          }
+          // If there are any problems can not operate
+          canOperate = false
+          console.warn("WARN: Cannot operate! Index query:", itemIndex)
+        }
+      }
+
+      if (keyIndex != null) {
+        if (!storage[keyName]){
+          if (keyIndex === parseInt(keyIndex, 10)) {
+            storage[keyName] = []
+          } else {
+            storage[keyName] = {}
+          }
+        }
+        storage[keyName][keyIndex] = value
+      } else {
+        storage[keyName] = value
+      }
+
+    })
+
+    storage[canOperate] = canOperate
+
+    return storage
+
+  }
+}
+
 const contractStatus = async (web3, dContracts, configProject) => {
   const collateral = configProject.collateral
   const vendorAddress = `${process.env.VENDOR_ADDRESS}`.toLowerCase()
@@ -14,91 +100,99 @@ const contractStatus = async (web3, dContracts, configProject) => {
   const FC_MAX_ABSOLUTE_OP_PROVIDER = dContracts.contracts.FC_MAX_ABSOLUTE_OP_PROVIDER
   const FC_MAX_OP_DIFFERENCE_PROVIDER = dContracts.contracts.FC_MAX_OP_DIFFERENCE_PROVIDER
 
+  //Omoc
+  const istakingmachine = dContracts.contracts.istakingmachine
+  const idelaymachine = dContracts.contracts.idelaymachine
+  const isupporters = dContracts.contracts.isupporters
+  const ivestingmachine = dContracts.contracts.ivestingmachine
+  const ivestingfactory = dContracts.contracts.ivestingfactory
+
+  const multiCallRequest = new MultiCall(multicall, web3)
+
+  multiCallRequest.aggregate(Moc, Moc.methods.protThrld().encodeABI(), 'uint256', 'protThrld')
+  multiCallRequest.aggregate(Moc, Moc.methods.liqThrld().encodeABI(), 'uint256', 'liqThrld')
+  multiCallRequest.aggregate(Moc, Moc.methods.liqEnabled().encodeABI(), 'bool', 'liqEnabled')
+  multiCallRequest.aggregate(Moc, Moc.methods.liquidated().encodeABI(), 'bool', 'liquidated')
+  multiCallRequest.aggregate(Moc, Moc.methods.nACcb().encodeABI(), 'uint256', 'nACcb')
+  multiCallRequest.aggregate(Moc, Moc.methods.tcToken().encodeABI(), 'address', 'tcToken')
+  multiCallRequest.aggregate(Moc, Moc.methods.nTCcb().encodeABI(), 'uint256', 'nTCcb')
+  multiCallRequest.aggregate(Moc, Moc.methods.successFee().encodeABI(), 'uint256', 'successFee')
+  multiCallRequest.aggregate(Moc, Moc.methods.appreciationFactor().encodeABI(), 'uint256', 'appreciationFactor')
+  multiCallRequest.aggregate(Moc, Moc.methods.feeRetainer().encodeABI(), 'uint256', 'feeRetainer')
+  multiCallRequest.aggregate(Moc, Moc.methods.tcMintFee().encodeABI(), 'uint256', 'tcMintFee')
+  multiCallRequest.aggregate(Moc, Moc.methods.tcRedeemFee().encodeABI(), 'uint256', 'tcRedeemFee')
+  multiCallRequest.aggregate(Moc, Moc.methods.swapTPforTPFee().encodeABI(), 'uint256', 'swapTPforTPFee')
+  multiCallRequest.aggregate(Moc, Moc.methods.swapTPforTCFee().encodeABI(), 'uint256', 'swapTPforTCFee')
+  multiCallRequest.aggregate(Moc, Moc.methods.swapTCforTPFee().encodeABI(), 'uint256', 'swapTCforTPFee')
+  multiCallRequest.aggregate(Moc, Moc.methods.redeemTCandTPFee().encodeABI(), 'uint256', 'redeemTCandTPFee')
+  multiCallRequest.aggregate(Moc, Moc.methods.mintTCandTPFee().encodeABI(), 'uint256', 'mintTCandTPFee')
+  multiCallRequest.aggregate(Moc, Moc.methods.mocFeeFlowAddress().encodeABI(), 'address', 'mocFeeFlowAddress')
+  multiCallRequest.aggregate(Moc, Moc.methods.mocAppreciationBeneficiaryAddress().encodeABI(), 'address', 'mocAppreciationBeneficiaryAddress')
+  multiCallRequest.aggregate(Moc, Moc.methods.isLiquidationReached().encodeABI(), 'bool', 'isLiquidationReached')
+  multiCallRequest.aggregate(Moc, Moc.methods.getPTCac().encodeABI(), 'uint256', 'getPTCac')
+  multiCallRequest.aggregate(Moc, Moc.methods.getCglb().encodeABI(), 'uint256', 'getCglb')
+  multiCallRequest.aggregate(Moc, Moc.methods.getTCAvailableToRedeem().encodeABI(), 'uint256', 'getTCAvailableToRedeem')
+  multiCallRequest.aggregate(Moc, Moc.methods.getTotalACavailable().encodeABI(), 'uint256', 'getTotalACavailable')
+  multiCallRequest.aggregate(Moc, Moc.methods.getLeverageTC().encodeABI(), 'uint256', 'getLeverageTC')
+  multiCallRequest.aggregate(Moc, Moc.methods.nextEmaCalculation().encodeABI(), 'uint256', 'nextEmaCalculation')
+  multiCallRequest.aggregate(Moc, Moc.methods.emaCalculationBlockSpan().encodeABI(), 'uint256', 'emaCalculationBlockSpan')
+  multiCallRequest.aggregate(Moc, Moc.methods.calcCtargemaCA().encodeABI(), 'uint256', 'calcCtargemaCA')
+  multiCallRequest.aggregate(Moc, Moc.methods.shouldCalculateEma().encodeABI(), 'bool', 'shouldCalculateEma')
+  multiCallRequest.aggregate(Moc, Moc.methods.bes().encodeABI(), 'uint256', 'bes')
+  multiCallRequest.aggregate(Moc, Moc.methods.bns().encodeABI(), 'uint256', 'bns')
+  multiCallRequest.aggregate(Moc, Moc.methods.getBts().encodeABI(), 'uint256', 'getBts')
+  multiCallRequest.aggregate(MocVendors, MocVendors.methods.vendorsGuardianAddress().encodeABI(), 'address', 'vendorGuardianAddress')
+  multiCallRequest.aggregate(Moc, Moc.methods.feeTokenPct().encodeABI(), 'uint256', 'feeTokenPct')
+  multiCallRequest.aggregate(Moc, Moc.methods.feeToken().encodeABI(), 'address', 'feeToken')
+  multiCallRequest.aggregate(Moc, Moc.methods.feeTokenPriceProvider().encodeABI(), 'address', 'feeTokenPriceProvider')
+  multiCallRequest.aggregate(Moc, Moc.methods.tcInterestCollectorAddress().encodeABI(), 'address', 'tcInterestCollectorAddress')
+  multiCallRequest.aggregate(Moc, Moc.methods.tcInterestRate().encodeABI(), 'uint256', 'tcInterestRate')
+  multiCallRequest.aggregate(Moc, Moc.methods.tcInterestPaymentBlockSpan().encodeABI(), 'uint256', 'tcInterestPaymentBlockSpan')
+  multiCallRequest.aggregate(Moc, Moc.methods.nextTCInterestPayment().encodeABI(), 'uint256', 'nextTCInterestPayment')
+  multiCallRequest.aggregate(PP_FeeToken, PP_FeeToken.methods.peek().encodeABI(), 'uint256', 'PP_FeeToken')
+  multiCallRequest.aggregate(MocVendors, MocVendors.methods.vendorMarkup(vendorAddress).encodeABI(), 'uint256', 'vendorMarkup')
+  multiCallRequest.aggregate(PP_COINBASE, PP_COINBASE.methods.peek().encodeABI(), 'uint256', 'PP_COINBASE')
+  multiCallRequest.aggregate(Moc, Moc.methods.maxAbsoluteOpProvider().encodeABI(), 'address', 'maxAbsoluteOpProvider')
+  multiCallRequest.aggregate(Moc, Moc.methods.maxOpDiffProvider().encodeABI(), 'address', 'maxOpDiffProvider')
+  multiCallRequest.aggregate(Moc, Moc.methods.decayBlockSpan().encodeABI(), 'uint256', 'decayBlockSpan')
+  multiCallRequest.aggregate(Moc, Moc.methods.absoluteAccumulator().encodeABI(), 'uint256', 'absoluteAccumulator')
+  multiCallRequest.aggregate(Moc, Moc.methods.differentialAccumulator().encodeABI(), 'uint256', 'differentialAccumulator')
+  multiCallRequest.aggregate(Moc, Moc.methods.lastOperationBlockNumber().encodeABI(), 'uint256', 'lastOperationBlockNumber')
+  multiCallRequest.aggregate(Moc, Moc.methods.qACLockedInPending().encodeABI(), 'uint256', 'qACLockedInPending')
+  multiCallRequest.aggregate(MocQueue, MocQueue.methods.operIdCount().encodeABI(), 'uint256', 'operIdCount')
+  multiCallRequest.aggregate(MocQueue, MocQueue.methods.firstOperId().encodeABI(), 'uint256', 'firstOperId')
+  multiCallRequest.aggregate(MocQueue, MocQueue.methods.minOperWaitingBlk().encodeABI(), 'uint256', 'minOperWaitingBlk')
+  multiCallRequest.aggregate(MocQueue, MocQueue.methods.execFee(1).encodeABI(), 'uint256', 'tcMintExecFee')
+  multiCallRequest.aggregate(MocQueue, MocQueue.methods.execFee(2).encodeABI(), 'uint256', 'tcRedeemExecFee')
+  multiCallRequest.aggregate(MocQueue, MocQueue.methods.execFee(3).encodeABI(), 'uint256', 'tpMintExecFee')
+  multiCallRequest.aggregate(MocQueue, MocQueue.methods.execFee(4).encodeABI(), 'uint256', 'tpRedeemExecFee')
+  multiCallRequest.aggregate(MocQueue, MocQueue.methods.execFee(9).encodeABI(), 'uint256', 'swapTPforTPExecFee')
+  multiCallRequest.aggregate(MocQueue, MocQueue.methods.execFee(8).encodeABI(), 'uint256', 'swapTPforTCExecFee')
+  multiCallRequest.aggregate(MocQueue, MocQueue.methods.execFee(7).encodeABI(), 'uint256', 'swapTCforTPExecFee')
+  multiCallRequest.aggregate(MocQueue, MocQueue.methods.execFee(6).encodeABI(), 'uint256', 'redeemTCandTPExecFee')
+  multiCallRequest.aggregate(MocQueue, MocQueue.methods.execFee(5).encodeABI(), 'uint256', 'mintTCandTPExecFee')
+  multiCallRequest.aggregate(FC_MAX_ABSOLUTE_OP_PROVIDER, FC_MAX_ABSOLUTE_OP_PROVIDER.methods.peek().encodeABI(), 'uint256', 'FC_MAX_ABSOLUTE_OP')
+  multiCallRequest.aggregate(FC_MAX_OP_DIFFERENCE_PROVIDER, FC_MAX_OP_DIFFERENCE_PROVIDER.methods.peek().encodeABI(), 'uint256', 'FC_MAX_OP_DIFFERENCE')
+  multiCallRequest.aggregate(Moc, Moc.methods.maxQACToMintTP().encodeABI(), 'uint256', 'maxQACToMintTP')
+  multiCallRequest.aggregate(Moc, Moc.methods.maxQACToRedeemTP().encodeABI(), 'uint256', 'maxQACToRedeemTP')
+  multiCallRequest.aggregate(Moc, Moc.methods.paused().encodeABI(), 'bool', 'paused')
 
   console.log('Reading contract status ...')
-
-  let listMethods = []
-  listMethods.push([Moc.options.address, Moc.methods.protThrld().encodeABI(), 'uint256']) // 0
-  listMethods.push([Moc.options.address, Moc.methods.liqThrld().encodeABI(), 'uint256']) // 1
-  listMethods.push([Moc.options.address, Moc.methods.liqEnabled().encodeABI(), 'bool']) // 2
-  listMethods.push([Moc.options.address, Moc.methods.liquidated().encodeABI(), 'bool']) // 3
-  listMethods.push([Moc.options.address, Moc.methods.nACcb().encodeABI(), 'uint256']) // 4
-  listMethods.push([Moc.options.address, Moc.methods.tcToken().encodeABI(), 'address']) // 5
-  listMethods.push([Moc.options.address, Moc.methods.nTCcb().encodeABI(), 'uint256']) // 6
-  listMethods.push([Moc.options.address, Moc.methods.successFee().encodeABI(), 'uint256']) // 7
-  listMethods.push([Moc.options.address, Moc.methods.appreciationFactor().encodeABI(), 'uint256']) // 8
-  listMethods.push([Moc.options.address, Moc.methods.feeRetainer().encodeABI(), 'uint256']) // 9
-  listMethods.push([Moc.options.address, Moc.methods.tcMintFee().encodeABI(), 'uint256']) // 10
-  listMethods.push([Moc.options.address, Moc.methods.tcRedeemFee().encodeABI(), 'uint256']) // 11
-  listMethods.push([Moc.options.address, Moc.methods.swapTPforTPFee().encodeABI(), 'uint256']) // 12
-  listMethods.push([Moc.options.address, Moc.methods.swapTPforTCFee().encodeABI(), 'uint256']) // 13
-  listMethods.push([Moc.options.address, Moc.methods.swapTCforTPFee().encodeABI(), 'uint256']) // 14
-  listMethods.push([Moc.options.address, Moc.methods.redeemTCandTPFee().encodeABI(), 'uint256']) // 15
-  listMethods.push([Moc.options.address, Moc.methods.mintTCandTPFee().encodeABI(), 'uint256']) // 16
-  listMethods.push([Moc.options.address, Moc.methods.mocFeeFlowAddress().encodeABI(), 'address']) // 17
-  listMethods.push([Moc.options.address, Moc.methods.mocAppreciationBeneficiaryAddress().encodeABI(), 'address']) // 18
-  listMethods.push([Moc.options.address, Moc.methods.isLiquidationReached().encodeABI(), 'bool']) // 19
-  listMethods.push([Moc.options.address, Moc.methods.getPTCac().encodeABI(), 'uint256']) // 20
-  listMethods.push([Moc.options.address, Moc.methods.getCglb().encodeABI(), 'uint256']) // 21
-  listMethods.push([Moc.options.address, Moc.methods.getTCAvailableToRedeem().encodeABI(), 'uint256']) // 22
-  listMethods.push([Moc.options.address, Moc.methods.getTotalACavailable().encodeABI(), 'uint256']) // 23
-  listMethods.push([Moc.options.address, Moc.methods.getLeverageTC().encodeABI(), 'uint256']) // 24
-  listMethods.push([Moc.options.address, Moc.methods.nextEmaCalculation().encodeABI(), 'uint256']) // 25
-  listMethods.push([Moc.options.address, Moc.methods.emaCalculationBlockSpan().encodeABI(), 'uint256']) // 26
-  listMethods.push([Moc.options.address, Moc.methods.calcCtargemaCA().encodeABI(), 'uint256']) // 27
-  listMethods.push([Moc.options.address, Moc.methods.shouldCalculateEma().encodeABI(), 'bool']) // 28
-  listMethods.push([Moc.options.address, Moc.methods.bes().encodeABI(), 'uint256']) // 29
-  listMethods.push([Moc.options.address, Moc.methods.bns().encodeABI(), 'uint256']) // 30
-  listMethods.push([Moc.options.address, Moc.methods.getBts().encodeABI(), 'uint256']) // 31
-  listMethods.push([MocVendors.options.address, MocVendors.methods.vendorsGuardianAddress().encodeABI(), 'address']) // 32
-  listMethods.push([Moc.options.address, Moc.methods.feeTokenPct().encodeABI(), 'uint256']) // 33
-  listMethods.push([Moc.options.address, Moc.methods.feeToken().encodeABI(), 'address']) // 34
-  listMethods.push([Moc.options.address, Moc.methods.feeTokenPriceProvider().encodeABI(), 'address']) // 35
-  listMethods.push([Moc.options.address, Moc.methods.tcInterestCollectorAddress().encodeABI(), 'address']) // 36
-  listMethods.push([Moc.options.address, Moc.methods.tcInterestRate().encodeABI(), 'uint256']) // 37
-  listMethods.push([Moc.options.address, Moc.methods.tcInterestPaymentBlockSpan().encodeABI(), 'uint256']) // 38
-  listMethods.push([Moc.options.address, Moc.methods.nextTCInterestPayment().encodeABI(), 'uint256']) // 39
-  listMethods.push([PP_FeeToken.options.address, PP_FeeToken.methods.peek().encodeABI(), 'uint256']) // 40
-  listMethods.push([MocVendors.options.address, MocVendors.methods.vendorMarkup(vendorAddress).encodeABI(), 'uint256']) // 41
-  listMethods.push([PP_COINBASE.options.address, PP_COINBASE.methods.peek().encodeABI(), 'uint256']) // 42
-  listMethods.push([Moc.options.address, Moc.methods.maxAbsoluteOpProvider().encodeABI(), 'address']) // 43
-  listMethods.push([Moc.options.address, Moc.methods.maxOpDiffProvider().encodeABI(), 'address']) // 44
-  listMethods.push([Moc.options.address, Moc.methods.decayBlockSpan().encodeABI(), 'uint256']) // 45
-  listMethods.push([Moc.options.address, Moc.methods.absoluteAccumulator().encodeABI(), 'uint256']) // 46
-  listMethods.push([Moc.options.address, Moc.methods.differentialAccumulator().encodeABI(), 'uint256']) // 47
-  listMethods.push([Moc.options.address, Moc.methods.lastOperationBlockNumber().encodeABI(), 'uint256']) // 48
-  listMethods.push([Moc.options.address, Moc.methods.qACLockedInPending().encodeABI(), 'uint256']) // 49
-  listMethods.push([MocQueue.options.address, MocQueue.methods.operIdCount().encodeABI(), 'uint256']) // 50
-  listMethods.push([MocQueue.options.address, MocQueue.methods.firstOperId().encodeABI(), 'uint256']) // 51
-  listMethods.push([MocQueue.options.address, MocQueue.methods.minOperWaitingBlk().encodeABI(), 'uint256']) // 52
-  listMethods.push([MocQueue.options.address, MocQueue.methods.execFee(1).encodeABI(), 'uint256']) // 53 mintTC
-  listMethods.push([MocQueue.options.address, MocQueue.methods.execFee(2).encodeABI(), 'uint256']) // 54 redeemTC
-  listMethods.push([MocQueue.options.address, MocQueue.methods.execFee(3).encodeABI(), 'uint256']) // 55 mintTP
-  listMethods.push([MocQueue.options.address, MocQueue.methods.execFee(4).encodeABI(), 'uint256']) // 56 redeemTP
-  listMethods.push([MocQueue.options.address, MocQueue.methods.execFee(9).encodeABI(), 'uint256']) // 57 swapTPforTP
-  listMethods.push([MocQueue.options.address, MocQueue.methods.execFee(8).encodeABI(), 'uint256']) // 58 swapTPforTC
-  listMethods.push([MocQueue.options.address, MocQueue.methods.execFee(7).encodeABI(), 'uint256']) // 59 swapTCforTP
-  listMethods.push([MocQueue.options.address, MocQueue.methods.execFee(6).encodeABI(), 'uint256']) // 60 redeemTCandTP
-  listMethods.push([MocQueue.options.address, MocQueue.methods.execFee(5).encodeABI(), 'uint256']) // 61 mintTCandTP
-  listMethods.push([FC_MAX_ABSOLUTE_OP_PROVIDER.options.address, FC_MAX_ABSOLUTE_OP_PROVIDER.methods.peek().encodeABI(), 'uint256']) // 62
-  listMethods.push([FC_MAX_OP_DIFFERENCE_PROVIDER.options.address, FC_MAX_OP_DIFFERENCE_PROVIDER.methods.peek().encodeABI(), 'uint256']) // 63
-  listMethods.push([Moc.options.address, Moc.methods.maxQACToMintTP().encodeABI(), 'uint256']) // 64
-  listMethods.push([Moc.options.address, Moc.methods.maxQACToRedeemTP().encodeABI(), 'uint256']) // 65
-  listMethods.push([Moc.options.address, Moc.methods.paused().encodeABI(), 'bool']) // 66
 
   let PP_TP
   let tpAddress
   for (let i = 0; i < configProject.tokens.TP.length; i++) {
     tpAddress = dContracts.contracts.TP[i].options.address
     PP_TP = dContracts.contracts.PP_TP[i]
-    listMethods.push([Moc.options.address, Moc.methods.tpMintFees(tpAddress).encodeABI(), 'uint256'])
-    listMethods.push([Moc.options.address, Moc.methods.tpRedeemFees(tpAddress).encodeABI(), 'uint256'])
-    listMethods.push([Moc.options.address, Moc.methods.tpCtarg(i).encodeABI(), 'uint256'])
-    listMethods.push([Moc.options.address, Moc.methods.pegContainer(i).encodeABI(), 'uint256'])
-    listMethods.push([PP_TP.options.address, PP_TP.methods.peek().encodeABI(), 'uint256'])
-    listMethods.push([Moc.options.address, Moc.methods.getPACtp(tpAddress).encodeABI(), 'uint256'])
-    listMethods.push([Moc.options.address, Moc.methods.getTPAvailableToMint(tpAddress).encodeABI(), 'uint256'])
-    listMethods.push([Moc.options.address, Moc.methods.tpEma(i).encodeABI(), 'uint256'])
+
+    multiCallRequest.aggregate(Moc, Moc.methods.tpMintFees(tpAddress).encodeABI(), 'uint256', 'tpMintFees', i)
+    multiCallRequest.aggregate(Moc, Moc.methods.tpRedeemFees(tpAddress).encodeABI(), 'uint256', 'tpRedeemFees', i)
+    multiCallRequest.aggregate(Moc, Moc.methods.tpCtarg(i).encodeABI(), 'uint256', 'tpCtarg', i)
+    multiCallRequest.aggregate(Moc, Moc.methods.pegContainer(i).encodeABI(), 'uint256', 'pegContainer', i)
+    multiCallRequest.aggregate(PP_TP, PP_TP.methods.peek().encodeABI(), 'uint256', 'PP_TP', i)
+    multiCallRequest.aggregate(Moc, Moc.methods.getPACtp(tpAddress).encodeABI(), 'uint256', 'getPACtp', i)
+    multiCallRequest.aggregate(Moc, Moc.methods.getTPAvailableToMint(tpAddress).encodeABI(), 'uint256', 'getTPAvailableToMint', i)
+    multiCallRequest.aggregate(Moc, Moc.methods.tpEma(i).encodeABI(), 'uint256', 'tpEma', i)
   }
 
   let PP_CA
@@ -106,252 +200,42 @@ const contractStatus = async (web3, dContracts, configProject) => {
   for (let i = 0; i < configProject.tokens.CA.length; i++) {
     PP_CA = dContracts.contracts.PP_CA[i]
     CA = dContracts.contracts.CA[i]
-    listMethods.push([CA.options.address, CA.methods.balanceOf(Moc.options.address).encodeABI(), 'uint256'])
-    listMethods.push([PP_CA.options.address, PP_CA.methods.peek().encodeABI(), 'uint256'])
+    multiCallRequest.aggregate(CA, CA.methods.balanceOf(Moc.options.address).encodeABI(), 'uint256', 'getACBalance', i)
+    multiCallRequest.aggregate(PP_CA, PP_CA.methods.peek().encodeABI(), 'uint256', 'PP_CA', i)
   }
 
-  const status = {}
+  const status = await multiCallRequest.tryBlockAndAggregate();
 
-  // Remove decode result parameter
-  const cleanListMethods = listMethods.map(x => [x[0], x[1]])
-
-  // const multicallResult = await multicall.methods.tryBlockAndAggregate(false, cleanListMethods).call({}, 3807699)
-  const multicallResult = await multicall.methods.tryBlockAndAggregate(false, cleanListMethods).call()
-
-  status.canOperate = true
-  const listReturnData = []
-  multicallResult.returnData.forEach(function (item, itemIndex) {
-    // Ok success
-    if (item.success) {
-      listReturnData.push(web3.eth.abi.decodeParameter(
-          listMethods[itemIndex][2],
-          item.returnData)
-      )
-    } else {
-
-      // 24 getLeverageTC this is an exception
-      if (itemIndex === 24) {
-        // When there are an exception here is because leverage is infinity
-        // very big number (infinity+)
-        listReturnData.push(new BigNumber(115792089237316200000000000000000000000000000000000000))
-        console.warn("WARN: Leverage too high!")
-
-      } else {
-
-        // Not Ok Error on calling
-        if (listMethods[itemIndex][2] === 'uint256') {
-          listReturnData.push('0')
-        } else if (listMethods[itemIndex][2] === 'address') {
-          listReturnData.push('0x')
-        } else if (listMethods[itemIndex][2] === 'bool') {
-          listReturnData.push(false)
-        }
-
-        // If there are any problems can not operate
-        status.canOperate = false
-        console.warn("WARN: Cannot operate! Index query:", itemIndex)
-
-      }
-
-    }
-
-  })
-
-  status.blockHeight = multicallResult[0]
-  status.protThrld = listReturnData[0]
-  status.liqThrld = listReturnData[1]
-  status.liqEnabled = listReturnData[2]
-  status.liquidated = listReturnData[3]
-  status.nACcb = listReturnData[4]
-  status.tcToken = listReturnData[5]
-  status.nTCcb = listReturnData[6]
-  status.successFee = listReturnData[7]
-  status.appreciationFactor = listReturnData[8]
-  status.feeRetainer = listReturnData[9]
-  status.tcMintFee = listReturnData[10]
-  status.tcRedeemFee = listReturnData[11]
-  status.swapTPforTPFee = listReturnData[12]
-  status.swapTPforTCFee = listReturnData[13]
-  status.swapTCforTPFee = listReturnData[14]
-  status.redeemTCandTPFee = listReturnData[15]
-  status.mintTCandTPFee = listReturnData[16]
-  status.mocFeeFlowAddress = listReturnData[17]
-  status.mocAppreciationBeneficiaryAddress = listReturnData[18]
-  status.isLiquidationReached = listReturnData[19]
-  status.getPTCac = listReturnData[20]
-  status.getCglb = listReturnData[21]
-  status.getTCAvailableToRedeem = listReturnData[22]
-  status.getTotalACavailable = listReturnData[23]
-  status.getLeverageTC = listReturnData[24]
-  status.nextEmaCalculation = listReturnData[25]
-  status.emaCalculationBlockSpan = listReturnData[26]
-  status.calcCtargemaCA = listReturnData[27]
-  status.shouldCalculateEma = listReturnData[28]
-  status.bes = listReturnData[29]
-  status.bns = listReturnData[30]
-  status.getBts = listReturnData[31]
-  status.vendorGuardianAddress = listReturnData[32]
-  status.feeTokenPct = listReturnData[33] // e.g. if tcMintFee = 1%, FeeTokenPct = 50% => qFeeToken = 0.5%
-  status.feeToken = listReturnData[34]
-  status.feeTokenPriceProvider = listReturnData[35]
-  status.tcInterestCollectorAddress = listReturnData[36]
-  status.tcInterestRate = listReturnData[37]
-  status.tcInterestPaymentBlockSpan = listReturnData[38]
-  status.nextTCInterestPayment = listReturnData[39]
-  status.PP_FeeToken = listReturnData[40]
-  status.vendorMarkup = listReturnData[41]
-  status.PP_COINBASE = listReturnData[42]
-  status.maxAbsoluteOpProvider = listReturnData[43]
-  status.maxOpDiffProvider = listReturnData[44]
-  status.decayBlockSpan = listReturnData[45]
-  status.absoluteAccumulator = listReturnData[46]
-  status.differentialAccumulator = listReturnData[47]
-  status.lastOperationBlockNumber = listReturnData[48]
-  status.qACLockedInPending = listReturnData[49]
-  status.operIdCount = listReturnData[50]
-  status.firstOperId = listReturnData[51]
-  status.minOperWaitingBlk = listReturnData[52]
-  status.tcMintExecFee = listReturnData[53]
-  status.tcRedeemExecFee = listReturnData[54]
-  status.tpMintExecFee = listReturnData[55]
-  status.tpRedeemExecFee = listReturnData[56]
-  status.swapTPforTPExecFee = listReturnData[57]
-  status.swapTPforTCExecFee = listReturnData[58]
-  status.swapTCforTPExecFee = listReturnData[59]
-  status.redeemTCandTPExecFee = listReturnData[60]
-  status.mintTCandTPExecFee = listReturnData[61]
-  status.FC_MAX_ABSOLUTE_OP = listReturnData[62]
-  status.FC_MAX_OP_DIFFERENCE = listReturnData[63]
-  status.maxQACToMintTP = listReturnData[64]
-  status.maxQACToRedeemTP = listReturnData[65]
-  status.paused = listReturnData[66]
-
-  const tpMintFees = []
-  const tpRedeemFees = []
-  const tpCtarg = []
-  const pegContainer = []
-  PP_TP = []
-  const getPACtp = []
-  const getTPAvailableToMint = []
-  const tpEma = []
-
-  let last_index = 66 // this is the last used array index
-  for (let i = 0; i < configProject.tokens.TP.length; i++) {
-    tpMintFees.push(listReturnData[last_index + 1])
-    tpRedeemFees.push(listReturnData[last_index + 2])
-    tpCtarg.push(listReturnData[last_index + 3])
-    pegContainer.push(listReturnData[last_index + 4])
-    PP_TP.push(listReturnData[last_index + 5])
-    getPACtp.push(listReturnData[last_index + 6])
-    getTPAvailableToMint.push(listReturnData[last_index + 7])
-    tpEma.push(listReturnData[last_index + 8])
-    last_index = last_index + 8
-  }
-
-  status.tpMintFees = tpMintFees
-  status.tpRedeemFees = tpRedeemFees
-  status.tpCtarg = tpCtarg
-  status.pegContainer = pegContainer
-  status.PP_TP = PP_TP
-  status.getPACtp = getPACtp
-  status.getTPAvailableToMint = getTPAvailableToMint
-  status.tpEma = tpEma
-
-  const getACBalance = []
-  PP_CA = []
-  for (let i = 0; i < configProject.tokens.CA.length; i++) {
-    getACBalance.push(listReturnData[last_index + 1])
-    PP_CA.push(listReturnData[last_index + 2])
-    last_index = last_index + 2
-  }
-
-  status.getACBalance = getACBalance
-  status.PP_CA = PP_CA
   status.getTokenPrice = new BigNumber('0')
-
-  last_index = last_index + 1
-
   const calcCtargemaCA = new BigNumber(
       fromContractPrecisionDecimals(
           status.calcCtargemaCA,
           18
       )
   );
-
   if (calcCtargemaCA.gt(1000000)) {
     status.canOperate = false
   }
 
-  // History Price (24hs ago)
+  // Multicall History Price
   const d24BlockHeights = status.blockHeight - process.env.BLOCK_SPAN_HISTORIC;
-  listMethods = []
-  listMethods.push([Moc.options.address, Moc.methods.getPTCac().encodeABI(), 'uint256']) // 0
-  listMethods.push([PP_COINBASE.options.address, PP_COINBASE.methods.peek().encodeABI(), 'uint256']) // 1
-  listMethods.push([PP_FeeToken.options.address, PP_FeeToken.methods.peek().encodeABI(), 'uint256']) // 2
+  const multiCallRequestHistory = new MultiCall(multicall, web3)
+  multiCallRequestHistory.aggregate(Moc, Moc.methods.getPTCac().encodeABI(), 'uint256', 'getPTCac')
+  multiCallRequestHistory.aggregate(PP_COINBASE, PP_COINBASE.methods.peek().encodeABI(), 'uint256', 'PP_COINBASE')
+  multiCallRequestHistory.aggregate(PP_FeeToken, PP_FeeToken.methods.peek().encodeABI(), 'uint256', 'PP_FeeToken')
 
   for (let i = 0; i < configProject.tokens.TP.length; i++) {
     PP_TP = dContracts.contracts.PP_TP[i]
-    listMethods.push([PP_TP.options.address, PP_TP.methods.peek().encodeABI(), 'uint256'])
+    multiCallRequestHistory.aggregate(PP_TP, PP_TP.methods.peek().encodeABI(), 'uint256', 'PP_TP', i)
   }
 
   for (let i = 0; i < configProject.tokens.CA.length; i++) {
     PP_CA = dContracts.contracts.PP_CA[i]
-    listMethods.push([PP_CA.options.address, PP_CA.methods.peek().encodeABI(), 'uint256'])
+    multiCallRequestHistory.aggregate(PP_CA, PP_CA.methods.peek().encodeABI(), 'uint256', 'PP_CA', i)
   }
 
-  const historic = {};
-
-  const cleanListMethodsHistoric = listMethods.map((x) => [x[0], x[1]]);
-  const multicallResultHistoric = await multicall.methods
-      .tryBlockAndAggregate(false, cleanListMethodsHistoric)
-      .call({}, d24BlockHeights);
-
-  status.canHistoric = true
-  const listReturnDataHistoric = []
-  multicallResultHistoric.returnData.forEach(function (item, itemIndex) {
-    // Ok success
-    if (item.success) {
-      listReturnDataHistoric.push(web3.eth.abi.decodeParameter(
-          listMethods[itemIndex][2],
-          item.returnData)
-      )
-    } else {
-
-      // Not Ok Error on calling
-      if (listMethods[itemIndex][2] === 'uint256') {
-        listReturnDataHistoric.push(0)
-      } else if (listMethods[itemIndex][2] === 'address') {
-        listReturnDataHistoric.push('0x')
-      } else if (listMethods[itemIndex][2] === 'bool') {
-        listReturnDataHistoric.push(false)
-      }
-
-      // If there are any problems can not have historic data
-      status.canHistoric = false
-      console.warn("WARN: Cannot have historic data!")
-    }
-
-  })
-
-  PP_TP = []
-  last_index = 2 // this is the last used array index
-  for (let i = 0; i < configProject.tokens.TP.length; i++) {
-    PP_TP.push(listReturnData[last_index + 1])
-    last_index = last_index + 1
-  }
-
-  PP_CA = []
-  for (let i = 0; i < configProject.tokens.CA.length; i++) {
-    PP_CA.push(listReturnData[last_index + 1])
-    last_index = last_index + 1
-  }
-
-  historic.blockHeight = d24BlockHeights;
-  historic.getPTCac = listReturnDataHistoric[0];
-  historic.PP_COINBASE = listReturnDataHistoric[1];
-  historic.PP_FeeToken = listReturnDataHistoric[2];
-  historic.PP_TP = PP_TP;
-  historic.PP_CA = PP_CA;
+  const historic = await multiCallRequestHistory.tryBlockAndAggregate(d24BlockHeights);
+  status.canHistoric = historic.canOperate
   status.historic = historic;
 
   return status
@@ -367,57 +251,39 @@ const userBalance = async (web3, dContracts, userAddress, configProject) => {
 
   console.log(`Reading user balance ... account: ${userAddress}`)
 
-  const listMethods = []
-  listMethods.push([multicall.options.address, multicall.methods.getEthBalance(userAddress).encodeABI(), 'uint256']) // 0
-  listMethods.push([CollateralToken.options.address, CollateralToken.methods.balanceOf(userAddress).encodeABI(), 'uint256']) // 1
-  listMethods.push([CollateralToken.options.address, CollateralToken.methods.allowance(userAddress, MoCContract.options.address).encodeABI(), 'uint256']) // 2
-  listMethods.push([FeeToken.options.address, FeeToken.methods.balanceOf(userAddress).encodeABI(), 'uint256']) // 3
-  listMethods.push([FeeToken.options.address, FeeToken.methods.allowance(userAddress, MoCContract.options.address).encodeABI(), 'uint256']) // 4
+  const multiCallRequest = new MultiCall(multicall, web3)
+  multiCallRequest.aggregate(multicall, multicall.methods.getEthBalance(userAddress).encodeABI(), 'uint256', 'coinbase')
+  multiCallRequest.aggregate(CollateralToken, CollateralToken.methods.balanceOf(userAddress).encodeABI(), 'uint256', 'TC', 'balance')
+  multiCallRequest.aggregate(CollateralToken, CollateralToken.methods.allowance(userAddress, MoCContract.options.address).encodeABI(), 'uint256', 'TC', 'allowance')
+  multiCallRequest.aggregate(FeeToken, FeeToken.methods.balanceOf(userAddress).encodeABI(), 'uint256', 'FeeToken', 'balance')
+  multiCallRequest.aggregate(FeeToken, FeeToken.methods.allowance(userAddress, MoCContract.options.address).encodeABI(), 'uint256', 'FeeToken', 'allowance')
 
   let TP
   for (let i = 0; i < configProject.tokens.TP.length; i++) {
     TP = dContracts.contracts.TP[i]
-    listMethods.push([TP.options.address, TP.methods.balanceOf(userAddress).encodeABI(), 'uint256'])
-    listMethods.push([TP.options.address, TP.methods.allowance(userAddress, MoCContract.options.address).encodeABI(), 'uint256'])
+    multiCallRequest.aggregate(TP, TP.methods.balanceOf(userAddress).encodeABI(), 'uint256', 'TP_balance', i)
+    multiCallRequest.aggregate(TP, TP.methods.allowance(userAddress, MoCContract.options.address).encodeABI(), 'uint256', 'TP_allowance', i)
   }
 
   let CA
   for (let i = 0; i < configProject.tokens.CA.length; i++) {
     CA = dContracts.contracts.CA[i]
-    listMethods.push([CA.options.address, CA.methods.balanceOf(userAddress).encodeABI(), 'uint256'])
-    listMethods.push([CA.options.address, CA.methods.allowance(userAddress, MoCContract.options.address).encodeABI(), 'uint256'])
+    multiCallRequest.aggregate(CA, CA.methods.balanceOf(userAddress).encodeABI(), 'uint256', 'CA_balance', i)
+    multiCallRequest.aggregate(CA, CA.methods.allowance(userAddress, MoCContract.options.address).encodeABI(), 'uint256', 'CA_allowance', i)
   }
 
-  // Remove decode result parameter
-  const cleanListMethods = listMethods.map(x => [x[0], x[1]])
-  const multicallResult = await multicall.methods.tryBlockAndAggregate(false, cleanListMethods).call()
-  const listReturnData = multicallResult[2].map((item, itemIndex) => web3.eth.abi.decodeParameter(listMethods[itemIndex][2], item.returnData))
+  const userBalance = await multiCallRequest.tryBlockAndAggregate();
+  //userBalance.blockHeight = multicallResult[0]
 
-  const userBalance = {}
-  userBalance.blockHeight = multicallResult[0]
-  userBalance.coinbase = listReturnData[0]
-
-  userBalance.TC = {
-    balance: listReturnData[1],
-    allowance: listReturnData[2]
-  }
-  userBalance.FeeToken = {
-    balance: listReturnData[3],
-    allowance: listReturnData[4]
-  }
-
-  let last_index = 4 // this is the last used array index
   TP = []
   for (let i = 0; i < configProject.tokens.TP.length; i++) {
-    TP.push({ balance: listReturnData[last_index + 1], allowance: listReturnData[last_index + 2] })
-    last_index = last_index + 2
+    TP.push({ balance: userBalance['TP_balance'][i], allowance: userBalance['TP_allowance'][i] })
   }
   userBalance.TP = TP
 
   CA = []
   for (let i = 0; i < configProject.tokens.CA.length; i++) {
-    CA.push({ balance: listReturnData[last_index + 1], allowance: listReturnData[last_index + 2] })
-    last_index = last_index + 2
+    CA.push({ balance: userBalance['CA_balance'][i], allowance: userBalance['CA_allowance'][i] })
   }
   userBalance.CA = CA
 

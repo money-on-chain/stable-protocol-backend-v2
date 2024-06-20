@@ -65,7 +65,7 @@ const readContracts = async (web3, configProject, dContracts) => {
   const ivestingfactory = new web3.eth.Contract(IVestingFactory.abi, vestingMachineAddress)
   dContracts.contracts.ivestingfactory = ivestingfactory
 
-  // reading vesting machine from enviroment address
+  // reading vesting machine from environment address
   if (typeof process.env.CONTRACT_OMOC_VESTING_ADDRESS !== 'undefined') {
     const vestingAddress = `${process.env.CONTRACT_OMOC_VESTING_ADDRESS}`.toLowerCase()
     console.log('Reading OMOC: IVestingMachine Contract... address: ', vestingAddress)

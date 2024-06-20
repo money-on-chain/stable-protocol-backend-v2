@@ -3,9 +3,10 @@ import Web3 from 'web3'
 import * as dotenv from 'dotenv'
 
 import { readJsonFile, fromContractPrecisionDecimals } from '../utils.js'
-import { addABIv2 } from '../transaction.js'
+import {addABIOMoC, addABIv2} from '../transaction.js'
 
 import { contractStatus, userBalance } from './multicall.js'
+import {registryAddresses} from "../omoc/multicall.js";
 
 dotenv.config()
 
@@ -28,6 +29,15 @@ const readContracts = async (web3, configProject) => {
   dContracts.json.MocQueue = readJsonFile(`./abis/${appProject}/MocQueue.json`)
   dContracts.json.FeeToken = readJsonFile(`./abis/${appProject}/FeeToken.json`)
   dContracts.json.CollateralAsset = readJsonFile(`./abis/${appProject}/CollateralAsset.json`)
+
+  // OMOC Contracts
+  dContracts.json.IRegistry = readJsonFile('./abis/omoc/IRegistry.json')
+  dContracts.json.IStakingMachine = readJsonFile('./abis/omoc/IStakingMachine.json')
+  dContracts.json.IDelayMachine = readJsonFile('./abis/omoc/IDelayMachine.json')
+  dContracts.json.ISupporters = readJsonFile('./abis/omoc/ISupporters.json')
+  dContracts.json.IVestingMachine = readJsonFile('./abis/omoc/IVestingMachine.json')
+  dContracts.json.IVotingMachine = readJsonFile('./abis/omoc/IVotingMachine.json')
+  dContracts.json.IVestingFactory = readJsonFile('./abis/omoc/IVestingFactory.json')
 
   console.log('Reading Multicall2 Contract... address: ', process.env.CONTRACT_MULTICALL2)
   dContracts.contracts.multicall = new web3.eth.Contract(dContracts.json.Multicall2.abi, process.env.CONTRACT_MULTICALL2)
@@ -87,8 +97,47 @@ const readContracts = async (web3, configProject) => {
   console.log('Reading FC_MAX_OP_DIFFERENCE_PROVIDER... address: ', process.env.CONTRACT_FC_MAX_OP_DIFFERENCE_PROVIDER)
   dContracts.contracts.FC_MAX_OP_DIFFERENCE_PROVIDER = new web3.eth.Contract(dContracts.json.IPriceProvider.abi, process.env.CONTRACT_FC_MAX_OP_DIFFERENCE_PROVIDER)
 
+  console.log('Reading OMOC: IRegistry Contract... address: ', process.env.CONTRACT_IREGISTRY)
+  dContracts.contracts.iregistry = new web3.eth.Contract(dContracts.json.IRegistry.abi, process.env.CONTRACT_IREGISTRY)
+
+  // Read contracts addresses from registry
+  const [
+    mocStakingMachineAddress,
+    supportersAddress,
+    delayMachineAddress,
+    vestingMachineAddress,
+    votingMachineAddress,
+    priceProviderRegistryAddress,
+    oracleManagerAddress
+  ] = await registryAddresses(web3, dContracts)
+
+  console.log('Reading OMOC: IStakingMachine Contract... address: ', mocStakingMachineAddress)
+  dContracts.contracts.istakingmachine = new web3.eth.Contract(dContracts.json.IStakingMachine.abi, mocStakingMachineAddress)
+
+  console.log('Reading OMOC: IDelayMachine Contract... address: ', delayMachineAddress)
+  dContracts.contracts.idelaymachine = new web3.eth.Contract(dContracts.json.IDelayMachine.abi, delayMachineAddress)
+
+  console.log('Reading OMOC: ISupporters Contract... address: ', supportersAddress)
+  dContracts.contracts.isupporters = new web3.eth.Contract(dContracts.json.ISupporters.abi, supportersAddress)
+
+  console.log('Reading OMOC: IVestingFactory Contract... address: ', vestingMachineAddress)
+  dContracts.contracts.ivestingfactory = new web3.eth.Contract(dContracts.json.IVestingFactory.abi, vestingMachineAddress)
+
+  // reading vesting machine from environment address
+  /*
+  if (typeof process.env.CONTRACT_OMOC_VESTING_ADDRESS !== 'undefined') {
+    const vestingAddress = `${process.env.CONTRACT_OMOC_VESTING_ADDRESS}`.toLowerCase()
+    console.log('Reading OMOC: IVestingMachine Contract... address: ', vestingAddress)
+    const ivestingmachine = new web3.eth.Contract(IVestingMachine.abi, vestingAddress)
+    dContracts.contracts.ivestingmachine = ivestingmachine
+  }*/
+
+  console.log('Reading OMOC: IVotingMachine Contract... address: ', votingMachineAddress)
+  dContracts.contracts.ivotingmachine = new web3.eth.Contract(dContracts.json.IVotingMachine.abi, votingMachineAddress)
+
   // Add to abi decoder
-  addABIv2(dContracts, configProject)
+  addABIv2(dContracts)
+  addABIOMoC(dContracts)
 
   return dContracts
 }
