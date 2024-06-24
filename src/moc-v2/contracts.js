@@ -2,11 +2,10 @@ import BigNumber from 'bignumber.js'
 import Web3 from 'web3'
 import * as dotenv from 'dotenv'
 
-import { readJsonFile, fromContractPrecisionDecimals } from '../utils.js'
+import {readJsonFile, fromContractPrecisionDecimals, formatTimestamp, formatVisibleValue} from '../utils.js'
 import {addABIOMoC, addABIv2} from '../transaction.js'
 
-import { contractStatus, userBalance } from './multicall.js'
-import {registryAddresses} from "../omoc/multicall.js";
+import { contractStatus, userBalance, registryAddresses } from './multicall.js'
 
 dotenv.config()
 
@@ -38,6 +37,7 @@ const readContracts = async (web3, configProject) => {
   dContracts.json.IVestingMachine = readJsonFile('./abis/omoc/IVestingMachine.json')
   dContracts.json.IVotingMachine = readJsonFile('./abis/omoc/IVotingMachine.json')
   dContracts.json.IVestingFactory = readJsonFile('./abis/omoc/IVestingFactory.json')
+  dContracts.json.IERC20 = readJsonFile('./abis/omoc/IERC20.json')
 
   console.log('Reading Multicall2 Contract... address: ', process.env.CONTRACT_MULTICALL2)
   dContracts.contracts.multicall = new web3.eth.Contract(dContracts.json.Multicall2.abi, process.env.CONTRACT_MULTICALL2)
@@ -101,39 +101,31 @@ const readContracts = async (web3, configProject) => {
   dContracts.contracts.iregistry = new web3.eth.Contract(dContracts.json.IRegistry.abi, process.env.CONTRACT_IREGISTRY)
 
   // Read contracts addresses from registry
-  const [
-    mocStakingMachineAddress,
-    supportersAddress,
-    delayMachineAddress,
-    vestingMachineAddress,
-    votingMachineAddress,
-    priceProviderRegistryAddress,
-    oracleManagerAddress
-  ] = await registryAddresses(web3, dContracts)
+  const registryAddr = await registryAddresses(web3, dContracts)
 
-  console.log('Reading OMOC: IStakingMachine Contract... address: ', mocStakingMachineAddress)
-  dContracts.contracts.istakingmachine = new web3.eth.Contract(dContracts.json.IStakingMachine.abi, mocStakingMachineAddress)
+  console.log('Reading OMOC: IStakingMachine Contract... address: ', registryAddr['MOC_STAKING_MACHINE'])
+  dContracts.contracts.istakingmachine = new web3.eth.Contract(dContracts.json.IStakingMachine.abi, registryAddr['MOC_STAKING_MACHINE'])
 
-  console.log('Reading OMOC: IDelayMachine Contract... address: ', delayMachineAddress)
-  dContracts.contracts.idelaymachine = new web3.eth.Contract(dContracts.json.IDelayMachine.abi, delayMachineAddress)
+  console.log('Reading OMOC: IDelayMachine Contract... address: ', registryAddr['MOC_DELAY_MACHINE'])
+  dContracts.contracts.idelaymachine = new web3.eth.Contract(dContracts.json.IDelayMachine.abi, registryAddr['MOC_DELAY_MACHINE'])
 
-  console.log('Reading OMOC: ISupporters Contract... address: ', supportersAddress)
-  dContracts.contracts.isupporters = new web3.eth.Contract(dContracts.json.ISupporters.abi, supportersAddress)
+  console.log('Reading OMOC: ISupporters Contract... address: ', registryAddr['SUPPORTERS_ADDR'])
+  dContracts.contracts.isupporters = new web3.eth.Contract(dContracts.json.ISupporters.abi, registryAddr['SUPPORTERS_ADDR'])
 
-  console.log('Reading OMOC: IVestingFactory Contract... address: ', vestingMachineAddress)
-  dContracts.contracts.ivestingfactory = new web3.eth.Contract(dContracts.json.IVestingFactory.abi, vestingMachineAddress)
+  console.log('Reading OMOC: IVestingFactory Contract... address: ', registryAddr['MOC_VESTING_MACHINE'])
+  dContracts.contracts.ivestingfactory = new web3.eth.Contract(dContracts.json.IVestingFactory.abi, registryAddr['MOC_VESTING_MACHINE'])
 
   // reading vesting machine from environment address
-  /*
   if (typeof process.env.CONTRACT_OMOC_VESTING_ADDRESS !== 'undefined') {
-    const vestingAddress = `${process.env.CONTRACT_OMOC_VESTING_ADDRESS}`.toLowerCase()
-    console.log('Reading OMOC: IVestingMachine Contract... address: ', vestingAddress)
-    const ivestingmachine = new web3.eth.Contract(IVestingMachine.abi, vestingAddress)
-    dContracts.contracts.ivestingmachine = ivestingmachine
-  }*/
+    console.log('Reading OMOC: IVestingMachine Contract... address: ', process.env.CONTRACT_OMOC_VESTING_ADDRESS)
+    dContracts.contracts.ivestingmachine = new web3.eth.Contract(dContracts.json.IVestingMachine.abi, process.env.CONTRACT_OMOC_VESTING_ADDRESS)
+  }
 
-  console.log('Reading OMOC: IVotingMachine Contract... address: ', votingMachineAddress)
-  dContracts.contracts.ivotingmachine = new web3.eth.Contract(dContracts.json.IVotingMachine.abi, votingMachineAddress)
+  console.log('Reading OMOC: IVotingMachine Contract... address: ', registryAddr['MOC_VOTING_MACHINE'])
+  dContracts.contracts.ivotingmachine = new web3.eth.Contract(dContracts.json.IVotingMachine.abi, registryAddr['MOC_VOTING_MACHINE'])
+
+  console.log('Reading OMOC: Token Govern Contract... address: ', registryAddr['MOC_TOKEN'])
+  dContracts.contracts.tg = new web3.eth.Contract(dContracts.json.IERC20.abi, registryAddr['MOC_TOKEN'])
 
   // Add to abi decoder
   addABIv2(dContracts)
@@ -234,7 +226,7 @@ const feeTP = (contractStatus, config) => {
 }
 
 const renderContractStatus = (contractStatus, config) => {
-  const render = `
+  let render = `
 Contract Status
 ===============
 
@@ -376,9 +368,110 @@ swapTCforTPExecFee: ${Web3.utils.fromWei(contractStatus.swapTCforTPExecFee)}
 redeemTCandTPExecFee: ${Web3.utils.fromWei(contractStatus.redeemTCandTPExecFee)}
 mintTCandTPExecFee: ${Web3.utils.fromWei(contractStatus.mintTCandTPExecFee)}
 
+
+OMOC Staking Machine
+====================
+ 
+Withdraw Lock Time: ${contractStatus.stakingmachine.getWithdrawLockTime} 
+Supporters: ${contractStatus.stakingmachine.getSupporters} 
+Oracle Manager: ${contractStatus.stakingmachine.getOracleManager} 
+Delay Machine: ${contractStatus.stakingmachine.getDelayMachine} 
+
+
+OMOC Delay Machine
+==================
+ 
+Last Id: ${contractStatus.delaymachine.getLastId} 
+Source: ${contractStatus.delaymachine.getSource}
+
+
+OMOC Supporters
+===============
+
+Ready to distribuite: ${contractStatus.supporters.isReadyToDistribute} 
+Moc Token: ${contractStatus.supporters.mocToken} 
+Period: ${contractStatus.supporters.period} 
+Total MoC: ${Web3.utils.fromWei(contractStatus.supporters.totalMoc)} 
+Total Token: ${Web3.utils.fromWei(contractStatus.supporters.totalToken)}
+
+
+OMOC VESTING FACTORY
+====================
+
+Is TGE configured: ${contractStatus.vestingfactory.isTGEConfigured} 
+Get TGE Timestamp: ${contractStatus.vestingfactory.getTGETimestamp}
+
           `
+  if (typeof process.env.CONTRACT_OMOC_VESTING_ADDRESS !== 'undefined') {
+    render += `
+VESTING MACHINE
+===============
+
+Get Holder: ${contractStatus.vestingmachine.getHolder}
+Get Locked: ${Web3.utils.fromWei(contractStatus.vestingmachine.getLocked)}
+Get Available: ${Web3.utils.fromWei(contractStatus.vestingmachine.getAvailable)}
+Is Verified: ${contractStatus.vestingmachine.isVerified}
+Get Total: ${Web3.utils.fromWei(contractStatus.vestingmachine.getTotal)}
+Balance: ${Web3.utils.fromWei(contractStatus.vestingmachine.tgBalance)}
+
+VESTING PARAMETERS
+==================
+    `
+    render += renderVestingParameters(contractStatus)
+  }
+
+
+
   return render
 }
+
+
+const renderVestingParameters = (contractStatus) => {
+  const getParameters = contractStatus.vestingmachine.getParameters
+  const tgeTimestamp = contractStatus.vestingfactory.getTGETimestamp
+  const total = contractStatus.vestingmachine.getTotal
+  const percentMultiplier = 10000
+
+  const percentages = getParameters.percentages
+  const timeDeltas = getParameters.timeDeltas
+  const deltas = [...timeDeltas]
+  if (timeDeltas && !new BigNumber(timeDeltas[0]).isZero()) {
+    deltas.unshift(new BigNumber(0))
+  }
+  const percents = percentages.map((x) => new BigNumber(percentMultiplier).minus(x))
+  if (percentages && !new BigNumber(percentages[percentages.length - 1]).isZero()) {
+    percents.push(new BigNumber(percentMultiplier))
+  }
+
+  let dates = []
+  if (deltas) {
+    if (tgeTimestamp) {
+      // Convert timestamp to date.
+      dates = deltas.map(x => formatTimestamp(new BigNumber(tgeTimestamp).plus(x).times(1000).toNumber()))
+    } else {
+      dates = deltas.map(x => x / 60 / 60 / 24)
+    }
+  }
+
+  let table = ''
+  if (getParameters) {
+    let itemIndex = 0
+    for (const percent of percents) {
+      let strTotal = ''
+      if (total && !new BigNumber(total).isZero()) {
+        strTotal = new BigNumber(percent).times(total).div(percentMultiplier)
+      }
+      table += `
+${dates[itemIndex]} | ${(percent.toNumber() / percentMultiplier * 100).toFixed(2)} % | ${formatVisibleValue(strTotal, 2)} `
+      itemIndex += 1
+    }
+  }
+
+  return `
+${table} 
+    `
+}
+
 
 const userBalanceAllowanceCA = (userBalance, config) => {
   let result = ''
@@ -416,6 +509,16 @@ ${config.tokens.TC.name} Balance: ${fromContractPrecisionDecimals(userBalance.TC
 ${config.tokens.TC.name} Allowance: ${fromContractPrecisionDecimals(userBalance.TC.allowance, config.tokens.TC.decimals).toString()} ${config.tokens.TC.name}
 ${config.tokens.FeeToken.name} Balance: ${fromContractPrecisionDecimals(userBalance.FeeToken.balance, config.tokens.FeeToken.decimals).toString()} ${config.tokens.FeeToken.name}
 ${config.tokens.FeeToken.name} Allowance: ${fromContractPrecisionDecimals(userBalance.FeeToken.allowance, config.tokens.FeeToken.decimals).toString()} ${config.tokens.FeeToken.name}
+
+OMOC
+====
+
+Staking Machine Balance: ${fromContractPrecisionDecimals(userBalance.stakingmachine.getBalance, config.tokens.FeeToken.decimals).toString()} ${config.tokens.FeeToken.name}
+Staking Machine Locked Balance: ${fromContractPrecisionDecimals(userBalance.stakingmachine.getLockedBalance, config.tokens.FeeToken.decimals).toString()} ${config.tokens.FeeToken.name}
+Delay Machine Balance: ${fromContractPrecisionDecimals(userBalance.delaymachine.getBalance, config.tokens.FeeToken.decimals).toString()} ${config.tokens.FeeToken.name}
+${config.tokens.FeeToken.name} Balance: ${fromContractPrecisionDecimals(userBalance.tgBalance, config.tokens.FeeToken.decimals).toString()} ${config.tokens.FeeToken.name}
+${config.tokens.FeeToken.name} Staking Machine Allowance: ${fromContractPrecisionDecimals(userBalance.stakingmachine.tgAllowance, config.tokens.FeeToken.decimals).toString()} ${config.tokens.FeeToken.name}
+
     `
 
   return render

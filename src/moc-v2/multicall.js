@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js'
-import { fromContractPrecisionDecimals } from '../utils.js'
+import {fromContractPrecisionDecimals, readJsonFile} from '../utils.js'
 
 
 class MultiCall {
@@ -38,9 +38,11 @@ class MultiCall {
 
       // Ok success
       if (item.success) {
-        value = web3.eth.abi.decodeParameter(
-            resultType,
-            item.returnData)
+        if (typeof resultType === 'string') {
+          value = web3.eth.abi.decodeParameter(resultType, item.returnData)
+        } else {
+          value = web3.eth.abi.decodeParameters(resultType, item.returnData)
+        }
       } else {
 
         // Exceptions
@@ -100,12 +102,13 @@ const contractStatus = async (web3, dContracts, configProject) => {
   const FC_MAX_ABSOLUTE_OP_PROVIDER = dContracts.contracts.FC_MAX_ABSOLUTE_OP_PROVIDER
   const FC_MAX_OP_DIFFERENCE_PROVIDER = dContracts.contracts.FC_MAX_OP_DIFFERENCE_PROVIDER
 
-  //Omoc
+  // OMOC
   const istakingmachine = dContracts.contracts.istakingmachine
   const idelaymachine = dContracts.contracts.idelaymachine
   const isupporters = dContracts.contracts.isupporters
   const ivestingmachine = dContracts.contracts.ivestingmachine
   const ivestingfactory = dContracts.contracts.ivestingfactory
+  const tg = dContracts.contracts.tg
 
   const multiCallRequest = new MultiCall(multicall, web3)
 
@@ -176,6 +179,31 @@ const contractStatus = async (web3, dContracts, configProject) => {
   multiCallRequest.aggregate(Moc, Moc.methods.maxQACToMintTP().encodeABI(), 'uint256', 'maxQACToMintTP')
   multiCallRequest.aggregate(Moc, Moc.methods.maxQACToRedeemTP().encodeABI(), 'uint256', 'maxQACToRedeemTP')
   multiCallRequest.aggregate(Moc, Moc.methods.paused().encodeABI(), 'bool', 'paused')
+
+  // OMOC
+  multiCallRequest.aggregate(istakingmachine, istakingmachine.methods.getWithdrawLockTime().encodeABI(), 'uint256', 'stakingmachine', 'getWithdrawLockTime')
+  multiCallRequest.aggregate(istakingmachine, istakingmachine.methods.getSupporters().encodeABI(), 'address', 'stakingmachine', 'getSupporters')
+  multiCallRequest.aggregate(istakingmachine, istakingmachine.methods.getOracleManager().encodeABI(), 'address', 'stakingmachine', 'getOracleManager')
+  multiCallRequest.aggregate(istakingmachine, istakingmachine.methods.getDelayMachine().encodeABI(), 'address', 'stakingmachine', 'getDelayMachine')
+  multiCallRequest.aggregate(idelaymachine, idelaymachine.methods.getLastId().encodeABI(), 'uint256', 'delaymachine', 'getLastId')
+  multiCallRequest.aggregate(idelaymachine, idelaymachine.methods.getSource().encodeABI(), 'address', 'delaymachine', 'getSource')
+  multiCallRequest.aggregate(isupporters, isupporters.methods.isReadyToDistribute().encodeABI(), 'bool', 'supporters', 'isReadyToDistribute')
+  multiCallRequest.aggregate(isupporters, isupporters.methods.mocToken().encodeABI(), 'address', 'supporters', 'mocToken')
+  multiCallRequest.aggregate(isupporters, isupporters.methods.period().encodeABI(), 'uint256', 'supporters', 'period')
+  multiCallRequest.aggregate(isupporters, isupporters.methods.totalMoc().encodeABI(), 'uint256', 'supporters', 'totalMoc')
+  multiCallRequest.aggregate(isupporters, isupporters.methods.totalToken().encodeABI(), 'uint256', 'supporters', 'totalToken')
+  multiCallRequest.aggregate(ivestingfactory, ivestingfactory.methods.isTGEConfigured().encodeABI(), 'bool', 'vestingfactory', 'isTGEConfigured')
+  multiCallRequest.aggregate(ivestingfactory, ivestingfactory.methods.getTGETimestamp().encodeABI(), 'uint256', 'vestingfactory', 'getTGETimestamp')
+
+  if (typeof ivestingmachine !== 'undefined') {
+    multiCallRequest.aggregate(ivestingmachine, ivestingmachine.methods.getParameters().encodeABI(), [{ type: 'uint256[]', name: 'percentages' }, { type: 'uint256[]', name: 'timeDeltas' }], 'vestingmachine', 'getParameters')
+    multiCallRequest.aggregate(ivestingmachine, ivestingmachine.methods.getHolder().encodeABI(), 'address', 'vestingmachine', 'getHolder')
+    multiCallRequest.aggregate(ivestingmachine, ivestingmachine.methods.getLocked().encodeABI(), 'uint256', 'vestingmachine', 'getLocked')
+    multiCallRequest.aggregate(ivestingmachine, ivestingmachine.methods.getAvailable().encodeABI(), 'uint256', 'vestingmachine', 'getAvailable')
+    multiCallRequest.aggregate(ivestingmachine, ivestingmachine.methods.isVerified().encodeABI(), 'bool', 'vestingmachine', 'isVerified')
+    multiCallRequest.aggregate(ivestingmachine, ivestingmachine.methods.getTotal().encodeABI(), 'uint256', 'vestingmachine', 'getTotal')
+    multiCallRequest.aggregate(tg, tg.methods.balanceOf(ivestingmachine.options.address).encodeABI(), 'uint256', 'vestingmachine', 'tgBalance')
+  }
 
   console.log('Reading contract status ...')
 
@@ -249,6 +277,11 @@ const userBalance = async (web3, dContracts, userAddress, configProject) => {
   const FeeToken = dContracts.contracts.FeeToken
   const MoCContract = dContracts.contracts.Moc
 
+  const istakingmachine = dContracts.contracts.istakingmachine
+  const idelaymachine = dContracts.contracts.idelaymachine
+  const tg = dContracts.contracts.tg
+
+
   console.log(`Reading user balance ... account: ${userAddress}`)
 
   const multiCallRequest = new MultiCall(multicall, web3)
@@ -257,6 +290,15 @@ const userBalance = async (web3, dContracts, userAddress, configProject) => {
   multiCallRequest.aggregate(CollateralToken, CollateralToken.methods.allowance(userAddress, MoCContract.options.address).encodeABI(), 'uint256', 'TC', 'allowance')
   multiCallRequest.aggregate(FeeToken, FeeToken.methods.balanceOf(userAddress).encodeABI(), 'uint256', 'FeeToken', 'balance')
   multiCallRequest.aggregate(FeeToken, FeeToken.methods.allowance(userAddress, MoCContract.options.address).encodeABI(), 'uint256', 'FeeToken', 'allowance')
+
+  // OMOC
+  multiCallRequest.aggregate(istakingmachine, istakingmachine.methods.getBalance(userAddress).encodeABI(), 'uint256', 'stakingmachine', 'getBalance')
+  multiCallRequest.aggregate(istakingmachine, istakingmachine.methods.getLockedBalance(userAddress).encodeABI(), 'uint256', 'stakingmachine', 'getLockedBalance')
+  multiCallRequest.aggregate(istakingmachine, istakingmachine.methods.getLockingInfo(userAddress).encodeABI(), [{ type: 'uint256', name: 'amount' }, { type: 'uint256', name: 'untilTimestamp' }], 'stakingmachine', 'getLockingInfo')
+  multiCallRequest.aggregate(idelaymachine, idelaymachine.methods.getTransactions(userAddress).encodeABI(), [{ type: 'uint256[]', name: 'ids' }, { type: 'uint256[]', name: 'amounts' }, { type: 'uint256[]', name: 'expirations' }], 'delaymachine', 'getTransactions')
+  multiCallRequest.aggregate(idelaymachine, idelaymachine.methods.getBalance(userAddress).encodeABI(), 'uint256', 'delaymachine', 'getBalance')
+  multiCallRequest.aggregate(tg, tg.methods.balanceOf(userAddress).encodeABI(), 'uint256', 'tgBalance')
+  multiCallRequest.aggregate(tg, tg.methods.allowance(userAddress, istakingmachine.options.address).encodeABI(), 'uint256', 'stakingmachine', 'tgAllowance')
 
   let TP
   for (let i = 0; i < configProject.tokens.TP.length; i++) {
@@ -290,7 +332,28 @@ const userBalance = async (web3, dContracts, userAddress, configProject) => {
   return userBalance
 }
 
+const registryAddresses = async (web3, dContracts) => {
+
+  // getting constants from omoc.json
+  const configOmoc = readJsonFile('./settings/omoc.json')
+  const multicall = dContracts.contracts.multicall
+  const iregistry = dContracts.contracts.iregistry
+
+  const multiCallRequest = new MultiCall(multicall, web3)
+  multiCallRequest.aggregate(iregistry, iregistry.methods.getAddress(configOmoc.RegistryConstants.MOC_STAKING_MACHINE).encodeABI(), 'address', 'MOC_STAKING_MACHINE')
+  multiCallRequest.aggregate(iregistry, iregistry.methods.getAddress(configOmoc.RegistryConstants.SUPPORTERS_ADDR).encodeABI(), 'address', 'SUPPORTERS_ADDR')
+  multiCallRequest.aggregate(iregistry, iregistry.methods.getAddress(configOmoc.RegistryConstants.MOC_DELAY_MACHINE).encodeABI(), 'address', 'MOC_DELAY_MACHINE')
+  multiCallRequest.aggregate(iregistry, iregistry.methods.getAddress(configOmoc.RegistryConstants.MOC_VESTING_MACHINE).encodeABI(), 'address', 'MOC_VESTING_MACHINE')
+  multiCallRequest.aggregate(iregistry, iregistry.methods.getAddress(configOmoc.RegistryConstants.MOC_VOTING_MACHINE).encodeABI(), 'address', 'MOC_VOTING_MACHINE')
+  multiCallRequest.aggregate(iregistry, iregistry.methods.getAddress(configOmoc.RegistryConstants.MOC_PRICE_PROVIDER_REGISTRY).encodeABI(), 'address', 'MOC_PRICE_PROVIDER_REGISTRY')
+  multiCallRequest.aggregate(iregistry, iregistry.methods.getAddress(configOmoc.RegistryConstants.ORACLE_MANAGER_ADDR).encodeABI(), 'address', 'ORACLE_MANAGER_ADDR')
+  multiCallRequest.aggregate(iregistry, iregistry.methods.getAddress(configOmoc.RegistryConstants.MOC_TOKEN).encodeABI(), 'address', 'MOC_TOKEN')
+
+  return await multiCallRequest.tryBlockAndAggregate();
+}
+
 export {
   contractStatus,
-  userBalance
+  userBalance,
+  registryAddresses
 }
