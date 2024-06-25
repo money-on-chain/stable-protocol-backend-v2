@@ -1,33 +1,6 @@
 import { sendTransaction } from '../transaction.js'
+import {toContractPrecisionDecimals} from "../utils.js";
 
-
-const StakingAllowance = async (web3, dContracts, allow) => {
-  const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
-  const tg = dContracts.contracts.tg
-
-  let amountAllowance = '0'
-  const valueToSend = null
-  if (allow) {
-    amountAllowance = Number.MAX_SAFE_INTEGER.toString()
-  }
-
-  // Calculate estimate gas cost
-  const estimateGas = await tg.methods
-    .approve(dContracts.contracts.mocvendors._address, web3.utils.toWei(amountAllowance))
-    .estimateGas({ from: userAddress, value: '0x' })
-
-  // encode function
-  const encodedCall = tg.methods
-    .approve(dContracts.contracts.mocvendors._address, web3.utils.toWei(amountAllowance))
-    .encodeABI()
-
-  // send transaction to the blockchain and get receipt
-  const { receipt, filteredEvents } = await sendTransaction(web3, valueToSend, estimateGas, encodedCall, tg._address)
-
-  console.log(`Transaction hash: ${receipt.transactionHash}`)
-
-  return { receipt, filteredEvents }
-}
 
 const vestingVerify = async (web3, dContracts) => {
   /* Mark contract as verified by holder */
@@ -54,7 +27,120 @@ const vestingVerify = async (web3, dContracts) => {
   return { receipt, filteredEvents }
 }
 
+
+const addStake = async (web3, dContracts, configProject, amount) => {
+
+  const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
+  const istakingmachine = dContracts.contracts.istakingmachine
+  const stakingMachineAddress = istakingmachine.options.address
+  const tokenDecimals = configProject.tokens.FeeToken.decimals
+
+  const valueToSend = null
+
+  // Calculate estimate gas cost
+  const estimateGas = await istakingmachine.methods
+      .deposit(toContractPrecisionDecimals(amount, tokenDecimals))
+      .estimateGas({ from: userAddress, value: '0x' })
+
+  // encode function
+  const encodedCall = istakingmachine.methods
+      .deposit(toContractPrecisionDecimals(amount, tokenDecimals))
+      .encodeABI()
+
+  // send transaction to the blockchain and get receipt
+  const { receipt, filteredEvents } = await sendTransaction(web3, valueToSend, estimateGas, encodedCall, stakingMachineAddress)
+
+  console.log(`Transaction hash: ${receipt.transactionHash}`)
+
+  return { receipt, filteredEvents }
+}
+
+
+const unStake = async (web3, dContracts, configProject, amount) => {
+
+  const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
+  const istakingmachine = dContracts.contracts.istakingmachine
+  const stakingMachineAddress = istakingmachine.options.address
+  const tokenDecimals = configProject.tokens.FeeToken.decimals
+
+  const valueToSend = null
+
+  // Calculate estimate gas cost
+  const estimateGas = await istakingmachine.methods
+      .withdraw(toContractPrecisionDecimals(amount, tokenDecimals))
+      .estimateGas({ from: userAddress, value: '0x' })
+
+  // encode function
+  const encodedCall = istakingmachine.methods
+      .withdraw(toContractPrecisionDecimals(amount, tokenDecimals))
+      .encodeABI()
+
+  // send transaction to the blockchain and get receipt
+  const { receipt, filteredEvents } = await sendTransaction(web3, valueToSend, estimateGas, encodedCall, stakingMachineAddress)
+
+  console.log(`Transaction hash: ${receipt.transactionHash}`)
+
+  return { receipt, filteredEvents }
+}
+
+
+const delayMachineWithdraw = async (web3, dContracts, configProject, idWithdraw) => {
+
+  const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
+  const idelaymachine = dContracts.contracts.idelaymachine
+  const delayMachineAddress = idelaymachine.options.address
+
+  const valueToSend = null
+
+  // Calculate estimate gas cost
+  const estimateGas = await idelaymachine.methods
+      .withdraw(idWithdraw)
+      .estimateGas({ from: userAddress, value: '0x' })
+
+  // encode function
+  const encodedCall = idelaymachine.methods
+      .withdraw(idWithdraw)
+      .encodeABI()
+
+  // send transaction to the blockchain and get receipt
+  const { receipt, filteredEvents } = await sendTransaction(web3, valueToSend, estimateGas, encodedCall, delayMachineAddress)
+
+  console.log(`Transaction hash: ${receipt.transactionHash}`)
+
+  return { receipt, filteredEvents }
+}
+
+const delayMachineCancelWithdraw = async (web3, dContracts, configProject, idWithdraw) => {
+
+  const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
+  const idelaymachine = dContracts.contracts.idelaymachine
+  const delayMachineAddress = idelaymachine.options.address
+
+  const valueToSend = null
+
+  // Calculate estimate gas cost
+  const estimateGas = await idelaymachine.methods
+      .cancel(idWithdraw)
+      .estimateGas({ from: userAddress, value: '0x' })
+
+  // encode function
+  const encodedCall = idelaymachine.methods
+      .cancel(idWithdraw)
+      .encodeABI()
+
+  // send transaction to the blockchain and get receipt
+  const { receipt, filteredEvents } = await sendTransaction(web3, valueToSend, estimateGas, encodedCall, delayMachineAddress)
+
+  console.log(`Transaction hash: ${receipt.transactionHash}`)
+
+  return { receipt, filteredEvents }
+}
+
+
 export {
-  StakingAllowance,
-  vestingVerify
+  vestingVerify,
+  addStake,
+  unStake,
+  delayMachineWithdraw,
+  delayMachineCancelWithdraw
 }

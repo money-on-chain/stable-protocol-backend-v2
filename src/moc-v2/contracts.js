@@ -472,6 +472,29 @@ ${table}
     `
 }
 
+const pendingWithdrawals = (userBalance) => {
+  const { ids, amounts, expirations } = userBalance.delaymachine.getTransactions
+  const withdraws = [];
+  for (let i = 0; i < ids.length; i++) {
+    withdraws.push({
+      id: ids[i],
+      amount: amounts[i],
+      expiration: expirations[i]
+    });
+  }
+  return withdraws;
+}
+
+const renderPendingWithdrawals = (userBalance) => {
+
+  const withdraws = pendingWithdrawals(userBalance)
+
+  let render = '';
+  for (let i = 0; i < withdraws.length; i++) {
+    render += `ID: ${withdraws[i].id} AMOUNT: ${Web3.utils.fromWei(withdraws[i].amount)} EXPIRATION: ${formatTimestamp(new BigNumber(withdraws[i].expiration).times(1000).toNumber())} \n`
+  }
+  return render;
+}
 
 const userBalanceAllowanceCA = (userBalance, config) => {
   let result = ''
@@ -499,7 +522,7 @@ const userBalanceAllowanceTP = (userBalance, config) => {
 }
 
 const renderUserBalance = (userBalance, config) => {
-  const render = `
+  let render = `
 User: ${userBalance.userAddress}
 
 ${config.tokens.COINBASE.name} Balance: ${fromContractPrecisionDecimals(userBalance.coinbase, config.tokens.COINBASE.decimals).toString()} ${config.tokens.COINBASE.name}
@@ -519,7 +542,10 @@ Delay Machine Balance: ${fromContractPrecisionDecimals(userBalance.delaymachine.
 ${config.tokens.FeeToken.name} Balance: ${fromContractPrecisionDecimals(userBalance.tgBalance, config.tokens.FeeToken.decimals).toString()} ${config.tokens.FeeToken.name}
 ${config.tokens.FeeToken.name} Staking Machine Allowance: ${fromContractPrecisionDecimals(userBalance.stakingmachine.tgAllowance, config.tokens.FeeToken.decimals).toString()} ${config.tokens.FeeToken.name}
 
+PENDING WITHDRAWS
+=================
     `
+  render += renderPendingWithdrawals(userBalance)
 
   return render
 }
