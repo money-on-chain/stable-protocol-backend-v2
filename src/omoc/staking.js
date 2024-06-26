@@ -1,3 +1,5 @@
+import Web3 from 'web3'
+
 import { sendTransaction } from '../transaction.js'
 import {toContractPrecisionDecimals} from "../utils.js";
 
@@ -39,12 +41,12 @@ const addStake = async (web3, dContracts, configProject, amount) => {
 
   // Calculate estimate gas cost
   const estimateGas = await istakingmachine.methods
-      .deposit(toContractPrecisionDecimals(amount, tokenDecimals))
+      .deposit(toContractPrecisionDecimals(amount, tokenDecimals), Web3.utils.toChecksumAddress(userAddress))
       .estimateGas({ from: userAddress, value: '0x' })
 
   // encode function
   const encodedCall = istakingmachine.methods
-      .deposit(toContractPrecisionDecimals(amount, tokenDecimals))
+      .deposit(toContractPrecisionDecimals(amount, tokenDecimals), Web3.utils.toChecksumAddress(userAddress))
       .encodeABI()
 
   // send transaction to the blockchain and get receipt

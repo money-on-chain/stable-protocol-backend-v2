@@ -18,9 +18,9 @@ const main = async () => {
     const dContracts = await readContracts(web3, configProject)
 
     // Token to approve
-    const token = dContracts.contracts.CA[0]
+    const token = dContracts.contracts.tg
     const contract = dContracts.contracts.istakingmachine
-    const tokenDecimals = configProject.tokens.CA[0].decimals
+    const tokenDecimals = configProject.tokens.FeeToken.decimals
     const amount = new BigNumber(10000)
 
     // Send transaction and get receipt
