@@ -5,9 +5,9 @@ import { toContractPrecision } from './utils.js'
 
 const addABIOMoC = (dContracts) => {
   abiDecoder.addABI(dContracts.json.IRegistry.abi)
-  abiDecoder.addABI(dContracts.json.IStakingMachine.abi)
-  abiDecoder.addABI(dContracts.json.IDelayMachine.abi)
-  abiDecoder.addABI(dContracts.json.ISupporters.abi)
+  abiDecoder.addABI(dContracts.json.StakingMachine.abi)
+  abiDecoder.addABI(dContracts.json.DelayMachine.abi)
+  abiDecoder.addABI(dContracts.json.Supporters.abi)
   abiDecoder.addABI(dContracts.json.IVestingMachine.abi)
   abiDecoder.addABI(dContracts.json.IVotingMachine.abi)
 }
@@ -82,7 +82,15 @@ const decodeEvents = (receipt) => {
     'OperationQueued',
     'OperationExecuted',
     'LiqTPRedeemed',
-    'PeggedTokenChange'
+    'PeggedTokenChange',
+    'PaymentCancel',
+    'PaymentDeposit',
+    'PaymentWithdraw',
+    'PayEarnings',
+    'CancelEarnings',
+    'AddStake',
+    'WithdrawStake',
+    'Withdraw'
   ]
 
   const filteredEvents = decodedLogs.filter(event =>

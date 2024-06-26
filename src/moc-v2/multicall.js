@@ -103,9 +103,9 @@ const contractStatus = async (web3, dContracts, configProject) => {
   const FC_MAX_OP_DIFFERENCE_PROVIDER = dContracts.contracts.FC_MAX_OP_DIFFERENCE_PROVIDER
 
   // OMOC
-  const istakingmachine = dContracts.contracts.istakingmachine
-  const idelaymachine = dContracts.contracts.idelaymachine
-  const isupporters = dContracts.contracts.isupporters
+  const stakingmachine = dContracts.contracts.stakingmachine
+  const delaymachine = dContracts.contracts.delaymachine
+  const supporters = dContracts.contracts.supporters
   const ivestingmachine = dContracts.contracts.ivestingmachine
   const ivestingfactory = dContracts.contracts.ivestingfactory
   const tg = dContracts.contracts.tg
@@ -181,17 +181,17 @@ const contractStatus = async (web3, dContracts, configProject) => {
   multiCallRequest.aggregate(Moc, Moc.methods.paused().encodeABI(), 'bool', 'paused')
 
   // OMOC
-  multiCallRequest.aggregate(istakingmachine, istakingmachine.methods.getWithdrawLockTime().encodeABI(), 'uint256', 'stakingmachine', 'getWithdrawLockTime')
-  multiCallRequest.aggregate(istakingmachine, istakingmachine.methods.getSupporters().encodeABI(), 'address', 'stakingmachine', 'getSupporters')
-  multiCallRequest.aggregate(istakingmachine, istakingmachine.methods.getOracleManager().encodeABI(), 'address', 'stakingmachine', 'getOracleManager')
-  multiCallRequest.aggregate(istakingmachine, istakingmachine.methods.getDelayMachine().encodeABI(), 'address', 'stakingmachine', 'getDelayMachine')
-  multiCallRequest.aggregate(idelaymachine, idelaymachine.methods.getLastId().encodeABI(), 'uint256', 'delaymachine', 'getLastId')
-  multiCallRequest.aggregate(idelaymachine, idelaymachine.methods.getSource().encodeABI(), 'address', 'delaymachine', 'getSource')
-  multiCallRequest.aggregate(isupporters, isupporters.methods.isReadyToDistribute().encodeABI(), 'bool', 'supporters', 'isReadyToDistribute')
-  multiCallRequest.aggregate(isupporters, isupporters.methods.mocToken().encodeABI(), 'address', 'supporters', 'mocToken')
-  multiCallRequest.aggregate(isupporters, isupporters.methods.period().encodeABI(), 'uint256', 'supporters', 'period')
-  multiCallRequest.aggregate(isupporters, isupporters.methods.totalMoc().encodeABI(), 'uint256', 'supporters', 'totalMoc')
-  multiCallRequest.aggregate(isupporters, isupporters.methods.totalToken().encodeABI(), 'uint256', 'supporters', 'totalToken')
+  multiCallRequest.aggregate(stakingmachine, stakingmachine.methods.getWithdrawLockTime().encodeABI(), 'uint256', 'stakingmachine', 'getWithdrawLockTime')
+  multiCallRequest.aggregate(stakingmachine, stakingmachine.methods.getSupporters().encodeABI(), 'address', 'stakingmachine', 'getSupporters')
+  multiCallRequest.aggregate(stakingmachine, stakingmachine.methods.getOracleManager().encodeABI(), 'address', 'stakingmachine', 'getOracleManager')
+  multiCallRequest.aggregate(stakingmachine, stakingmachine.methods.getDelayMachine().encodeABI(), 'address', 'stakingmachine', 'getDelayMachine')
+  multiCallRequest.aggregate(delaymachine, delaymachine.methods.getLastId().encodeABI(), 'uint256', 'delaymachine', 'getLastId')
+  multiCallRequest.aggregate(delaymachine, delaymachine.methods.getSource().encodeABI(), 'address', 'delaymachine', 'getSource')
+  multiCallRequest.aggregate(supporters, supporters.methods.isReadyToDistribute().encodeABI(), 'bool', 'supporters', 'isReadyToDistribute')
+  multiCallRequest.aggregate(supporters, supporters.methods.mocToken().encodeABI(), 'address', 'supporters', 'mocToken')
+  multiCallRequest.aggregate(supporters, supporters.methods.period().encodeABI(), 'uint256', 'supporters', 'period')
+  multiCallRequest.aggregate(supporters, supporters.methods.totalMoc().encodeABI(), 'uint256', 'supporters', 'totalMoc')
+  multiCallRequest.aggregate(supporters, supporters.methods.totalToken().encodeABI(), 'uint256', 'supporters', 'totalToken')
   multiCallRequest.aggregate(ivestingfactory, ivestingfactory.methods.isTGEConfigured().encodeABI(), 'bool', 'vestingfactory', 'isTGEConfigured')
   multiCallRequest.aggregate(ivestingfactory, ivestingfactory.methods.getTGETimestamp().encodeABI(), 'uint256', 'vestingfactory', 'getTGETimestamp')
 
@@ -277,8 +277,8 @@ const userBalance = async (web3, dContracts, userAddress, configProject) => {
   const FeeToken = dContracts.contracts.FeeToken
   const MoCContract = dContracts.contracts.Moc
 
-  const istakingmachine = dContracts.contracts.istakingmachine
-  const idelaymachine = dContracts.contracts.idelaymachine
+  const stakingmachine = dContracts.contracts.stakingmachine
+  const delaymachine = dContracts.contracts.delaymachine
   const tg = dContracts.contracts.tg
 
 
@@ -292,13 +292,13 @@ const userBalance = async (web3, dContracts, userAddress, configProject) => {
   multiCallRequest.aggregate(FeeToken, FeeToken.methods.allowance(userAddress, MoCContract.options.address).encodeABI(), 'uint256', 'FeeToken', 'allowance')
 
   // OMOC
-  multiCallRequest.aggregate(istakingmachine, istakingmachine.methods.getBalance(userAddress).encodeABI(), 'uint256', 'stakingmachine', 'getBalance')
-  multiCallRequest.aggregate(istakingmachine, istakingmachine.methods.getLockedBalance(userAddress).encodeABI(), 'uint256', 'stakingmachine', 'getLockedBalance')
-  multiCallRequest.aggregate(istakingmachine, istakingmachine.methods.getLockingInfo(userAddress).encodeABI(), [{ type: 'uint256', name: 'amount' }, { type: 'uint256', name: 'untilTimestamp' }], 'stakingmachine', 'getLockingInfo')
-  multiCallRequest.aggregate(idelaymachine, idelaymachine.methods.getTransactions(userAddress).encodeABI(), [{ type: 'uint256[]', name: 'ids' }, { type: 'uint256[]', name: 'amounts' }, { type: 'uint256[]', name: 'expirations' }], 'delaymachine', 'getTransactions')
-  multiCallRequest.aggregate(idelaymachine, idelaymachine.methods.getBalance(userAddress).encodeABI(), 'uint256', 'delaymachine', 'getBalance')
+  multiCallRequest.aggregate(stakingmachine, stakingmachine.methods.getBalance(userAddress).encodeABI(), 'uint256', 'stakingmachine', 'getBalance')
+  multiCallRequest.aggregate(stakingmachine, stakingmachine.methods.getLockedBalance(userAddress).encodeABI(), 'uint256', 'stakingmachine', 'getLockedBalance')
+  multiCallRequest.aggregate(stakingmachine, stakingmachine.methods.getLockingInfo(userAddress).encodeABI(), [{ type: 'uint256', name: 'amount' }, { type: 'uint256', name: 'untilTimestamp' }], 'stakingmachine', 'getLockingInfo')
+  multiCallRequest.aggregate(delaymachine, delaymachine.methods.getTransactions(userAddress).encodeABI(), [{ type: 'uint256[]', name: 'ids' }, { type: 'uint256[]', name: 'amounts' }, { type: 'uint256[]', name: 'expirations' }], 'delaymachine', 'getTransactions')
+  multiCallRequest.aggregate(delaymachine, delaymachine.methods.getBalance(userAddress).encodeABI(), 'uint256', 'delaymachine', 'getBalance')
   multiCallRequest.aggregate(tg, tg.methods.balanceOf(userAddress).encodeABI(), 'uint256', 'tgBalance')
-  multiCallRequest.aggregate(tg, tg.methods.allowance(userAddress, istakingmachine.options.address).encodeABI(), 'uint256', 'stakingmachine', 'tgAllowance')
+  multiCallRequest.aggregate(tg, tg.methods.allowance(userAddress, stakingmachine.options.address).encodeABI(), 'uint256', 'stakingmachine', 'tgAllowance')
 
   let TP
   for (let i = 0; i < configProject.tokens.TP.length; i++) {

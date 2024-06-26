@@ -19,7 +19,7 @@ const main = async () => {
 
     // Token to approve
     const token = dContracts.contracts.tg
-    const contract = dContracts.contracts.istakingmachine
+    const contract = dContracts.contracts.stakingmachine
     const tokenDecimals = configProject.tokens.FeeToken.decimals
     const amount = new BigNumber(10000)
 

@@ -33,19 +33,19 @@ const vestingVerify = async (web3, dContracts) => {
 const addStake = async (web3, dContracts, configProject, amount) => {
 
   const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
-  const istakingmachine = dContracts.contracts.istakingmachine
-  const stakingMachineAddress = istakingmachine.options.address
+  const stakingmachine = dContracts.contracts.stakingmachine
+  const stakingMachineAddress = stakingmachine.options.address
   const tokenDecimals = configProject.tokens.FeeToken.decimals
 
   const valueToSend = null
 
   // Calculate estimate gas cost
-  const estimateGas = await istakingmachine.methods
+  const estimateGas = await stakingmachine.methods
       .deposit(toContractPrecisionDecimals(amount, tokenDecimals), Web3.utils.toChecksumAddress(userAddress))
       .estimateGas({ from: userAddress, value: '0x' })
 
   // encode function
-  const encodedCall = istakingmachine.methods
+  const encodedCall = stakingmachine.methods
       .deposit(toContractPrecisionDecimals(amount, tokenDecimals), Web3.utils.toChecksumAddress(userAddress))
       .encodeABI()
 
@@ -61,19 +61,19 @@ const addStake = async (web3, dContracts, configProject, amount) => {
 const unStake = async (web3, dContracts, configProject, amount) => {
 
   const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
-  const istakingmachine = dContracts.contracts.istakingmachine
-  const stakingMachineAddress = istakingmachine.options.address
+  const stakingmachine = dContracts.contracts.stakingmachine
+  const stakingMachineAddress = stakingmachine.options.address
   const tokenDecimals = configProject.tokens.FeeToken.decimals
 
   const valueToSend = null
 
   // Calculate estimate gas cost
-  const estimateGas = await istakingmachine.methods
+  const estimateGas = await stakingmachine.methods
       .withdraw(toContractPrecisionDecimals(amount, tokenDecimals))
       .estimateGas({ from: userAddress, value: '0x' })
 
   // encode function
-  const encodedCall = istakingmachine.methods
+  const encodedCall = stakingmachine.methods
       .withdraw(toContractPrecisionDecimals(amount, tokenDecimals))
       .encodeABI()
 
@@ -89,18 +89,18 @@ const unStake = async (web3, dContracts, configProject, amount) => {
 const delayMachineWithdraw = async (web3, dContracts, configProject, idWithdraw) => {
 
   const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
-  const idelaymachine = dContracts.contracts.idelaymachine
-  const delayMachineAddress = idelaymachine.options.address
+  const delaymachine = dContracts.contracts.delaymachine
+  const delayMachineAddress = delaymachine.options.address
 
   const valueToSend = null
 
   // Calculate estimate gas cost
-  const estimateGas = await idelaymachine.methods
+  const estimateGas = await delaymachine.methods
       .withdraw(idWithdraw)
       .estimateGas({ from: userAddress, value: '0x' })
 
   // encode function
-  const encodedCall = idelaymachine.methods
+  const encodedCall = delaymachine.methods
       .withdraw(idWithdraw)
       .encodeABI()
 
@@ -115,18 +115,18 @@ const delayMachineWithdraw = async (web3, dContracts, configProject, idWithdraw)
 const delayMachineCancelWithdraw = async (web3, dContracts, configProject, idWithdraw) => {
 
   const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
-  const idelaymachine = dContracts.contracts.idelaymachine
-  const delayMachineAddress = idelaymachine.options.address
+  const delaymachine = dContracts.contracts.delaymachine
+  const delayMachineAddress = delaymachine.options.address
 
   const valueToSend = null
 
   // Calculate estimate gas cost
-  const estimateGas = await idelaymachine.methods
+  const estimateGas = await delaymachine.methods
       .cancel(idWithdraw)
       .estimateGas({ from: userAddress, value: '0x' })
 
   // encode function
-  const encodedCall = idelaymachine.methods
+  const encodedCall = delaymachine.methods
       .cancel(idWithdraw)
       .encodeABI()
 
