@@ -4,32 +4,6 @@ import { sendTransaction } from '../transaction.js'
 import {toContractPrecisionDecimals} from "../utils.js";
 
 
-const vestingVerify = async (web3, dContracts) => {
-  /* Mark contract as verified by holder */
-  const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
-  const ivestingmachine = dContracts.contracts.ivestingmachine
-
-  const valueToSend = null
-
-  // Calculate estimate gas cost
-  const estimateGas = await ivestingmachine.methods
-    .verify()
-    .estimateGas({ from: userAddress, value: '0x' })
-
-  // encode function
-  const encodedCall = ivestingmachine.methods
-    .verify()
-    .encodeABI()
-
-  // send transaction to the blockchain and get receipt
-  const { receipt, filteredEvents } = await sendTransaction(web3, valueToSend, estimateGas, encodedCall, ivestingmachine._address)
-
-  console.log(`Transaction hash: ${receipt.transactionHash}`)
-
-  return { receipt, filteredEvents }
-}
-
-
 const addStake = async (web3, dContracts, configProject, amount) => {
 
   const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
@@ -140,7 +114,6 @@ const delayMachineCancelWithdraw = async (web3, dContracts, configProject, idWit
 
 
 export {
-  vestingVerify,
   addStake,
   unStake,
   delayMachineWithdraw,

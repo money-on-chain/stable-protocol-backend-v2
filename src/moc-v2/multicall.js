@@ -12,8 +12,8 @@ class MultiCall {
   clear() {
     this.calls = [];
   }
-  aggregate(contract, encodeABI, resultType, keyName, keyIndex) {
-    this.calls.push([contract.options.address, encodeABI, resultType, keyName, keyIndex])
+  aggregate(contract, encodeABI, resultType, keyName, keyIndex, keySubIndex) {
+    this.calls.push([contract.options.address, encodeABI, resultType, keyName, keyIndex, keySubIndex])
   }
   async tryBlockAndAggregate(blockNumber) {
 
@@ -35,6 +35,7 @@ class MultiCall {
       const resultType = calls[itemIndex][2]
       const keyName = calls[itemIndex][3]
       const keyIndex = calls[itemIndex][4]
+      const keySubIndex = calls[itemIndex][5]
 
       // Ok success
       if (item.success) {
@@ -67,7 +68,15 @@ class MultiCall {
         }
       }
 
-      if (keyIndex != null) {
+      if (keyIndex != null && keySubIndex != null) {
+        if (!storage[keyName]){
+          storage[keyName] = {}
+        }
+        if (!storage[keyName][keyIndex]){
+          storage[keyName][keyIndex] = {}
+        }
+        storage[keyName][keyIndex][keySubIndex] = value
+      } else if (keyIndex != null) {
         if (!storage[keyName]){
           if (keyIndex === parseInt(keyIndex, 10)) {
             storage[keyName] = []
@@ -106,8 +115,7 @@ const contractStatus = async (web3, dContracts, configProject) => {
   const stakingmachine = dContracts.contracts.stakingmachine
   const delaymachine = dContracts.contracts.delaymachine
   const supporters = dContracts.contracts.supporters
-  const ivestingmachine = dContracts.contracts.ivestingmachine
-  const ivestingfactory = dContracts.contracts.ivestingfactory
+
   const tg = dContracts.contracts.tg
 
   const multiCallRequest = new MultiCall(multicall, web3)
@@ -192,18 +200,6 @@ const contractStatus = async (web3, dContracts, configProject) => {
   multiCallRequest.aggregate(supporters, supporters.methods.period().encodeABI(), 'uint256', 'supporters', 'period')
   multiCallRequest.aggregate(supporters, supporters.methods.totalMoc().encodeABI(), 'uint256', 'supporters', 'totalMoc')
   multiCallRequest.aggregate(supporters, supporters.methods.totalToken().encodeABI(), 'uint256', 'supporters', 'totalToken')
-  multiCallRequest.aggregate(ivestingfactory, ivestingfactory.methods.isTGEConfigured().encodeABI(), 'bool', 'vestingfactory', 'isTGEConfigured')
-  multiCallRequest.aggregate(ivestingfactory, ivestingfactory.methods.getTGETimestamp().encodeABI(), 'uint256', 'vestingfactory', 'getTGETimestamp')
-
-  if (typeof ivestingmachine !== 'undefined') {
-    multiCallRequest.aggregate(ivestingmachine, ivestingmachine.methods.getParameters().encodeABI(), [{ type: 'uint256[]', name: 'percentages' }, { type: 'uint256[]', name: 'timeDeltas' }], 'vestingmachine', 'getParameters')
-    multiCallRequest.aggregate(ivestingmachine, ivestingmachine.methods.getHolder().encodeABI(), 'address', 'vestingmachine', 'getHolder')
-    multiCallRequest.aggregate(ivestingmachine, ivestingmachine.methods.getLocked().encodeABI(), 'uint256', 'vestingmachine', 'getLocked')
-    multiCallRequest.aggregate(ivestingmachine, ivestingmachine.methods.getAvailable().encodeABI(), 'uint256', 'vestingmachine', 'getAvailable')
-    multiCallRequest.aggregate(ivestingmachine, ivestingmachine.methods.isVerified().encodeABI(), 'bool', 'vestingmachine', 'isVerified')
-    multiCallRequest.aggregate(ivestingmachine, ivestingmachine.methods.getTotal().encodeABI(), 'uint256', 'vestingmachine', 'getTotal')
-    multiCallRequest.aggregate(tg, tg.methods.balanceOf(ivestingmachine.options.address).encodeABI(), 'uint256', 'vestingmachine', 'tgBalance')
-  }
 
   console.log('Reading contract status ...')
 
@@ -281,6 +277,7 @@ const userBalance = async (web3, dContracts, userAddress, configProject) => {
   const delaymachine = dContracts.contracts.delaymachine
   const tg = dContracts.contracts.tg
   const ivestingmachine = dContracts.contracts.ivestingmachine
+  const ivestingfactory = dContracts.contracts.ivestingfactory
 
 
   console.log(`Reading user balance ... account: ${userAddress}`)
@@ -302,9 +299,25 @@ const userBalance = async (web3, dContracts, userAddress, configProject) => {
   multiCallRequest.aggregate(tg, tg.methods.allowance(userAddress, stakingmachine.options.address).encodeABI(), 'uint256', 'stakingmachine', 'tgAllowance')
 
   if (typeof ivestingmachine !== 'undefined') {
-    multiCallRequest.aggregate(stakingmachine, stakingmachine.methods.getBalance(ivestingmachine.options.address).encodeABI(), 'uint256', 'vestingmachine', 'balanceStaking')
+    multiCallRequest.aggregate(ivestingfactory, ivestingfactory.methods.isTGEConfigured().encodeABI(), 'bool', 'vestingfactory', 'isTGEConfigured')
+    multiCallRequest.aggregate(ivestingfactory, ivestingfactory.methods.getTGETimestamp().encodeABI(), 'uint256', 'vestingfactory', 'getTGETimestamp')
+    multiCallRequest.aggregate(ivestingmachine, ivestingmachine.methods.getParameters().encodeABI(), [{ type: 'uint256[]', name: 'percentages' }, { type: 'uint256[]', name: 'timeDeltas' }], 'vestingmachine', 'getParameters')
+    multiCallRequest.aggregate(ivestingmachine, ivestingmachine.methods.getHolder().encodeABI(), 'address', 'vestingmachine', 'getHolder')
+    multiCallRequest.aggregate(ivestingmachine, ivestingmachine.methods.getLocked().encodeABI(), 'uint256', 'vestingmachine', 'getLocked')
+    multiCallRequest.aggregate(ivestingmachine, ivestingmachine.methods.getAvailable().encodeABI(), 'uint256', 'vestingmachine', 'getAvailable')
+    multiCallRequest.aggregate(ivestingmachine, ivestingmachine.methods.isVerified().encodeABI(), 'bool', 'vestingmachine', 'isVerified')
+    multiCallRequest.aggregate(ivestingmachine, ivestingmachine.methods.getTotal().encodeABI(), 'uint256', 'vestingmachine', 'getTotal')
+    multiCallRequest.aggregate(tg, tg.methods.balanceOf(ivestingmachine.options.address).encodeABI(), 'uint256', 'vestingmachine', 'tgBalance')
     multiCallRequest.aggregate(tg, tg.methods.allowance(userAddress, ivestingmachine.options.address).encodeABI(), 'uint256', 'vestingmachine', 'tgAllowance')
-    multiCallRequest.aggregate(delaymachine, delaymachine.methods.getBalance(ivestingmachine.options.address).encodeABI(), 'uint256', 'vestingmachine', 'balanceDelay')
+    multiCallRequest.aggregate(stakingmachine, stakingmachine.methods.getBalance(ivestingmachine.options.address).encodeABI(), 'uint256', 'vestingmachine', 'staking', 'balance')
+    multiCallRequest.aggregate(tg, tg.methods.allowance(userAddress, stakingmachine.options.address).encodeABI(), 'uint256', 'vestingmachine', 'staking', 'allowance')
+    multiCallRequest.aggregate(delaymachine, delaymachine.methods.getBalance(ivestingmachine.options.address).encodeABI(), 'uint256', 'vestingmachine', 'delay', 'balance')
+    multiCallRequest.aggregate(tg, tg.methods.allowance(userAddress, delaymachine.options.address).encodeABI(), 'uint256', 'vestingmachine', 'delay', 'allowance')
+    multiCallRequest.aggregate(stakingmachine, stakingmachine.methods.getBalance(ivestingmachine.options.address).encodeABI(), 'uint256', 'vestingmachine', 'staking', 'getBalance')
+    multiCallRequest.aggregate(stakingmachine, stakingmachine.methods.getLockedBalance(ivestingmachine.options.address).encodeABI(), 'uint256', 'vestingmachine', 'staking','getLockedBalance')
+    multiCallRequest.aggregate(stakingmachine, stakingmachine.methods.getLockingInfo(ivestingmachine.options.address).encodeABI(), [{ type: 'uint256', name: 'amount' }, { type: 'uint256', name: 'untilTimestamp' }], 'vestingmachine', 'staking', 'getLockingInfo')
+    multiCallRequest.aggregate(delaymachine, delaymachine.methods.getTransactions(ivestingmachine.options.address).encodeABI(), [{ type: 'uint256[]', name: 'ids' }, { type: 'uint256[]', name: 'amounts' }, { type: 'uint256[]', name: 'expirations' }], 'vestingmachine', 'delay', 'getTransactions')
+    multiCallRequest.aggregate(delaymachine, delaymachine.methods.getBalance(ivestingmachine.options.address).encodeABI(), 'uint256', 'vestingmachine', 'delay', 'getBalance')
   }
 
   let TP

@@ -112,11 +112,11 @@ const readContracts = async (web3, configProject) => {
   console.log('Reading OMOC: Supporters Contract... address: ', registryAddr['SUPPORTERS_ADDR'])
   dContracts.contracts.supporters = new web3.eth.Contract(dContracts.json.Supporters.abi, registryAddr['SUPPORTERS_ADDR'])
 
-  console.log('Reading OMOC: IVestingFactory Contract... address: ', registryAddr['MOC_VESTING_MACHINE'])
-  dContracts.contracts.ivestingfactory = new web3.eth.Contract(dContracts.json.IVestingFactory.abi, registryAddr['MOC_VESTING_MACHINE'])
-
   // reading vesting machine from environment address
   if (typeof process.env.CONTRACT_OMOC_VESTING_ADDRESS !== 'undefined') {
+    console.log('Reading OMOC: IVestingFactory Contract... address: ', registryAddr['MOC_VESTING_MACHINE'])
+    dContracts.contracts.ivestingfactory = new web3.eth.Contract(dContracts.json.IVestingFactory.abi, registryAddr['MOC_VESTING_MACHINE'])
+
     console.log('Reading OMOC: IVestingMachine Contract... address: ', process.env.CONTRACT_OMOC_VESTING_ADDRESS)
     dContracts.contracts.ivestingmachine = new web3.eth.Contract(dContracts.json.IVestingMachine.abi, process.env.CONTRACT_OMOC_VESTING_ADDRESS)
   }
@@ -394,42 +394,63 @@ Period: ${contractStatus.supporters.period}
 Total MoC: ${Web3.utils.fromWei(contractStatus.supporters.totalMoc)} 
 Total Token: ${Web3.utils.fromWei(contractStatus.supporters.totalToken)}
 
-
-OMOC VESTING FACTORY
-====================
-
-Is TGE configured: ${contractStatus.vestingfactory.isTGEConfigured} 
-Get TGE Timestamp: ${contractStatus.vestingfactory.getTGETimestamp}
-
-          `
-  if (typeof process.env.CONTRACT_OMOC_VESTING_ADDRESS !== 'undefined') {
-    render += `
-VESTING MACHINE
-===============
-
-Get Holder: ${contractStatus.vestingmachine.getHolder}
-Get Locked: ${Web3.utils.fromWei(contractStatus.vestingmachine.getLocked)}
-Get Available: ${Web3.utils.fromWei(contractStatus.vestingmachine.getAvailable)}
-Is Verified: ${contractStatus.vestingmachine.isVerified}
-Get Total: ${Web3.utils.fromWei(contractStatus.vestingmachine.getTotal)}
-Balance: ${Web3.utils.fromWei(contractStatus.vestingmachine.tgBalance)}
-
-VESTING PARAMETERS
-==================
-    `
-    render += renderVestingParameters(contractStatus)
-  }
-
-
-
+`
   return render
 }
 
+const pendingWithdrawals = (delaymachine) => {
+  const { ids, amounts, expirations } = delaymachine.getTransactions
+  const withdraws = [];
+  for (let i = 0; i < ids.length; i++) {
+    withdraws.push({
+      id: ids[i],
+      amount: amounts[i],
+      expiration: expirations[i]
+    });
+  }
+  return withdraws;
+}
 
-const renderVestingParameters = (contractStatus) => {
-  const getParameters = contractStatus.vestingmachine.getParameters
-  const tgeTimestamp = contractStatus.vestingfactory.getTGETimestamp
-  const total = contractStatus.vestingmachine.getTotal
+const renderPendingWithdrawals = (delayMachine) => {
+
+  const withdraws = pendingWithdrawals(delayMachine)
+
+  let render = '';
+  for (let i = 0; i < withdraws.length; i++) {
+    render += `ID: ${withdraws[i].id} AMOUNT: ${Web3.utils.fromWei(withdraws[i].amount)} EXPIRATION: ${formatTimestamp(new BigNumber(withdraws[i].expiration).times(1000).toNumber())} \n`
+  }
+  return render;
+}
+
+const userBalanceAllowanceCA = (userBalance, config) => {
+  let result = ''
+  for (let i = 0; i < config.tokens.CA.length; i++) {
+    result += `${config.tokens.CA[i].name} Balance: ${fromContractPrecisionDecimals(userBalance.CA[i].balance, config.tokens.CA[i].decimals).toString()} ${config.tokens.CA[i].name} \n`
+    result += `${config.tokens.CA[i].name} Allowance: ${fromContractPrecisionDecimals(userBalance.CA[i].allowance, config.tokens.CA[i].decimals).toString()} ${config.tokens.CA[i].name} `
+
+    if (i + 1 < config.tokens.CA.length) {
+      result += '\n'
+    }
+  }
+  return result
+}
+
+const userBalanceAllowanceTP = (userBalance, config) => {
+  let result = ''
+  for (let i = 0; i < config.tokens.TP.length; i++) {
+    result += `${config.tokens.TP[i].name} Balance: ${fromContractPrecisionDecimals(userBalance.TP[i].balance, config.tokens.TP[i].decimals).toString()} ${config.tokens.TP[i].name} `
+    if (i + 1 < config.tokens.TP.length) {
+      result += '\n'
+    }
+    // result += `${config.tokens.TP[i].name} Allowance: ${fromContractPrecisionDecimals(userBalance.TP[i].allowance, config.tokens.TP[i].decimals).toString()} ${config.tokens.TP[i].name} \n`
+  }
+  return result
+}
+
+const renderVestingParameters = (userBalance) => {
+  const getParameters = userBalance.vestingmachine.getParameters
+  const tgeTimestamp = userBalance.vestingfactory.getTGETimestamp
+  const total = userBalance.vestingmachine.getTotal
   const percentMultiplier = 10000
 
   const percentages = getParameters.percentages
@@ -472,66 +493,29 @@ ${table}
     `
 }
 
-const pendingWithdrawals = (userBalance) => {
-  const { ids, amounts, expirations } = userBalance.delaymachine.getTransactions
-  const withdraws = [];
-  for (let i = 0; i < ids.length; i++) {
-    withdraws.push({
-      id: ids[i],
-      amount: amounts[i],
-      expiration: expirations[i]
-    });
-  }
-  return withdraws;
-}
-
-const renderPendingWithdrawals = (userBalance) => {
-
-  const withdraws = pendingWithdrawals(userBalance)
+const renderVestingBalance = (userBalance, config) => {
 
   let render = '';
-  for (let i = 0; i < withdraws.length; i++) {
-    render += `ID: ${withdraws[i].id} AMOUNT: ${Web3.utils.fromWei(withdraws[i].amount)} EXPIRATION: ${formatTimestamp(new BigNumber(withdraws[i].expiration).times(1000).toNumber())} \n`
-  }
-  return render;
-}
-
-const userBalanceAllowanceCA = (userBalance, config) => {
-  let result = ''
-  for (let i = 0; i < config.tokens.CA.length; i++) {
-    result += `${config.tokens.CA[i].name} Balance: ${fromContractPrecisionDecimals(userBalance.CA[i].balance, config.tokens.CA[i].decimals).toString()} ${config.tokens.CA[i].name} \n`
-    result += `${config.tokens.CA[i].name} Allowance: ${fromContractPrecisionDecimals(userBalance.CA[i].allowance, config.tokens.CA[i].decimals).toString()} ${config.tokens.CA[i].name} `
-
-    if (i + 1 < config.tokens.CA.length) {
-      result += '\n'
-    }
-  }
-  return result
-}
-
-const userBalanceAllowanceTP = (userBalance, config) => {
-  let result = ''
-  for (let i = 0; i < config.tokens.TP.length; i++) {
-    result += `${config.tokens.TP[i].name} Balance: ${fromContractPrecisionDecimals(userBalance.TP[i].balance, config.tokens.TP[i].decimals).toString()} ${config.tokens.TP[i].name} `
-    if (i + 1 < config.tokens.TP.length) {
-      result += '\n'
-    }
-    // result += `${config.tokens.TP[i].name} Allowance: ${fromContractPrecisionDecimals(userBalance.TP[i].allowance, config.tokens.TP[i].decimals).toString()} ${config.tokens.TP[i].name} \n`
-  }
-  return result
-}
-
-const renderVesting = (userBalance, config) => {
-
-  let render = '';
-  if (typeof userBalance.vestingmachine !== 'undefined') {
-    render += `\nVESTING\n`
-    render += `=======\n`
-    render += `\n`
-    render += `Balance Available: ${fromContractPrecisionDecimals(userBalance.vestingmachine.getAvailable, config.tokens.FeeToken.decimals).toString()}   \n`
-    render += `Balance Staking Machine: ${fromContractPrecisionDecimals(userBalance.vestingmachine.balanceStaking, config.tokens.FeeToken.decimals).toString()}   \n`
-    render += `Balance Delay Machine: ${fromContractPrecisionDecimals(userBalance.vestingmachine.balanceDelay, config.tokens.FeeToken.decimals).toString()}   \n`
-  }
+  render += `\nVESTING BALANCE\n`
+  render += `================\n`
+  render += `\n`
+  render += `Balance Available: ${fromContractPrecisionDecimals(userBalance.vestingmachine.getAvailable, config.tokens.TG.decimals).toString()} ${config.tokens.TG.name}   \n`
+  render += `Allowance Available: ${fromContractPrecisionDecimals(userBalance.vestingmachine.tgAllowance, config.tokens.TG.decimals).toString()} ${config.tokens.TG.name}   \n`
+  render += `\n`
+  render += `\nVESTING STAKING\n`
+  render += `==================\n`
+  render += `\n`
+  render += `Staking Machine Balance : ${fromContractPrecisionDecimals(userBalance.vestingmachine.staking.balance, config.tokens.TG.decimals).toString()} ${config.tokens.TG.name}   \n`
+  render += `Staking Machine Allowance : ${fromContractPrecisionDecimals(userBalance.vestingmachine.staking.allowance, config.tokens.TG.decimals).toString()} ${config.tokens.TG.name}   \n`
+  render += `getBalance : ${fromContractPrecisionDecimals(userBalance.vestingmachine.staking.getBalance, config.tokens.TG.decimals).toString()} ${config.tokens.TG.name}   \n`
+  render += `getLockedBalance : ${fromContractPrecisionDecimals(userBalance.vestingmachine.staking.getLockedBalance, config.tokens.TG.decimals).toString()} ${config.tokens.TG.name}   \n`
+  render += `\n`
+  render += `\nVESTING DELAY\n`
+  render += `================\n`
+  render += `\n`
+  render += `Delay Machine Balance : ${fromContractPrecisionDecimals(userBalance.vestingmachine.delay.balance, config.tokens.TG.decimals).toString()} ${config.tokens.TG.name}   \n`
+  render += `Delay Machine Allowance : ${fromContractPrecisionDecimals(userBalance.vestingmachine.delay.allowance, config.tokens.TG.decimals).toString()} ${config.tokens.TG.name}   \n`
+  render += `Delay Machine getBalance : ${fromContractPrecisionDecimals(userBalance.vestingmachine.delay.getBalance, config.tokens.TG.decimals).toString()} ${config.tokens.TG.name}   \n`
 
   return render;
 }
@@ -548,21 +532,53 @@ ${config.tokens.TC.name} Allowance: ${fromContractPrecisionDecimals(userBalance.
 ${config.tokens.FeeToken.name} Balance: ${fromContractPrecisionDecimals(userBalance.FeeToken.balance, config.tokens.FeeToken.decimals).toString()} ${config.tokens.FeeToken.name}
 ${config.tokens.FeeToken.name} Allowance: ${fromContractPrecisionDecimals(userBalance.FeeToken.allowance, config.tokens.FeeToken.decimals).toString()} ${config.tokens.FeeToken.name}
 
-OMOC
-====
+OMOC STAKING & WITHDRAWS
+========================
 
-Staking Machine Balance: ${fromContractPrecisionDecimals(userBalance.stakingmachine.getBalance, config.tokens.FeeToken.decimals).toString()} ${config.tokens.FeeToken.name}
-Staking Machine Locked Balance: ${fromContractPrecisionDecimals(userBalance.stakingmachine.getLockedBalance, config.tokens.FeeToken.decimals).toString()} ${config.tokens.FeeToken.name}
-Delay Machine Balance: ${fromContractPrecisionDecimals(userBalance.delaymachine.getBalance, config.tokens.FeeToken.decimals).toString()} ${config.tokens.FeeToken.name}
-${config.tokens.FeeToken.name} Balance: ${fromContractPrecisionDecimals(userBalance.tgBalance, config.tokens.FeeToken.decimals).toString()} ${config.tokens.FeeToken.name}
-${config.tokens.FeeToken.name} Staking Machine Allowance: ${fromContractPrecisionDecimals(userBalance.stakingmachine.tgAllowance, config.tokens.FeeToken.decimals).toString()} ${config.tokens.FeeToken.name}
+Free ${config.tokens.FeeToken.name} Balance: ${fromContractPrecisionDecimals(userBalance.tgBalance, config.tokens.TG.decimals).toString()} ${config.tokens.TG.name}
+Staking Machine Balance: ${fromContractPrecisionDecimals(userBalance.stakingmachine.getBalance, config.tokens.TG.decimals).toString()} ${config.tokens.TG.name}
+Staking Machine Locked Balance: ${fromContractPrecisionDecimals(userBalance.stakingmachine.getLockedBalance, config.tokens.TG.decimals).toString()} ${config.tokens.TG.name}
+Delay Machine Balance: ${fromContractPrecisionDecimals(userBalance.delaymachine.getBalance, config.tokens.TG.decimals).toString()} ${config.tokens.TG.name}
+${config.tokens.FeeToken.name} Staking Machine Allowance: ${fromContractPrecisionDecimals(userBalance.stakingmachine.tgAllowance, config.tokens.TG.decimals).toString()} ${config.tokens.FeeToken.name}
 
-PENDING WITHDRAWS
-=================
+DELAY PENDING WITHDRAWS
+=======================
     `
-  render += renderPendingWithdrawals(userBalance)
+  render += renderPendingWithdrawals(userBalance.delaymachine)
 
-  render += renderVesting(userBalance, config)
+  if (typeof process.env.CONTRACT_OMOC_VESTING_ADDRESS !== 'undefined') {
+    render += `
+VESTING FACTORY
+===============
+
+Is TGE configured: ${userBalance.vestingfactory.isTGEConfigured} 
+Get TGE Timestamp: ${userBalance.vestingfactory.getTGETimestamp}
+
+  
+VESTING MACHINE: ${process.env.CONTRACT_OMOC_VESTING_ADDRESS}
+===============
+
+Get Holder: ${userBalance.vestingmachine.getHolder}
+Get Locked: ${Web3.utils.fromWei(userBalance.vestingmachine.getLocked)} ${config.tokens.TG.name}
+Get Available: ${Web3.utils.fromWei(userBalance.vestingmachine.getAvailable)} ${config.tokens.TG.name}
+Is Verified: ${userBalance.vestingmachine.isVerified}
+Get Total: ${Web3.utils.fromWei(userBalance.vestingmachine.getTotal)} ${config.tokens.TG.name}
+Balance: ${Web3.utils.fromWei(userBalance.vestingmachine.tgBalance)} ${config.tokens.TG.name}
+
+
+VESTING PARAMETERS
+==================
+    `
+    render += renderVestingParameters(userBalance)
+
+    render += renderVestingBalance(userBalance, config)
+
+    render += `\nDELAY PENDING WITHDRAWS\n`
+    render += `==================\n`
+    render += `\n`
+
+    render += renderPendingWithdrawals(userBalance.vestingmachine.delay)
+  }
 
   return render
 }

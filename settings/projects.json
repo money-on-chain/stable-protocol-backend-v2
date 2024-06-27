@@ -31,6 +31,10 @@
         "FeeToken": {
           "name": "FLIP",
           "decimals": 18
+        },
+        "TG": {
+          "name": "FLIP",
+          "decimals": 18
         }
       }
     },
@@ -59,6 +63,10 @@
           "decimals": 18
         },
         "FeeToken": {
+          "name": "MOC",
+          "decimals": 18
+        },
+        "TG": {
           "name": "MOC",
           "decimals": 18
         }

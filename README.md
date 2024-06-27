@@ -31,14 +31,16 @@ Money on chain token operations (backend to contracts)
 
 ### Money on Chain projects and tokens 
 
-| Token      | Token name       | Project          | Token Name    | Collateral |
-|------------|------------------|------------------|---------------|------------|
-| TP         | Pegged Token 1:1 | ROC              | USDRIF        | RIF        |
-| TC         | Collateral Token | ROC              | RIFP          | RIF        |
-| Fee Token  | Fee Token        | ROC              | MOC           | -          |
-| TP         | Pegged Token 1:1 | Flipmoney RC20   | GOARS, GOCOP  | BPRO       |
-| TC         | Collateral Token | Flipmoney RC20   | GoTurbo       | BPRO       |
-| Fee Token  | Fee Token        | Flipmoney RC20   | FLIP          | -          |
+| Token     | Token name       | Project      | Token Name   | Collateral |
+|-----------|------------------|--------------|--------------|------------|
+| TP        | Pegged Token 1:1 | ROC          | USDRIF       | RIF        |
+| TC        | Collateral Token | ROC          | RIFP         | RIF        |
+| Fee Token | Fee Token        | ROC          | MOC          | -          |
+| TG        | Token Govern     | ROC          | MOC          | -          |
+| TP        | Pegged Token 1:1 | Flipmoney    | GOARS, GOCOP | BPRO       |
+| TC        | Collateral Token | Flipmoney    | BPROMAX      | BPRO       |
+| Fee Token | Fee Token        | Flipmoney    | FLIP         | -          |
+| Fee Token | Token Govern     | Flipmoney    | FLIP         | -          |
 
 
 ### Money on Chain projects and Collateral types
