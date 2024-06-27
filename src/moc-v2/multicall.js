@@ -280,6 +280,7 @@ const userBalance = async (web3, dContracts, userAddress, configProject) => {
   const stakingmachine = dContracts.contracts.stakingmachine
   const delaymachine = dContracts.contracts.delaymachine
   const tg = dContracts.contracts.tg
+  const ivestingmachine = dContracts.contracts.ivestingmachine
 
 
   console.log(`Reading user balance ... account: ${userAddress}`)
@@ -299,6 +300,12 @@ const userBalance = async (web3, dContracts, userAddress, configProject) => {
   multiCallRequest.aggregate(delaymachine, delaymachine.methods.getBalance(userAddress).encodeABI(), 'uint256', 'delaymachine', 'getBalance')
   multiCallRequest.aggregate(tg, tg.methods.balanceOf(userAddress).encodeABI(), 'uint256', 'tgBalance')
   multiCallRequest.aggregate(tg, tg.methods.allowance(userAddress, stakingmachine.options.address).encodeABI(), 'uint256', 'stakingmachine', 'tgAllowance')
+
+  if (typeof ivestingmachine !== 'undefined') {
+    multiCallRequest.aggregate(stakingmachine, stakingmachine.methods.getBalance(ivestingmachine.options.address).encodeABI(), 'uint256', 'vestingmachine', 'balanceStaking')
+    multiCallRequest.aggregate(tg, tg.methods.allowance(userAddress, ivestingmachine.options.address).encodeABI(), 'uint256', 'vestingmachine', 'tgAllowance')
+    multiCallRequest.aggregate(delaymachine, delaymachine.methods.getBalance(ivestingmachine.options.address).encodeABI(), 'uint256', 'vestingmachine', 'balanceDelay')
+  }
 
   let TP
   for (let i = 0; i < configProject.tokens.TP.length; i++) {

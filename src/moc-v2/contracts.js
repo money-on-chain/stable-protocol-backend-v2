@@ -521,6 +521,21 @@ const userBalanceAllowanceTP = (userBalance, config) => {
   return result
 }
 
+const renderVesting = (userBalance, config) => {
+
+  let render = '';
+  if (typeof userBalance.vestingmachine !== 'undefined') {
+    render += `\nVESTING\n`
+    render += `=======\n`
+    render += `\n`
+    render += `Balance Available: ${fromContractPrecisionDecimals(userBalance.vestingmachine.getAvailable, config.tokens.FeeToken.decimals).toString()}   \n`
+    render += `Balance Staking Machine: ${fromContractPrecisionDecimals(userBalance.vestingmachine.balanceStaking, config.tokens.FeeToken.decimals).toString()}   \n`
+    render += `Balance Delay Machine: ${fromContractPrecisionDecimals(userBalance.vestingmachine.balanceDelay, config.tokens.FeeToken.decimals).toString()}   \n`
+  }
+
+  return render;
+}
+
 const renderUserBalance = (userBalance, config) => {
   let render = `
 User: ${userBalance.userAddress}
@@ -546,6 +561,8 @@ PENDING WITHDRAWS
 =================
     `
   render += renderPendingWithdrawals(userBalance)
+
+  render += renderVesting(userBalance, config)
 
   return render
 }
