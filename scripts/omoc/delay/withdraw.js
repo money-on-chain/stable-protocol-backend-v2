@@ -1,8 +1,8 @@
 import * as dotenv from 'dotenv'
 
-import { readJsonFile, getWeb3 } from '../../src/utils.js'
-import { readContracts } from '../../src/moc-v2/contracts.js'
-import { unStake } from '../../src/omoc/staking.js'
+import { readJsonFile, getWeb3 } from '../../../src/utils.js'
+import { readContracts } from '../../../src/moc-v2/contracts.js'
+import { delayMachineWithdraw } from '../../../src/omoc/staking.js'
 import BigNumber from "bignumber.js";
 
 dotenv.config()
@@ -17,10 +17,10 @@ const main = async () => {
     // Obtain all contracts
     const dContracts = await readContracts(web3, configProject)
 
-    const amount = new BigNumber(1)
+    const idWithdraw = 138
 
     // Send transaction and get receipt
-    const { receipt, filteredEvents } = await unStake(web3, dContracts, configProject, amount)
+    const { receipt, filteredEvents } = await delayMachineWithdraw(web3, dContracts, configProject, idWithdraw)
 }
 
 main()
