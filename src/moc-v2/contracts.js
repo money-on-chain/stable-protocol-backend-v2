@@ -34,9 +34,9 @@ const readContracts = async (web3, configProject) => {
   dContracts.json.StakingMachine = readJsonFile('./abis/omoc/StakingMachine.json')
   dContracts.json.DelayMachine = readJsonFile('./abis/omoc/DelayMachine.json')
   dContracts.json.Supporters = readJsonFile('./abis/omoc/Supporters.json')
-  dContracts.json.IVestingMachine = readJsonFile('./abis/omoc/IVestingMachine.json')
-  dContracts.json.IVotingMachine = readJsonFile('./abis/omoc/IVotingMachine.json')
-  dContracts.json.IVestingFactory = readJsonFile('./abis/omoc/IVestingFactory.json')
+  dContracts.json.VestingMachine = readJsonFile('./abis/omoc/VestingMachine.json')
+  dContracts.json.VotingMachine = readJsonFile('./abis/omoc/VotingMachine.json')
+  dContracts.json.VestingFactory = readJsonFile('./abis/omoc/VestingFactory.json')
   dContracts.json.IERC20 = readJsonFile('./abis/omoc/IERC20.json')
 
   console.log('Reading Multicall2 Contract... address: ', process.env.CONTRACT_MULTICALL2)
@@ -114,15 +114,15 @@ const readContracts = async (web3, configProject) => {
 
   // reading vesting machine from environment address
   if (typeof process.env.CONTRACT_OMOC_VESTING_ADDRESS !== 'undefined') {
-    console.log('Reading OMOC: IVestingFactory Contract... address: ', registryAddr['MOC_VESTING_MACHINE'])
-    dContracts.contracts.ivestingfactory = new web3.eth.Contract(dContracts.json.IVestingFactory.abi, registryAddr['MOC_VESTING_MACHINE'])
+    console.log('Reading OMOC: VestingFactory Contract... address: ', registryAddr['MOC_VESTING_MACHINE'])
+    dContracts.contracts.vestingfactory = new web3.eth.Contract(dContracts.json.VestingFactory.abi, registryAddr['MOC_VESTING_MACHINE'])
 
-    console.log('Reading OMOC: IVestingMachine Contract... address: ', process.env.CONTRACT_OMOC_VESTING_ADDRESS)
-    dContracts.contracts.ivestingmachine = new web3.eth.Contract(dContracts.json.IVestingMachine.abi, process.env.CONTRACT_OMOC_VESTING_ADDRESS)
+    console.log('Reading OMOC: VestingMachine Contract... address: ', process.env.CONTRACT_OMOC_VESTING_ADDRESS)
+    dContracts.contracts.vestingmachine = new web3.eth.Contract(dContracts.json.VestingMachine.abi, process.env.CONTRACT_OMOC_VESTING_ADDRESS)
   }
 
-  console.log('Reading OMOC: IVotingMachine Contract... address: ', registryAddr['MOC_VOTING_MACHINE'])
-  dContracts.contracts.ivotingmachine = new web3.eth.Contract(dContracts.json.IVotingMachine.abi, registryAddr['MOC_VOTING_MACHINE'])
+  console.log('Reading OMOC: VotingMachine Contract... address: ', registryAddr['MOC_VOTING_MACHINE'])
+  dContracts.contracts.votingmachine = new web3.eth.Contract(dContracts.json.VotingMachine.abi, registryAddr['MOC_VOTING_MACHINE'])
 
   console.log('Reading OMOC: Token Govern Contract... address: ', registryAddr['MOC_TOKEN'])
   dContracts.contracts.tg = new web3.eth.Contract(dContracts.json.IERC20.abi, registryAddr['MOC_TOKEN'])

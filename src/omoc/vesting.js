@@ -6,22 +6,22 @@ import Web3 from "web3";
 const vestingVerify = async (web3, dContracts) => {
     /* Mark contract as verified by holder */
     const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
-    const ivestingmachine = dContracts.contracts.ivestingmachine
+    const vestingmachine = dContracts.contracts.vestingmachine
 
     const valueToSend = null
 
     // Calculate estimate gas cost
-    const estimateGas = await ivestingmachine.methods
+    const estimateGas = await vestingmachine.methods
         .verify()
         .estimateGas({ from: userAddress, value: '0x' })
 
     // encode function
-    const encodedCall = ivestingmachine.methods
+    const encodedCall = vestingmachine.methods
         .verify()
         .encodeABI()
 
     // send transaction to the blockchain and get receipt
-    const { receipt, filteredEvents } = await sendTransaction(web3, valueToSend, estimateGas, encodedCall, ivestingmachine._address)
+    const { receipt, filteredEvents } = await sendTransaction(web3, valueToSend, estimateGas, encodedCall, vestingmachine._address)
 
     console.log(`Transaction hash: ${receipt.transactionHash}`)
 
@@ -31,7 +31,7 @@ const vestingVerify = async (web3, dContracts) => {
 const approve = async (web3, dContracts, configProject, amount) => {
 
     const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
-    const vestingMachine = dContracts.contracts.ivestingmachine
+    const vestingMachine = dContracts.contracts.vestingmachine
     const vestingMachineAddress = vestingMachine.options.address
     const tokenDecimals = configProject.tokens.TG.decimals
 
@@ -59,7 +59,7 @@ const approve = async (web3, dContracts, configProject, amount) => {
 const deposit = async (web3, dContracts, configProject, amount) => {
 
     const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
-    const vestingMachine = dContracts.contracts.ivestingmachine
+    const vestingMachine = dContracts.contracts.vestingmachine
     const vestingMachineAddress = vestingMachine.options.address
     const tokenDecimals = configProject.tokens.TG.decimals
 
@@ -87,7 +87,7 @@ const deposit = async (web3, dContracts, configProject, amount) => {
 const withdraw = async (web3, dContracts, configProject, amount) => {
 
     const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
-    const vestingMachine = dContracts.contracts.ivestingmachine
+    const vestingMachine = dContracts.contracts.vestingmachine
     const vestingMachineAddress = vestingMachine.options.address
     const tokenDecimals = configProject.tokens.TG.decimals
 
@@ -115,7 +115,7 @@ const withdraw = async (web3, dContracts, configProject, amount) => {
 const withdrawAll = async (web3, dContracts, configProject, amount) => {
 
     const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
-    const vestingMachine = dContracts.contracts.ivestingmachine
+    const vestingMachine = dContracts.contracts.vestingmachine
     const vestingMachineAddress = vestingMachine.options.address
     const tokenDecimals = configProject.tokens.TG.decimals
 
@@ -143,7 +143,7 @@ const withdrawAll = async (web3, dContracts, configProject, amount) => {
 const addStake = async (web3, dContracts, configProject, amount) => {
 
     const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
-    const vestingMachine = dContracts.contracts.ivestingmachine
+    const vestingMachine = dContracts.contracts.vestingmachine
     const vestingMachineAddress = vestingMachine.options.address
     const stakingmachine = dContracts.contracts.stakingmachine
     const stakingMachineAddress = stakingmachine.options.address
@@ -177,7 +177,7 @@ const addStake = async (web3, dContracts, configProject, amount) => {
 const unStake = async (web3, dContracts, configProject, amount) => {
 
     const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
-    const vestingMachine = dContracts.contracts.ivestingmachine
+    const vestingMachine = dContracts.contracts.vestingmachine
     const vestingMachineAddress = vestingMachine.options.address
     const stakingmachine = dContracts.contracts.stakingmachine
     const stakingMachineAddress = stakingmachine.options.address
@@ -210,7 +210,7 @@ const unStake = async (web3, dContracts, configProject, amount) => {
 const cancelWithdrawDelay = async (web3, dContracts, configProject, idWithdraw) => {
 
     const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
-    const vestingMachine = dContracts.contracts.ivestingmachine
+    const vestingMachine = dContracts.contracts.vestingmachine
     const vestingMachineAddress = vestingMachine.options.address
     const delaymachine = dContracts.contracts.delaymachine
     const delayMachineAddress = delaymachine.options.address
@@ -242,7 +242,7 @@ const cancelWithdrawDelay = async (web3, dContracts, configProject, idWithdraw) 
 const withdrawDelay = async (web3, dContracts, configProject, idWithdraw) => {
 
     const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
-    const vestingMachine = dContracts.contracts.ivestingmachine
+    const vestingMachine = dContracts.contracts.vestingmachine
     const vestingMachineAddress = vestingMachine.options.address
     const delaymachine = dContracts.contracts.delaymachine
     const delayMachineAddress = delaymachine.options.address

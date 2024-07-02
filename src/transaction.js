@@ -8,8 +8,8 @@ const addABIOMoC = (dContracts) => {
   abiDecoder.addABI(dContracts.json.StakingMachine.abi)
   abiDecoder.addABI(dContracts.json.DelayMachine.abi)
   abiDecoder.addABI(dContracts.json.Supporters.abi)
-  abiDecoder.addABI(dContracts.json.IVestingMachine.abi)
-  abiDecoder.addABI(dContracts.json.IVotingMachine.abi)
+  abiDecoder.addABI(dContracts.json.VestingMachine.abi)
+  abiDecoder.addABI(dContracts.json.VotingMachine.abi)
 }
 
 const addABIv2 = (dContracts) => {
