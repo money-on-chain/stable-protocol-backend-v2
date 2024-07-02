@@ -17,7 +17,7 @@ const main = async () => {
     // Obtain all contracts
     const dContracts = await readContracts(web3, configProject)
 
-    const amount = new BigNumber(143)
+    const amount = new BigNumber(144)
 
     // Send transaction and get receipt
     const { receipt, filteredEvents } = await cancelWithdrawDelay(web3, dContracts, configProject, amount)

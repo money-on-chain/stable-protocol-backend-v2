@@ -85,12 +85,12 @@ const decodeEvents = (receipt) => {
     'PeggedTokenChange',
     'PaymentCancel',
     'PaymentDeposit',
-    'PaymentWithdraw',
+    //'PaymentWithdraw',
     'PayEarnings',
     'CancelEarnings',
     'AddStake',
-    'WithdrawStake',
-    'Withdraw'
+    //'WithdrawStake',
+    //'Withdraw'
   ]
 
   const filteredEvents = decodedLogs.filter(event =>

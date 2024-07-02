@@ -17,7 +17,7 @@ const main = async () => {
     // Obtain all contracts
     const dContracts = await readContracts(web3, configProject)
 
-    const idWithdraw = 138
+    const idWithdraw = 79
 
     // Send transaction and get receipt
     const { receipt, filteredEvents } = await delayMachineWithdraw(web3, dContracts, configProject, idWithdraw)
