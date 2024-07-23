@@ -21,7 +21,7 @@ const main = async () => {
     const token = dContracts.contracts.tg
     const contract = dContracts.contracts.stakingmachine
     const tokenDecimals = configProject.tokens.FeeToken.decimals
-    const amount = new BigNumber(10000)
+    const amount = new BigNumber(0)
 
     // Send transaction and get receipt
     const { receipt, filteredEvents } = await AllowanceUseContract(web3, dContracts, configProject, token, contract, amount, tokenDecimals)
