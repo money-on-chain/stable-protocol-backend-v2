@@ -64,7 +64,7 @@ class MultiCall {
           }
           // If there are any problems can not operate
           canOperate = false
-          console.warn("WARN: Cannot operate! Index query:", itemIndex)
+          console.warn(`WARN: Cannot operate! Item: ${keyName} -> ${keyIndex} -> ${keySubIndex}`)
         }
       }
 
