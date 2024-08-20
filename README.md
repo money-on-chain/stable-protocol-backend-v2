@@ -4,8 +4,8 @@
 
 Money on chain token operations (backend to contracts)
 
-* Mint / Redeem Pegged Token (TP): Ex.: USDRIF, GOARS, GOCOP (depends on the project)
-* Mint / Redeem Collateral Token (TC): Ex.: RIFP, GoTurbo
+* Mint / Redeem Pegged Token (TP): Ex.: USDRIF, ARSFLIP, COPFLIP (depends on the project)
+* Mint / Redeem Collateral Token (TC): Ex.: RIFP, BPROMAX
 * Allowance to use Collateral Asset
 * Status of Main MoC Contracts
 * Admin operations: Ex. Execute settlement, calculate EMA, Vendor, etc.
@@ -14,11 +14,11 @@ Money on chain token operations (backend to contracts)
 
 **Tokens**
 
-| Token     | Name             | Ex.                  |                   |
-|-----------|------------------|----------------------|-------------------|
-| TP        | Token Pegged     | USDRIF, GOARS, GOCOP | Pegged token      |
-| TC        | Collateral Token | RIFP, GoTurbo        | HODL + Earn Token |
-| Fee Token | Fee Token        | MOC, FLIP            | Pay w/ Fee Token  |
+| Token     | Name             | Ex.                      |                   |
+|-----------|------------------|--------------------------|-------------------|
+| TP        | Token Pegged     | USDRIF, ARSFLIP, COPFLIP | Pegged token      |
+| TC        | Collateral Token | RIFP, BPROMAX            | HODL + Earn Token |
+| Fee Token | Fee Token        | MOC, FLIP                | Pay w/ Fee Token  |
 
 
 ### Setup
@@ -32,16 +32,16 @@ Money on chain token operations (backend to contracts)
 
 ### Money on Chain projects and tokens 
 
-| Token     | Token name       | Project      | Token Name   | Collateral |
-|-----------|------------------|--------------|--------------|------------|
-| TP        | Pegged Token 1:1 | ROC          | USDRIF       | RIF        |
-| TC        | Collateral Token | ROC          | RIFP         | RIF        |
-| Fee Token | Fee Token        | ROC          | MOC          | -          |
-| TG        | Token Govern     | ROC          | MOC          | -          |
-| TP        | Pegged Token 1:1 | Flipmoney    | GOARS, GOCOP | BPRO       |
-| TC        | Collateral Token | Flipmoney    | BPROMAX      | BPRO       |
-| Fee Token | Fee Token        | Flipmoney    | FLIP         | -          |
-| Fee Token | Token Govern     | Flipmoney    | FLIP         | -          |
+| Token     | Token name       | Project      | Token Name       | Collateral |
+|-----------|------------------|--------------|------------------|------------|
+| TP        | Pegged Token 1:1 | ROC          | USDRIF           | RIF        |
+| TC        | Collateral Token | ROC          | RIFP             | RIF        |
+| Fee Token | Fee Token        | ROC          | MOC              | -          |
+| TG        | Token Govern     | ROC          | MOC              | -          |
+| TP        | Pegged Token 1:1 | Flipmoney    | ARSFLIP, COPFLIP | BPRO       |
+| TC        | Collateral Token | Flipmoney    | BPROMAX          | BPRO       |
+| Fee Token | Fee Token        | Flipmoney    | FLIP             | -          |
+| Fee Token | Token Govern     | Flipmoney    | FLIP             | -          |
 
 
 ### Money on Chain projects and Collateral types
@@ -73,11 +73,12 @@ Money on chain token operations (backend to contracts)
 
 Environment is our already deployed contracts. 
 
-| Network Name        | Project   | Environment                   | Network |
-|---------------------|-----------|-------------------------------|---------|
-| flipmoneyRskTestnet | Flipmoney | Flipmoney Testnet RSK         | Testnet |
-| rocRskTestnet       | ROC       | Rif on Chain Testnet RSK      | Testnet |
-| rocRskMainnet       | ROC       | Rif on Chain RSK              | Mainnet |
+| Network Name        | Project   | Environment              | Network |
+|---------------------|-----------|--------------------------|---------|
+| flipmoneyRskTestnet | Flipmoney | Flipmoney Testnet RSK    | Testnet |
+| flipmoneyRskMainnet | Flipmoney | Flipmoney Mainnet RSK    | Mainnet |
+| rocRskTestnet       | ROC       | Rif on Chain Testnet RSK | Testnet |
+| rocRskMainnet       | ROC       | Rif on Chain RSK         | Mainnet |
 
 
 ### Faucets (testnet)

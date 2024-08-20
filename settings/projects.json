@@ -10,17 +10,17 @@
         },
         "CA": [
           {
-            "name": "BPRO",
+            "name": "BPro",
             "decimals": 18
           }
         ],
         "TP": [
           {
-            "name": "GoARS",
+            "name": "ArsFlip",
             "decimals": 18
           },
           {
-            "name": "GoCOP",
+            "name": "CopFlip",
             "decimals": 18
           }
         ],
