@@ -394,8 +394,80 @@ Period: ${contractStatus.supporters.period}
 Total MoC: ${Web3.utils.fromWei(contractStatus.supporters.totalMoc)} 
 Total Token: ${Web3.utils.fromWei(contractStatus.supporters.totalToken)}
 
+OMOC Voting
+===========
+
+State: ${contractStatus.votingmachine.getState}
+Voting Round: ${contractStatus.votingmachine.getVotingRound}
+Ready to Pre Vote Step: ${contractStatus.votingmachine.readyToPreVoteStep}
+Ready to Vote Step: ${contractStatus.votingmachine.readyToVoteStep}
+Proposal Count: ${contractStatus.votingmachine.getProposalCount}
+
+MIN_STAKE: ${Web3.utils.fromWei(contractStatus.votingmachine.MIN_STAKE)}
+PRE_VOTE_EXPIRATION_TIME_DELTA: ${contractStatus.votingmachine.PRE_VOTE_EXPIRATION_TIME_DELTA} (60 * 60 * 24 * 7)
+MAX_PRE_PROPOSALS: ${contractStatus.votingmachine.MAX_PRE_PROPOSALS}
+PRE_VOTE_MIN_PCT_TO_WIN: ${contractStatus.votingmachine.PRE_VOTE_MIN_PCT_TO_WIN}
+VOTE_MIN_PCT_TO_VETO: ${contractStatus.votingmachine.VOTE_MIN_PCT_TO_VETO}
+MIN_PCT_FOR_QUORUM: ${contractStatus.votingmachine.MIN_PCT_FOR_QUORUM}
+VOTE_MIN_PCT_TO_ACCEPT: ${contractStatus.votingmachine.VOTE_MIN_PCT_TO_ACCEPT}
+PCT_PRECISION: ${contractStatus.votingmachine.PCT_PRECISION}
+VOTING_TIME_DELTA: ${contractStatus.votingmachine.VOTING_TIME_DELTA} (60 * 60 * 24 * 7)
+
 `
+  render += renderVotingProposal(contractStatus.votingmachine.getProposalByIndex)
+  render += renderVoteInfo(contractStatus.votingmachine.getVoteInfo)
+  render += renderVotingData(contractStatus.votingmachine.getVotingData)
+
   return render
+}
+
+const renderVotingProposal = (proposals) => {
+  let render = '';
+  for (let i = 0; i < Object.keys(proposals).length; i++) {
+    if (proposals[i] !== null) {
+      render += renderProposal(proposals[i], i)
+    }
+  }
+  return render
+}
+
+
+const renderProposal = (proposal, index) => {
+
+  return `
+Proposal INDEX: ${index}
+==============
+
+proposalAddress: ${proposal.proposalAddress}
+votingRound: ${proposal.votingRound}
+votes: ${proposal.votes}
+expirationTimeStamp: ${proposal.expirationTimeStamp}  
+  `
+}
+
+const renderVoteInfo = (info) => {
+
+  return `
+Vote Info
+=========
+
+winnerProposal: ${info.winnerProposal}
+inFavorVotes: ${info.inFavorVotes}
+againstVotes: ${info.againstVotes}  
+  `
+}
+
+const renderVotingData = (data) => {
+
+  return `
+Voting Data
+===========
+
+winnerProposal: ${data.winnerProposal}
+inFavorVotes: ${data.inFavorVotes}
+againstVotes: ${data.againstVotes}  
+votingExpirationTime: ${data.votingExpirationTime}
+  `
 }
 
 const pendingWithdrawals = (delaymachine) => {
