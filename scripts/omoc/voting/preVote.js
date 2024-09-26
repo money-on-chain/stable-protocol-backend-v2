@@ -16,7 +16,7 @@ const main = async () => {
     // Obtain all contracts
     const dContracts = await readContracts(web3, configProject)
 
-    const changeContractAddress = '0x8b5C363d1f17Ca91910e87f45BBEd9e6cFbBeAF8';
+    const changeContractAddress = '0x3051CBdf107fD88C2F17b617aC702129A21c552a';
 
     // Send transaction and get receipt
     const { receipt, filteredEvents } = await preVote(web3, dContracts, changeContractAddress)

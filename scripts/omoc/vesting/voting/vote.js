@@ -16,7 +16,7 @@ const main = async () => {
     // Obtain all contracts
     const dContracts = await readContracts(web3, configProject)
 
-    const inFavorAgainst = true;
+    const inFavorAgainst = false;
 
     // Send transaction and get receipt
     const { receipt, filteredEvents } = await vote(web3, dContracts, inFavorAgainst)
