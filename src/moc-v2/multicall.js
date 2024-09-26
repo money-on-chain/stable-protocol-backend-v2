@@ -125,6 +125,8 @@ const contractStatus = async (web3, dContracts, configProject) => {
 
   const tg = dContracts.contracts.tg
 
+  const proposalCountVoting = await votingmachine.methods.getProposalCount().call()
+
   const multiCallRequest = new MultiCall(multicall, web3)
 
   multiCallRequest.aggregate(Moc, Moc.methods.protThrld().encodeABI(), 'uint256', 'protThrld')
@@ -214,10 +216,16 @@ const contractStatus = async (web3, dContracts, configProject) => {
   multiCallRequest.aggregate(votingmachine, votingmachine.methods.readyToVoteStep().encodeABI(), 'uint256', 'votingmachine', 'readyToVoteStep')
   multiCallRequest.aggregate(votingmachine, votingmachine.methods.getProposalCount().encodeABI(), 'uint256', 'votingmachine', 'getProposalCount')
   multiCallRequest.aggregate(votingmachine, votingmachine.methods.getVotingData().encodeABI(), [{ type: 'address', name: 'winnerProposal' }, { type: 'uint256', name: 'inFavorVotes' }, { type: 'uint256', name: 'againstVotes' }, { type: 'uint256', name: 'votingExpirationTime' }], 'votingmachine', 'getVotingData')
-  multiCallRequest.aggregate(votingmachine, votingmachine.methods.getProposalByIndex(0).encodeABI(), [{ type: 'address', name: 'proposalAddress' }, { type: 'uint256', name: 'votingRound' }, { type: 'uint256', name: 'votes' }, { type: 'uint256', name: 'expirationTimeStamp' }], 'votingmachine', 'getProposalByIndex', 0)
-  multiCallRequest.aggregate(votingmachine, votingmachine.methods.getProposalByIndex(1).encodeABI(), [{ type: 'address', name: 'proposalAddress' }, { type: 'uint256', name: 'votingRound' }, { type: 'uint256', name: 'votes' }, { type: 'uint256', name: 'expirationTimeStamp' }], 'votingmachine', 'getProposalByIndex', 1)
-  multiCallRequest.aggregate(votingmachine, votingmachine.methods.getProposalByIndex(2).encodeABI(), [{ type: 'address', name: 'proposalAddress' }, { type: 'uint256', name: 'votingRound' }, { type: 'uint256', name: 'votes' }, { type: 'uint256', name: 'expirationTimeStamp' }], 'votingmachine', 'getProposalByIndex', 2)
-  multiCallRequest.aggregate(votingmachine, votingmachine.methods.getProposalByIndex(3).encodeABI(), [{ type: 'address', name: 'proposalAddress' }, { type: 'uint256', name: 'votingRound' }, { type: 'uint256', name: 'votes' }, { type: 'uint256', name: 'expirationTimeStamp' }], 'votingmachine', 'getProposalByIndex', 3)
+  multiCallRequest.aggregate(tg, tg.methods.totalSupply().encodeABI(), 'uint256', 'votingmachine', 'totalSupply')
+
+  // Proposals
+  let indexProp
+  for (let i = 1; i < 5; i++) {
+    if (proposalCountVoting - i >= 0) {
+      indexProp = proposalCountVoting - i
+      multiCallRequest.aggregate(votingmachine, votingmachine.methods.getProposalByIndex(indexProp).encodeABI(), [{ type: 'address', name: 'proposalAddress' }, { type: 'uint256', name: 'votingRound' }, { type: 'uint256', name: 'votes' }, { type: 'uint256', name: 'expirationTimeStamp' }], 'votingmachine', 'getProposalByIndex', indexProp)
+    }
+  }
 
   // OMOC REGISTRY CONSTANT
   multiCallRequest.aggregate(iregistry, iregistry.methods.getUint(configOmoc.RegistryConstants.MOC_VOTING_MACHINE_MIN_STAKE).encodeABI(), 'uint256', 'votingmachine', 'MIN_STAKE')
@@ -293,9 +301,6 @@ const contractStatus = async (web3, dContracts, configProject) => {
   status.canHistoric = historic.canOperate
   status.historic = historic;
 
-  console.log("DEBUG>>")
-  console.log(status)
-
   return status
 }
 
@@ -312,6 +317,7 @@ const userBalance = async (web3, dContracts, userAddress, configProject) => {
   const tg = dContracts.contracts.tg
   const vestingmachine = dContracts.contracts.vestingmachine
   const vestingfactory = dContracts.contracts.vestingfactory
+  const votingmachine = dContracts.contracts.votingmachine
 
 
   console.log(`Reading user balance ... account: ${userAddress}`)
@@ -331,6 +337,7 @@ const userBalance = async (web3, dContracts, userAddress, configProject) => {
   multiCallRequest.aggregate(delaymachine, delaymachine.methods.getBalance(userAddress).encodeABI(), 'uint256', 'delaymachine', 'getBalance')
   multiCallRequest.aggregate(tg, tg.methods.balanceOf(userAddress).encodeABI(), 'uint256', 'tgBalance')
   multiCallRequest.aggregate(tg, tg.methods.allowance(userAddress, stakingmachine.options.address).encodeABI(), 'uint256', 'stakingmachine', 'tgAllowance')
+  multiCallRequest.aggregate(votingmachine, votingmachine.methods.getUserVote(userAddress).encodeABI(), [{ type: 'address', name: 'voteAddress' }, { type: 'uint256', name: 'voteRound' }], 'votingmachine', 'getUserVote')
 
   // OMOC VESTING MACHINE
   if (typeof vestingmachine !== 'undefined') {

@@ -30,6 +30,33 @@ const preVote = async (web3, dContracts, changeContractAddress) => {
 }
 
 
+const unRegister = async (web3, dContracts, changeContractAddress) => {
+
+    const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
+    const votingMachine = dContracts.contracts.votingmachine
+    const votingMachineAddress = votingMachine.options.address
+
+    const valueToSend = null
+
+    // Calculate estimate gas cost
+    const estimateGas = await votingMachine.methods
+        .unregister(Web3.utils.toChecksumAddress(changeContractAddress))
+        .estimateGas({ from: userAddress, value: '0x' })
+
+    // encode function
+    const encodedCall = votingMachine.methods
+        .unregister(Web3.utils.toChecksumAddress(changeContractAddress))
+        .encodeABI()
+
+    // send transaction to the blockchain and get receipt
+    const { receipt, filteredEvents } = await sendTransaction(web3, valueToSend, estimateGas, encodedCall, votingMachineAddress)
+
+    console.log(`Transaction hash: ${receipt.transactionHash}`)
+
+    return { receipt, filteredEvents }
+}
+
+
 const vote = async (web3, dContracts, inFavorAgainst) => {
 
     const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
@@ -139,6 +166,7 @@ const acceptedStep = async (web3, dContracts) => {
 
 export {
     preVote,
+    unRegister,
     vote,
     preVoteStep,
     voteStep,

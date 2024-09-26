@@ -397,6 +397,7 @@ Total Token: ${Web3.utils.fromWei(contractStatus.supporters.totalToken)}
 OMOC Voting
 ===========
 
+Token Total supply: ${Web3.utils.fromWei(contractStatus.votingmachine.totalSupply)}
 State: ${contractStatus.votingmachine.getState}
 Voting Round: ${contractStatus.votingmachine.getVotingRound}
 Ready to Pre Vote Step: ${contractStatus.votingmachine.readyToPreVoteStep}
@@ -406,10 +407,10 @@ Proposal Count: ${contractStatus.votingmachine.getProposalCount}
 MIN_STAKE: ${Web3.utils.fromWei(contractStatus.votingmachine.MIN_STAKE)}
 PRE_VOTE_EXPIRATION_TIME_DELTA: ${contractStatus.votingmachine.PRE_VOTE_EXPIRATION_TIME_DELTA} (60 * 60 * 24 * 7)
 MAX_PRE_PROPOSALS: ${contractStatus.votingmachine.MAX_PRE_PROPOSALS}
-PRE_VOTE_MIN_PCT_TO_WIN: ${contractStatus.votingmachine.PRE_VOTE_MIN_PCT_TO_WIN}
-VOTE_MIN_PCT_TO_VETO: ${contractStatus.votingmachine.VOTE_MIN_PCT_TO_VETO}
-MIN_PCT_FOR_QUORUM: ${contractStatus.votingmachine.MIN_PCT_FOR_QUORUM}
-VOTE_MIN_PCT_TO_ACCEPT: ${contractStatus.votingmachine.VOTE_MIN_PCT_TO_ACCEPT}
+PRE_VOTE_MIN_PCT_TO_WIN: ${contractStatus.votingmachine.PRE_VOTE_MIN_PCT_TO_WIN} %
+VOTE_MIN_PCT_TO_VETO: ${contractStatus.votingmachine.VOTE_MIN_PCT_TO_VETO} %
+MIN_PCT_FOR_QUORUM: ${contractStatus.votingmachine.MIN_PCT_FOR_QUORUM} %
+VOTE_MIN_PCT_TO_ACCEPT: ${contractStatus.votingmachine.VOTE_MIN_PCT_TO_ACCEPT} %
 PCT_PRECISION: ${contractStatus.votingmachine.PCT_PRECISION}
 VOTING_TIME_DELTA: ${contractStatus.votingmachine.VOTING_TIME_DELTA} (60 * 60 * 24 * 7)
 
@@ -417,6 +418,7 @@ VOTING_TIME_DELTA: ${contractStatus.votingmachine.VOTING_TIME_DELTA} (60 * 60 * 
   render += renderVotingProposal(contractStatus.votingmachine.getProposalByIndex)
   render += renderVoteInfo(contractStatus.votingmachine.getVoteInfo)
   render += renderVotingData(contractStatus.votingmachine.getVotingData)
+  render += renderVotingPower(contractStatus)
 
   return render
 }
@@ -432,6 +434,29 @@ const renderVotingProposal = (proposals) => {
 }
 
 
+const renderVotingPower = (contractStatus) => {
+
+  const totalSupply = Web3.utils.fromWei(contractStatus.votingmachine.totalSupply)
+  const PRE_VOTE_MIN_TO_WIN = new BigNumber(totalSupply).times(new BigNumber(
+      contractStatus.votingmachine.PRE_VOTE_MIN_PCT_TO_WIN)).div(100);
+  const VOTE_MIN_TO_VETO = new BigNumber(totalSupply).times(new BigNumber(
+      contractStatus.votingmachine.VOTE_MIN_PCT_TO_VETO)).div(100);
+  const MIN_FOR_QUORUM = new BigNumber(totalSupply).times(new BigNumber(
+      contractStatus.votingmachine.MIN_PCT_FOR_QUORUM)).div(100);
+  const VOTE_MIN_TO_ACCEPT = new BigNumber(totalSupply).times(new BigNumber(
+      contractStatus.votingmachine.VOTE_MIN_PCT_TO_ACCEPT)).div(100);
+
+  return `
+Voting Power:
+============
+
+PRE_VOTE_MIN_TO_WIN: ${PRE_VOTE_MIN_TO_WIN}
+VOTE_MIN_TO_VETO: ${VOTE_MIN_TO_VETO}
+MIN_FOR_QUORUM: ${MIN_FOR_QUORUM}
+VOTE_MIN_TO_ACCEPT: ${VOTE_MIN_TO_ACCEPT}
+  `
+}
+
 const renderProposal = (proposal, index) => {
 
   return `
@@ -440,8 +465,8 @@ Proposal INDEX: ${index}
 
 proposalAddress: ${proposal.proposalAddress}
 votingRound: ${proposal.votingRound}
-votes: ${proposal.votes}
-expirationTimeStamp: ${proposal.expirationTimeStamp}  
+votes: ${Web3.utils.fromWei(proposal.votes)}
+expirationTimeStamp: ${formatTimestamp(new BigNumber(proposal.expirationTimeStamp).times(1000).toNumber())}
   `
 }
 
@@ -452,8 +477,8 @@ Vote Info
 =========
 
 winnerProposal: ${info.winnerProposal}
-inFavorVotes: ${info.inFavorVotes}
-againstVotes: ${info.againstVotes}  
+inFavorVotes: ${Web3.utils.fromWei(info.inFavorVotes)}
+againstVotes: ${Web3.utils.fromWei(info.againstVotes)}  
   `
 }
 
@@ -464,9 +489,9 @@ Voting Data
 ===========
 
 winnerProposal: ${data.winnerProposal}
-inFavorVotes: ${data.inFavorVotes}
-againstVotes: ${data.againstVotes}  
-votingExpirationTime: ${data.votingExpirationTime}
+inFavorVotes: ${Web3.utils.fromWei(data.inFavorVotes)}
+againstVotes: ${Web3.utils.fromWei(data.againstVotes)}  
+votingExpirationTime: ${formatTimestamp(new BigNumber(data.votingExpirationTime).times(1000).toNumber())}
   `
 }
 
@@ -603,6 +628,14 @@ ${config.tokens.TC.name} Balance: ${fromContractPrecisionDecimals(userBalance.TC
 ${config.tokens.TC.name} Allowance: ${fromContractPrecisionDecimals(userBalance.TC.allowance, config.tokens.TC.decimals).toString()} ${config.tokens.TC.name}
 ${config.tokens.FeeToken.name} Balance: ${fromContractPrecisionDecimals(userBalance.FeeToken.balance, config.tokens.FeeToken.decimals).toString()} ${config.tokens.FeeToken.name}
 ${config.tokens.FeeToken.name} Allowance: ${fromContractPrecisionDecimals(userBalance.FeeToken.allowance, config.tokens.FeeToken.decimals).toString()} ${config.tokens.FeeToken.name}
+
+
+OMOC VOTING
+===========
+
+Vote Address: ${userBalance.votingmachine.getUserVote.voteAddress}
+Vote Round: ${userBalance.votingmachine.getUserVote.voteRound}
+
 
 OMOC STAKING & WITHDRAWS
 ========================
