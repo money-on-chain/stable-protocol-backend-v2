@@ -42,27 +42,6 @@ const readContracts = async (web3, configProject) => {
   console.log('Reading Multicall2 Contract... address: ', process.env.CONTRACT_MULTICALL2)
   dContracts.contracts.multicall = new web3.eth.Contract(dContracts.json.Multicall2.abi, process.env.CONTRACT_MULTICALL2)
 
-  dContracts.contracts.TP = []
-  const contractTP = process.env.CONTRACT_TP.split(",")
-  for (let i = 0; i < configProject.tokens.TP.length; i++) {
-    console.log(`Reading ${configProject.tokens.TP[i].name} Token Contract... address: `, contractTP[i])
-    dContracts.contracts.TP.push(new web3.eth.Contract(dContracts.json.TokenPegged.abi, contractTP[i]))
-  }
-
-  dContracts.contracts.CA = []
-  const contractCA = process.env.CONTRACT_CA.split(",")
-  for (let i = 0; i < configProject.tokens.CA.length; i++) {
-    console.log(`Reading ${configProject.tokens.CA[i].name} Token Contract... address: `, contractCA[i])
-    dContracts.contracts.CA.push(new web3.eth.Contract(dContracts.json.CollateralAsset.abi, contractCA[i]))
-  }
-
-  dContracts.contracts.PP_TP = []
-  const contractPPTP = process.env.CONTRACT_PRICE_PROVIDER_TP.split(",")
-  for (let i = 0; i < configProject.tokens.TP.length; i++) {
-    console.log(`Reading Price Provider ${configProject.tokens.TP[i].name} Contract... address: `, contractPPTP[i])
-    dContracts.contracts.PP_TP.push(new web3.eth.Contract(dContracts.json.IPriceProvider.abi, contractPPTP[i]))
-  }
-
   dContracts.contracts.PP_CA = []
   const contractPPCA = process.env.CONTRACT_PRICE_PROVIDER_CA.split(",")
   for (let i = 0; i < configProject.tokens.CA.length; i++) {
@@ -76,26 +55,75 @@ const readContracts = async (web3, configProject) => {
   console.log('Reading Moc Contract... address: ', process.env.CONTRACT_MOC)
   dContracts.contracts.Moc = new web3.eth.Contract(dContracts.json.Moc.abi, process.env.CONTRACT_MOC)
 
-  console.log('Reading Collateral Token Contract... address: ', process.env.CONTRACT_TC)
-  dContracts.contracts.CollateralToken = new web3.eth.Contract(dContracts.json.CollateralToken.abi, process.env.CONTRACT_TC)
+  // Get contracts addresses from MoC Contract
+  const feeToken = await dContracts.contracts.Moc.methods.feeToken().call()
+  const feeTokenPriceProvider = await dContracts.contracts.Moc.methods.feeTokenPriceProvider().call()
+  const acTokenAddress = await dContracts.contracts.Moc.methods.acToken().call()
+  const tcTokenAddress = await dContracts.contracts.Moc.methods.tcToken().call()
+  const maxAbsoluteOpProvider = await dContracts.contracts.Moc.methods.maxAbsoluteOpProvider().call()
+  const maxOpDiffProvider = await dContracts.contracts.Moc.methods.maxOpDiffProvider().call()
+  const mocQueueAddress = await dContracts.contracts.Moc.methods.mocQueue().call()
+  const mocVendorsAddress = await dContracts.contracts.Moc.methods.mocVendors().call()
 
-  console.log('Reading MocVendors Contract... address: ', process.env.CONTRACT_MOC_VENDORS)
-  dContracts.contracts.MocVendors = new web3.eth.Contract(dContracts.json.MocVendors.abi, process.env.CONTRACT_MOC_VENDORS)
+  dContracts.contracts.CA = []
+  const contractCA = [acTokenAddress]
+  for (let i = 0; i < configProject.tokens.CA.length; i++) {
+    console.log(`Reading ${configProject.tokens.CA[i].name} Token Contract... address: `, contractCA[i])
+    dContracts.contracts.CA.push(new web3.eth.Contract(dContracts.json.CollateralAsset.abi, contractCA[i]))
+  }
 
-  console.log('Reading MocQueue Contract... address: ', process.env.CONTRACT_MOC_QUEUE)
-  dContracts.contracts.MocQueue = new web3.eth.Contract(dContracts.json.MocQueue.abi, process.env.CONTRACT_MOC_QUEUE)
+  const MAX_LEN_ARRAY_TP = 10;
 
-  console.log('Reading Fee Token Contract... address: ', process.env.CONTRACT_FEE_TOKEN)
-  dContracts.contracts.FeeToken = new web3.eth.Contract(dContracts.json.FeeToken.abi, process.env.CONTRACT_FEE_TOKEN)
+  const tpAddresses = [];
+  let tpAddressesProviders = []
+  let tpAddress;
+  let tpIndex;
+  let tpItem;
+  for (let i = 0; i < MAX_LEN_ARRAY_TP; i++) {
+    try {
+      tpAddress = await dContracts.contracts.Moc.methods.tpTokens(i).call()
+      tpIndex = await dContracts.contracts.Moc.methods.peggedTokenIndex(tpAddress).call()
+      if (!tpIndex.exists) continue
+      tpItem = await dContracts.contracts.Moc.methods.pegContainer(tpIndex.index).call()
+      tpAddresses.push(tpAddress)
+      tpAddressesProviders.push(tpItem.priceProvider)
+    } catch (e) {
+      break;
+    }
+  }
 
-  console.log('Reading Fee Token PP Contract... address: ', process.env.CONTRACT_PRICE_PROVIDER_FEE_TOKEN)
-  dContracts.contracts.PP_FeeToken = new web3.eth.Contract(dContracts.json.IPriceProvider.abi, process.env.CONTRACT_PRICE_PROVIDER_FEE_TOKEN)
+  dContracts.contracts.TP = []
+  for (let i = 0; i < configProject.tokens.TP.length; i++) {
+    console.log(`Reading ${configProject.tokens.TP[i].name} Token Contract... address: `, tpAddresses[i])
+    dContracts.contracts.TP.push(new web3.eth.Contract(dContracts.json.TokenPegged.abi, tpAddresses[i]))
+  }
 
-  console.log('Reading FC_MAX_ABSOLUTE_OP_PROVIDER... address: ', process.env.CONTRACT_FC_MAX_ABSOLUTE_OP_PROVIDER)
-  dContracts.contracts.FC_MAX_ABSOLUTE_OP_PROVIDER = new web3.eth.Contract(dContracts.json.IPriceProvider.abi, process.env.CONTRACT_FC_MAX_ABSOLUTE_OP_PROVIDER)
+  dContracts.contracts.PP_TP = []
+  for (let i = 0; i < configProject.tokens.TP.length; i++) {
+    console.log(`Reading Price Provider ${configProject.tokens.TP[i].name} Contract... address: `, tpAddressesProviders[i])
+    dContracts.contracts.PP_TP.push(new web3.eth.Contract(dContracts.json.IPriceProvider.abi, tpAddressesProviders[i]))
+  }
 
-  console.log('Reading FC_MAX_OP_DIFFERENCE_PROVIDER... address: ', process.env.CONTRACT_FC_MAX_OP_DIFFERENCE_PROVIDER)
-  dContracts.contracts.FC_MAX_OP_DIFFERENCE_PROVIDER = new web3.eth.Contract(dContracts.json.IPriceProvider.abi, process.env.CONTRACT_FC_MAX_OP_DIFFERENCE_PROVIDER)
+  console.log('Reading Collateral Token Contract... address: ', tcTokenAddress)
+  dContracts.contracts.CollateralToken = new web3.eth.Contract(dContracts.json.CollateralToken.abi, tcTokenAddress)
+
+  console.log('Reading MocVendors Contract... address: ', mocVendorsAddress)
+  dContracts.contracts.MocVendors = new web3.eth.Contract(dContracts.json.MocVendors.abi, mocVendorsAddress)
+
+  console.log('Reading MocQueue Contract... address: ', mocQueueAddress)
+  dContracts.contracts.MocQueue = new web3.eth.Contract(dContracts.json.MocQueue.abi, mocQueueAddress)
+
+  console.log('Reading Fee Token Contract... address: ', feeToken)
+  dContracts.contracts.FeeToken = new web3.eth.Contract(dContracts.json.FeeToken.abi, feeToken)
+
+  console.log('Reading Fee Token PP Contract... address: ', feeTokenPriceProvider)
+  dContracts.contracts.PP_FeeToken = new web3.eth.Contract(dContracts.json.IPriceProvider.abi, feeTokenPriceProvider)
+
+  console.log('Reading FC_MAX_ABSOLUTE_OP_PROVIDER... address: ', maxAbsoluteOpProvider)
+  dContracts.contracts.FC_MAX_ABSOLUTE_OP_PROVIDER = new web3.eth.Contract(dContracts.json.IPriceProvider.abi, maxAbsoluteOpProvider)
+
+  console.log('Reading FC_MAX_OP_DIFFERENCE_PROVIDER... address: ', maxOpDiffProvider)
+  dContracts.contracts.FC_MAX_OP_DIFFERENCE_PROVIDER = new web3.eth.Contract(dContracts.json.IPriceProvider.abi, maxOpDiffProvider)
 
   console.log('Reading OMOC: IRegistry Contract... address: ', process.env.CONTRACT_IREGISTRY)
   dContracts.contracts.iregistry = new web3.eth.Contract(dContracts.json.IRegistry.abi, process.env.CONTRACT_IREGISTRY)
