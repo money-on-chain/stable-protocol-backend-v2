@@ -58,6 +58,8 @@ class MultiCall {
           console.warn("WARN: Leverage too high!")
         } else if (keyName === 'votingmachine' && keyIndex === 'getProposalByIndex') {
           value = null
+        } else if (keyName === 'tpTokens') {
+          value = null
         } else {
           // Not Ok Error on calling
           if (resultType === 'uint256') {
@@ -412,8 +414,33 @@ const registryAddresses = async (web3, dContracts) => {
   return await multiCallRequest.tryBlockAndAggregate();
 }
 
+
+const mocAddresses = async (web3, dContracts) => {
+
+  const multicall = dContracts.contracts.multicall
+  const moc = dContracts.contracts.Moc
+
+  const multiCallRequest = new MultiCall(multicall, web3)
+  multiCallRequest.aggregate(moc, moc.methods.feeToken().encodeABI(), 'address', 'feeToken')
+  multiCallRequest.aggregate(moc, moc.methods.feeTokenPriceProvider().encodeABI(), 'address', 'feeTokenPriceProvider')
+  multiCallRequest.aggregate(moc, moc.methods.acToken().encodeABI(), 'address', 'acToken')
+  multiCallRequest.aggregate(moc, moc.methods.tcToken().encodeABI(), 'address', 'tcToken')
+  multiCallRequest.aggregate(moc, moc.methods.maxAbsoluteOpProvider().encodeABI(), 'address', 'maxAbsoluteOpProvider')
+  multiCallRequest.aggregate(moc, moc.methods.maxOpDiffProvider().encodeABI(), 'address', 'maxOpDiffProvider')
+  multiCallRequest.aggregate(moc, moc.methods.mocQueue().encodeABI(), 'address', 'mocQueue')
+  multiCallRequest.aggregate(moc, moc.methods.mocVendors().encodeABI(), 'address', 'mocVendors')
+
+  const MAX_LEN_ARRAY_TP = 4;
+  for (let i = 0; i < MAX_LEN_ARRAY_TP; i++) {
+    multiCallRequest.aggregate(moc, moc.methods.tpTokens(i).encodeABI(), 'address', 'tpTokens', i)
+  }
+
+  return await multiCallRequest.tryBlockAndAggregate();
+}
+
 export {
   contractStatus,
   userBalance,
-  registryAddresses
+  registryAddresses,
+  mocAddresses
 }
