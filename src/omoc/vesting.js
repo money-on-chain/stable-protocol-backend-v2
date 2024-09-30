@@ -270,6 +270,69 @@ const withdrawDelay = async (web3, dContracts, configProject, idWithdraw) => {
     return { receipt, filteredEvents }
 }
 
+const preVote = async (web3, dContracts, changeContractAddress) => {
+
+    const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
+    const vestingMachine = dContracts.contracts.vestingmachine
+    const vestingMachineAddress = vestingMachine.options.address
+    const votingMachine = dContracts.contracts.votingmachine
+    const votingMachineAddress = votingMachine.options.address
+
+    const target = votingMachineAddress
+    const data = votingMachine.methods.preVote(Web3.utils.toChecksumAddress(changeContractAddress)).encodeABI()
+
+    const valueToSend = null
+
+    // Calculate estimate gas cost
+    const estimateGas = await vestingMachine.methods
+        .callWithData(target, data)
+        .estimateGas({ from: userAddress, value: '0x' })
+
+    // encode function
+    const encodedCall = vestingMachine.methods
+        .callWithData(target, data)
+        .encodeABI()
+
+    // send transaction to the blockchain and get receipt
+    const { receipt, filteredEvents } = await sendTransaction(web3, valueToSend, estimateGas, encodedCall, vestingMachineAddress)
+
+    console.log(`Transaction hash: ${receipt.transactionHash}`)
+
+    return { receipt, filteredEvents }
+}
+
+
+const vote = async (web3, dContracts, inFavorAgainst) => {
+
+    const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
+    const vestingMachine = dContracts.contracts.vestingmachine
+    const vestingMachineAddress = vestingMachine.options.address
+    const votingMachine = dContracts.contracts.votingmachine
+    const votingMachineAddress = votingMachine.options.address
+
+    const target = votingMachineAddress
+    const data = votingMachine.methods.vote(inFavorAgainst).encodeABI()
+
+    const valueToSend = null
+
+    // Calculate estimate gas cost
+    const estimateGas = await vestingMachine.methods
+        .callWithData(target, data)
+        .estimateGas({ from: userAddress, value: '0x' })
+
+    // encode function
+    const encodedCall = vestingMachine.methods
+        .callWithData(target, data)
+        .encodeABI()
+
+    // send transaction to the blockchain and get receipt
+    const { receipt, filteredEvents } = await sendTransaction(web3, valueToSend, estimateGas, encodedCall, vestingMachineAddress)
+
+    console.log(`Transaction hash: ${receipt.transactionHash}`)
+
+    return { receipt, filteredEvents }
+}
+
 
 export {
     vestingVerify,
@@ -280,5 +343,7 @@ export {
     addStake,
     unStake,
     cancelWithdrawDelay,
-    withdrawDelay
+    withdrawDelay,
+    preVote,
+    vote
 }
