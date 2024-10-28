@@ -222,7 +222,7 @@ const contractStatus = async (web3, dContracts, configProject) => {
 
   // Proposals
   let indexProp
-  for (let i = 1; i < 5; i++) {
+  for (let i = 1; i < 50; i++) {
     if (proposalCountVoting - i >= 0) {
       indexProp = proposalCountVoting - i
       multiCallRequest.aggregate(votingmachine, votingmachine.methods.getProposalByIndex(indexProp).encodeABI(), [{ type: 'address', name: 'proposalAddress' }, { type: 'uint256', name: 'votingRound' }, { type: 'uint256', name: 'votes' }, { type: 'uint256', name: 'expirationTimeStamp' }], 'votingmachine', 'getProposalByIndex', indexProp)

@@ -446,7 +446,9 @@ VOTING_TIME_DELTA: ${contractStatus.votingmachine.VOTING_TIME_DELTA} (60 * 60 * 
 
 const renderVotingProposal = (proposals) => {
   let render = '';
-  for (let i = 0; i < Object.keys(proposals).length; i++) {
+  let lenProp = 0
+  if (proposals != null) lenProp = Object.keys(proposals).length;
+  for (let i = 0; i < lenProp; i++) {
     if (proposals[i] !== null) {
       render += renderProposal(proposals[i], i)
     }
@@ -666,6 +668,12 @@ Staking Machine Balance: ${fromContractPrecisionDecimals(userBalance.stakingmach
 Staking Machine Locked Balance: ${fromContractPrecisionDecimals(userBalance.stakingmachine.getLockedBalance, config.tokens.TG.decimals).toString()} ${config.tokens.TG.name}
 Delay Machine Balance: ${fromContractPrecisionDecimals(userBalance.delaymachine.getBalance, config.tokens.TG.decimals).toString()} ${config.tokens.TG.name}
 ${config.tokens.FeeToken.name} Staking Machine Allowance: ${fromContractPrecisionDecimals(userBalance.stakingmachine.tgAllowance, config.tokens.TG.decimals).toString()} ${config.tokens.FeeToken.name}
+
+OMOC LOCKED INFO
+================
+Staking Machine Locked Balance: ${fromContractPrecisionDecimals(userBalance.stakingmachine.getLockingInfo.amount, config.tokens.TG.decimals).toString()} ${config.tokens.TG.name}
+Staking Machine Locked Balance Until: ${userBalance.stakingmachine.getLockingInfo.untilTimestamp}
+
 
 DELAY PENDING WITHDRAWS
 =======================

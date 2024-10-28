@@ -16,7 +16,7 @@ const main = async () => {
     // Obtain all contracts
     const dContracts = await readContracts(web3, configProject)
 
-    const changeContractAddress = '0x9ccb5ba1D7ebD746044458A23FB6af80836Dba70';
+    const changeContractAddress = '0x975Bcf5D21A456C539bc7CcE008fC288D511D447';
 
     // Send transaction and get receipt
     const { receipt, filteredEvents } = await unRegister(web3, dContracts, changeContractAddress)
