@@ -1,9 +1,8 @@
 import * as dotenv from 'dotenv'
 
-import { readJsonFile, getWeb3 } from '../../../src/utils.js'
-import { readContracts } from '../../../src/moc-v2/contracts.js'
-import { addStake } from '../../../src/omoc/staking.js'
-import BigNumber from "bignumber.js";
+import { readJsonFile, getWeb3 } from '../../../../src/utils.js'
+import { readContracts } from '../../../../src/moc-v2/contracts.js'
+import { preVote } from '../../../../src/omoc/vesting.js'
 
 dotenv.config()
 
@@ -17,10 +16,10 @@ const main = async () => {
     // Obtain all contracts
     const dContracts = await readContracts(web3, configProject)
 
-    const amount = new BigNumber(49000)
+    const changeContractAddress = '0xf6F7063c5Da82e6a4e87Ca996b0F82ff06953c12';
 
     // Send transaction and get receipt
-    const { receipt, filteredEvents } = await addStake(web3, dContracts, configProject, amount)
+    const { receipt, filteredEvents } = await preVote(web3, dContracts, changeContractAddress)
 }
 
 main()

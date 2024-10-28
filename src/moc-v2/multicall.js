@@ -1,6 +1,9 @@
 import BigNumber from 'bignumber.js'
 import {fromContractPrecisionDecimals, readJsonFile} from '../utils.js'
 
+// getting constants from omoc.json
+const configOmoc = readJsonFile('./settings/omoc.json')
+
 
 class MultiCall {
   constructor(multicall, web3) {
@@ -53,6 +56,10 @@ class MultiCall {
           // very big number (infinity+)
           value = new BigNumber(115792089237316200000000000000000000000000000000000000)
           console.warn("WARN: Leverage too high!")
+        } else if (keyName === 'votingmachine' && keyIndex === 'getProposalByIndex') {
+          value = null
+        } else if (keyName === 'tpTokens') {
+          value = null
         } else {
           // Not Ok Error on calling
           if (resultType === 'uint256') {
@@ -112,11 +119,15 @@ const contractStatus = async (web3, dContracts, configProject) => {
   const FC_MAX_OP_DIFFERENCE_PROVIDER = dContracts.contracts.FC_MAX_OP_DIFFERENCE_PROVIDER
 
   // OMOC
+  const iregistry = dContracts.contracts.iregistry
   const stakingmachine = dContracts.contracts.stakingmachine
   const delaymachine = dContracts.contracts.delaymachine
   const supporters = dContracts.contracts.supporters
+  const votingmachine = dContracts.contracts.votingmachine
 
   const tg = dContracts.contracts.tg
+
+  const proposalCountVoting = await votingmachine.methods.getProposalCount().call()
 
   const multiCallRequest = new MultiCall(multicall, web3)
 
@@ -200,9 +211,36 @@ const contractStatus = async (web3, dContracts, configProject) => {
   multiCallRequest.aggregate(supporters, supporters.methods.period().encodeABI(), 'uint256', 'supporters', 'period')
   multiCallRequest.aggregate(supporters, supporters.methods.totalMoc().encodeABI(), 'uint256', 'supporters', 'totalMoc')
   multiCallRequest.aggregate(supporters, supporters.methods.totalToken().encodeABI(), 'uint256', 'supporters', 'totalToken')
+  multiCallRequest.aggregate(votingmachine, votingmachine.methods.getState().encodeABI(), 'uint256', 'votingmachine', 'getState')
+  multiCallRequest.aggregate(votingmachine, votingmachine.methods.getVotingRound().encodeABI(), 'uint256', 'votingmachine', 'getVotingRound')
+  multiCallRequest.aggregate(votingmachine, votingmachine.methods.getVoteInfo().encodeABI(), [{ type: 'address', name: 'winnerProposal' }, { type: 'uint256', name: 'inFavorVotes' }, { type: 'uint256', name: 'againstVotes' }], 'votingmachine', 'getVoteInfo')
+  multiCallRequest.aggregate(votingmachine, votingmachine.methods.readyToPreVoteStep().encodeABI(), 'uint256', 'votingmachine', 'readyToPreVoteStep')
+  multiCallRequest.aggregate(votingmachine, votingmachine.methods.readyToVoteStep().encodeABI(), 'uint256', 'votingmachine', 'readyToVoteStep')
+  multiCallRequest.aggregate(votingmachine, votingmachine.methods.getProposalCount().encodeABI(), 'uint256', 'votingmachine', 'getProposalCount')
+  multiCallRequest.aggregate(votingmachine, votingmachine.methods.getVotingData().encodeABI(), [{ type: 'address', name: 'winnerProposal' }, { type: 'uint256', name: 'inFavorVotes' }, { type: 'uint256', name: 'againstVotes' }, { type: 'uint256', name: 'votingExpirationTime' }], 'votingmachine', 'getVotingData')
+  multiCallRequest.aggregate(tg, tg.methods.totalSupply().encodeABI(), 'uint256', 'votingmachine', 'totalSupply')
 
-  console.log('Reading contract status ...')
+  // Proposals
+  let indexProp
+  for (let i = 1; i < 50; i++) {
+    if (proposalCountVoting - i >= 0) {
+      indexProp = proposalCountVoting - i
+      multiCallRequest.aggregate(votingmachine, votingmachine.methods.getProposalByIndex(indexProp).encodeABI(), [{ type: 'address', name: 'proposalAddress' }, { type: 'uint256', name: 'votingRound' }, { type: 'uint256', name: 'votes' }, { type: 'uint256', name: 'expirationTimeStamp' }], 'votingmachine', 'getProposalByIndex', indexProp)
+    }
+  }
 
+  // OMOC REGISTRY CONSTANT
+  multiCallRequest.aggregate(iregistry, iregistry.methods.getUint(configOmoc.RegistryConstants.MOC_VOTING_MACHINE_MIN_STAKE).encodeABI(), 'uint256', 'votingmachine', 'MIN_STAKE')
+  multiCallRequest.aggregate(iregistry, iregistry.methods.getUint(configOmoc.RegistryConstants.MOC_VOTING_MACHINE_PRE_VOTE_EXPIRATION_TIME_DELTA).encodeABI(), 'uint256', 'votingmachine', 'PRE_VOTE_EXPIRATION_TIME_DELTA')
+  multiCallRequest.aggregate(iregistry, iregistry.methods.getUint(configOmoc.RegistryConstants.MOC_VOTING_MACHINE_MAX_PRE_PROPOSALS).encodeABI(), 'uint256', 'votingmachine', 'MAX_PRE_PROPOSALS')
+  multiCallRequest.aggregate(iregistry, iregistry.methods.getUint(configOmoc.RegistryConstants.MOC_VOTING_MACHINE_PRE_VOTE_MIN_PCT_TO_WIN).encodeABI(), 'uint256', 'votingmachine', 'PRE_VOTE_MIN_PCT_TO_WIN')
+  multiCallRequest.aggregate(iregistry, iregistry.methods.getUint(configOmoc.RegistryConstants.MOC_VOTING_MACHINE_VOTE_MIN_PCT_TO_VETO).encodeABI(), 'uint256', 'votingmachine', 'VOTE_MIN_PCT_TO_VETO')
+  multiCallRequest.aggregate(iregistry, iregistry.methods.getUint(configOmoc.RegistryConstants.MOC_VOTING_MACHINE_VOTE_MIN_PCT_FOR_QUORUM).encodeABI(), 'uint256', 'votingmachine', 'MIN_PCT_FOR_QUORUM')
+  multiCallRequest.aggregate(iregistry, iregistry.methods.getUint(configOmoc.RegistryConstants.MOC_VOTING_MACHINE_VOTE_MIN_PCT_TO_ACCEPT).encodeABI(), 'uint256', 'votingmachine', 'VOTE_MIN_PCT_TO_ACCEPT')
+  multiCallRequest.aggregate(iregistry, iregistry.methods.getUint(configOmoc.RegistryConstants.MOC_VOTING_MACHINE_PCT_PRECISION).encodeABI(), 'uint256', 'votingmachine', 'PCT_PRECISION')
+  multiCallRequest.aggregate(iregistry, iregistry.methods.getUint(configOmoc.RegistryConstants.MOC_VOTING_MACHINE_VOTING_TIME_DELTA).encodeABI(), 'uint256', 'votingmachine', 'VOTING_TIME_DELTA')
+
+  // PP TP
   let PP_TP
   let tpAddress
   for (let i = 0; i < configProject.tokens.TP.length; i++) {
@@ -219,6 +257,7 @@ const contractStatus = async (web3, dContracts, configProject) => {
     multiCallRequest.aggregate(Moc, Moc.methods.tpEma(i).encodeABI(), 'uint256', 'tpEma', i)
   }
 
+  // PP CA
   let PP_CA
   let CA
   for (let i = 0; i < configProject.tokens.CA.length; i++) {
@@ -227,6 +266,8 @@ const contractStatus = async (web3, dContracts, configProject) => {
     multiCallRequest.aggregate(CA, CA.methods.balanceOf(Moc.options.address).encodeABI(), 'uint256', 'getACBalance', i)
     multiCallRequest.aggregate(PP_CA, PP_CA.methods.peek().encodeABI(), 'uint256', 'PP_CA', i)
   }
+
+  console.log('Reading contract status ...')
 
   const status = await multiCallRequest.tryBlockAndAggregate();
 
@@ -278,6 +319,7 @@ const userBalance = async (web3, dContracts, userAddress, configProject) => {
   const tg = dContracts.contracts.tg
   const vestingmachine = dContracts.contracts.vestingmachine
   const vestingfactory = dContracts.contracts.vestingfactory
+  const votingmachine = dContracts.contracts.votingmachine
 
 
   console.log(`Reading user balance ... account: ${userAddress}`)
@@ -297,7 +339,9 @@ const userBalance = async (web3, dContracts, userAddress, configProject) => {
   multiCallRequest.aggregate(delaymachine, delaymachine.methods.getBalance(userAddress).encodeABI(), 'uint256', 'delaymachine', 'getBalance')
   multiCallRequest.aggregate(tg, tg.methods.balanceOf(userAddress).encodeABI(), 'uint256', 'tgBalance')
   multiCallRequest.aggregate(tg, tg.methods.allowance(userAddress, stakingmachine.options.address).encodeABI(), 'uint256', 'stakingmachine', 'tgAllowance')
+  multiCallRequest.aggregate(votingmachine, votingmachine.methods.getUserVote(userAddress).encodeABI(), [{ type: 'address', name: 'voteAddress' }, { type: 'uint256', name: 'voteRound' }], 'votingmachine', 'getUserVote')
 
+  // OMOC VESTING MACHINE
   if (typeof vestingmachine !== 'undefined') {
     multiCallRequest.aggregate(vestingfactory, vestingfactory.methods.isTGEConfigured().encodeABI(), 'bool', 'vestingfactory', 'isTGEConfigured')
     multiCallRequest.aggregate(vestingfactory, vestingfactory.methods.getTGETimestamp().encodeABI(), 'uint256', 'vestingfactory', 'getTGETimestamp')
@@ -354,8 +398,6 @@ const userBalance = async (web3, dContracts, userAddress, configProject) => {
 
 const registryAddresses = async (web3, dContracts) => {
 
-  // getting constants from omoc.json
-  const configOmoc = readJsonFile('./settings/omoc.json')
   const multicall = dContracts.contracts.multicall
   const iregistry = dContracts.contracts.iregistry
 
@@ -372,8 +414,33 @@ const registryAddresses = async (web3, dContracts) => {
   return await multiCallRequest.tryBlockAndAggregate();
 }
 
+
+const mocAddresses = async (web3, dContracts) => {
+
+  const multicall = dContracts.contracts.multicall
+  const moc = dContracts.contracts.Moc
+
+  const multiCallRequest = new MultiCall(multicall, web3)
+  multiCallRequest.aggregate(moc, moc.methods.feeToken().encodeABI(), 'address', 'feeToken')
+  multiCallRequest.aggregate(moc, moc.methods.feeTokenPriceProvider().encodeABI(), 'address', 'feeTokenPriceProvider')
+  multiCallRequest.aggregate(moc, moc.methods.acToken().encodeABI(), 'address', 'acToken')
+  multiCallRequest.aggregate(moc, moc.methods.tcToken().encodeABI(), 'address', 'tcToken')
+  multiCallRequest.aggregate(moc, moc.methods.maxAbsoluteOpProvider().encodeABI(), 'address', 'maxAbsoluteOpProvider')
+  multiCallRequest.aggregate(moc, moc.methods.maxOpDiffProvider().encodeABI(), 'address', 'maxOpDiffProvider')
+  multiCallRequest.aggregate(moc, moc.methods.mocQueue().encodeABI(), 'address', 'mocQueue')
+  multiCallRequest.aggregate(moc, moc.methods.mocVendors().encodeABI(), 'address', 'mocVendors')
+
+  const MAX_LEN_ARRAY_TP = 4;
+  for (let i = 0; i < MAX_LEN_ARRAY_TP; i++) {
+    multiCallRequest.aggregate(moc, moc.methods.tpTokens(i).encodeABI(), 'address', 'tpTokens', i)
+  }
+
+  return await multiCallRequest.tryBlockAndAggregate();
+}
+
 export {
   contractStatus,
   userBalance,
-  registryAddresses
+  registryAddresses,
+  mocAddresses
 }

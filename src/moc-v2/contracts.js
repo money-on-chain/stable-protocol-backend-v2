@@ -5,7 +5,7 @@ import * as dotenv from 'dotenv'
 import {readJsonFile, fromContractPrecisionDecimals, formatTimestamp, formatVisibleValue} from '../utils.js'
 import {addABIOMoC, addABIv2} from '../transaction.js'
 
-import { contractStatus, userBalance, registryAddresses } from './multicall.js'
+import { contractStatus, userBalance, registryAddresses, mocAddresses} from './multicall.js'
 
 dotenv.config()
 
@@ -42,27 +42,6 @@ const readContracts = async (web3, configProject) => {
   console.log('Reading Multicall2 Contract... address: ', process.env.CONTRACT_MULTICALL2)
   dContracts.contracts.multicall = new web3.eth.Contract(dContracts.json.Multicall2.abi, process.env.CONTRACT_MULTICALL2)
 
-  dContracts.contracts.TP = []
-  const contractTP = process.env.CONTRACT_TP.split(",")
-  for (let i = 0; i < configProject.tokens.TP.length; i++) {
-    console.log(`Reading ${configProject.tokens.TP[i].name} Token Contract... address: `, contractTP[i])
-    dContracts.contracts.TP.push(new web3.eth.Contract(dContracts.json.TokenPegged.abi, contractTP[i]))
-  }
-
-  dContracts.contracts.CA = []
-  const contractCA = process.env.CONTRACT_CA.split(",")
-  for (let i = 0; i < configProject.tokens.CA.length; i++) {
-    console.log(`Reading ${configProject.tokens.CA[i].name} Token Contract... address: `, contractCA[i])
-    dContracts.contracts.CA.push(new web3.eth.Contract(dContracts.json.CollateralAsset.abi, contractCA[i]))
-  }
-
-  dContracts.contracts.PP_TP = []
-  const contractPPTP = process.env.CONTRACT_PRICE_PROVIDER_TP.split(",")
-  for (let i = 0; i < configProject.tokens.TP.length; i++) {
-    console.log(`Reading Price Provider ${configProject.tokens.TP[i].name} Contract... address: `, contractPPTP[i])
-    dContracts.contracts.PP_TP.push(new web3.eth.Contract(dContracts.json.IPriceProvider.abi, contractPPTP[i]))
-  }
-
   dContracts.contracts.PP_CA = []
   const contractPPCA = process.env.CONTRACT_PRICE_PROVIDER_CA.split(",")
   for (let i = 0; i < configProject.tokens.CA.length; i++) {
@@ -76,26 +55,68 @@ const readContracts = async (web3, configProject) => {
   console.log('Reading Moc Contract... address: ', process.env.CONTRACT_MOC)
   dContracts.contracts.Moc = new web3.eth.Contract(dContracts.json.Moc.abi, process.env.CONTRACT_MOC)
 
-  console.log('Reading Collateral Token Contract... address: ', process.env.CONTRACT_TC)
-  dContracts.contracts.CollateralToken = new web3.eth.Contract(dContracts.json.CollateralToken.abi, process.env.CONTRACT_TC)
+  // Read contracts addresses from MoC
+  const mocAddr = await mocAddresses(web3, dContracts)
 
-  console.log('Reading MocVendors Contract... address: ', process.env.CONTRACT_MOC_VENDORS)
-  dContracts.contracts.MocVendors = new web3.eth.Contract(dContracts.json.MocVendors.abi, process.env.CONTRACT_MOC_VENDORS)
+  dContracts.contracts.CA = []
+  const contractCA = [mocAddr['acToken']]
+  for (let i = 0; i < configProject.tokens.CA.length; i++) {
+    console.log(`Reading ${configProject.tokens.CA[i].name} Token Contract... address: `, contractCA[i])
+    dContracts.contracts.CA.push(new web3.eth.Contract(dContracts.json.CollateralAsset.abi, contractCA[i]))
+  }
 
-  console.log('Reading MocQueue Contract... address: ', process.env.CONTRACT_MOC_QUEUE)
-  dContracts.contracts.MocQueue = new web3.eth.Contract(dContracts.json.MocQueue.abi, process.env.CONTRACT_MOC_QUEUE)
+  const MAX_LEN_ARRAY_TP = 4;
+  const tpAddresses = [];
+  let tpAddressesProviders = []
+  let tpAddress;
+  let tpIndex;
+  let tpItem;
+  for (let i = 0; i < MAX_LEN_ARRAY_TP; i++) {
+    try {
+      tpAddress = mocAddr['tpTokens'][i]
+      if (!tpAddress) continue
+      tpIndex = await dContracts.contracts.Moc.methods.peggedTokenIndex(tpAddress).call()
+      if (!tpIndex.exists) continue
+      tpItem = await dContracts.contracts.Moc.methods.pegContainer(tpIndex.index).call()
+      tpAddresses.push(tpAddress)
+      tpAddressesProviders.push(tpItem.priceProvider)
+    } catch (e) {
+      break;
+    }
+  }
 
-  console.log('Reading Fee Token Contract... address: ', process.env.CONTRACT_FEE_TOKEN)
-  dContracts.contracts.FeeToken = new web3.eth.Contract(dContracts.json.FeeToken.abi, process.env.CONTRACT_FEE_TOKEN)
+  dContracts.contracts.TP = []
+  for (let i = 0; i < configProject.tokens.TP.length; i++) {
+    console.log(`Reading ${configProject.tokens.TP[i].name} Token Contract... address: `, tpAddresses[i])
+    dContracts.contracts.TP.push(new web3.eth.Contract(dContracts.json.TokenPegged.abi, tpAddresses[i]))
+  }
 
-  console.log('Reading Fee Token PP Contract... address: ', process.env.CONTRACT_PRICE_PROVIDER_FEE_TOKEN)
-  dContracts.contracts.PP_FeeToken = new web3.eth.Contract(dContracts.json.IPriceProvider.abi, process.env.CONTRACT_PRICE_PROVIDER_FEE_TOKEN)
+  dContracts.contracts.PP_TP = []
+  for (let i = 0; i < configProject.tokens.TP.length; i++) {
+    console.log(`Reading Price Provider ${configProject.tokens.TP[i].name} Contract... address: `, tpAddressesProviders[i])
+    dContracts.contracts.PP_TP.push(new web3.eth.Contract(dContracts.json.IPriceProvider.abi, tpAddressesProviders[i]))
+  }
 
-  console.log('Reading FC_MAX_ABSOLUTE_OP_PROVIDER... address: ', process.env.CONTRACT_FC_MAX_ABSOLUTE_OP_PROVIDER)
-  dContracts.contracts.FC_MAX_ABSOLUTE_OP_PROVIDER = new web3.eth.Contract(dContracts.json.IPriceProvider.abi, process.env.CONTRACT_FC_MAX_ABSOLUTE_OP_PROVIDER)
+  console.log('Reading Collateral Token Contract... address: ', mocAddr['tcToken'])
+  dContracts.contracts.CollateralToken = new web3.eth.Contract(dContracts.json.CollateralToken.abi, mocAddr['tcToken'])
 
-  console.log('Reading FC_MAX_OP_DIFFERENCE_PROVIDER... address: ', process.env.CONTRACT_FC_MAX_OP_DIFFERENCE_PROVIDER)
-  dContracts.contracts.FC_MAX_OP_DIFFERENCE_PROVIDER = new web3.eth.Contract(dContracts.json.IPriceProvider.abi, process.env.CONTRACT_FC_MAX_OP_DIFFERENCE_PROVIDER)
+  console.log('Reading MocVendors Contract... address: ', mocAddr['mocVendors'])
+  dContracts.contracts.MocVendors = new web3.eth.Contract(dContracts.json.MocVendors.abi, mocAddr['mocVendors'])
+
+  console.log('Reading MocQueue Contract... address: ', mocAddr['mocQueue'])
+  dContracts.contracts.MocQueue = new web3.eth.Contract(dContracts.json.MocQueue.abi, mocAddr['mocQueue'])
+
+  console.log('Reading Fee Token Contract... address: ', mocAddr['feeToken'])
+  dContracts.contracts.FeeToken = new web3.eth.Contract(dContracts.json.FeeToken.abi, mocAddr['feeToken'])
+
+  console.log('Reading Fee Token PP Contract... address: ', mocAddr['feeTokenPriceProvider'])
+  dContracts.contracts.PP_FeeToken = new web3.eth.Contract(dContracts.json.IPriceProvider.abi, mocAddr['feeTokenPriceProvider'])
+
+  console.log('Reading FC_MAX_ABSOLUTE_OP_PROVIDER... address: ', mocAddr['maxAbsoluteOpProvider'])
+  dContracts.contracts.FC_MAX_ABSOLUTE_OP_PROVIDER = new web3.eth.Contract(dContracts.json.IPriceProvider.abi, mocAddr['maxAbsoluteOpProvider'])
+
+  console.log('Reading FC_MAX_OP_DIFFERENCE_PROVIDER... address: ', mocAddr['maxOpDiffProvider'])
+  dContracts.contracts.FC_MAX_OP_DIFFERENCE_PROVIDER = new web3.eth.Contract(dContracts.json.IPriceProvider.abi, mocAddr['maxOpDiffProvider'])
 
   console.log('Reading OMOC: IRegistry Contract... address: ', process.env.CONTRACT_IREGISTRY)
   dContracts.contracts.iregistry = new web3.eth.Contract(dContracts.json.IRegistry.abi, process.env.CONTRACT_IREGISTRY)
@@ -394,8 +415,107 @@ Period: ${contractStatus.supporters.period}
 Total MoC: ${Web3.utils.fromWei(contractStatus.supporters.totalMoc)} 
 Total Token: ${Web3.utils.fromWei(contractStatus.supporters.totalToken)}
 
+OMOC Voting
+===========
+
+Token Total supply: ${Web3.utils.fromWei(contractStatus.votingmachine.totalSupply)}
+State: ${contractStatus.votingmachine.getState}
+Voting Round: ${contractStatus.votingmachine.getVotingRound}
+Ready to Pre Vote Step: ${contractStatus.votingmachine.readyToPreVoteStep}
+Ready to Vote Step: ${contractStatus.votingmachine.readyToVoteStep}
+Proposal Count: ${contractStatus.votingmachine.getProposalCount}
+
+MIN_STAKE: ${Web3.utils.fromWei(contractStatus.votingmachine.MIN_STAKE)}
+PRE_VOTE_EXPIRATION_TIME_DELTA: ${contractStatus.votingmachine.PRE_VOTE_EXPIRATION_TIME_DELTA} (60 * 60 * 24 * 7)
+MAX_PRE_PROPOSALS: ${contractStatus.votingmachine.MAX_PRE_PROPOSALS}
+PRE_VOTE_MIN_PCT_TO_WIN: ${contractStatus.votingmachine.PRE_VOTE_MIN_PCT_TO_WIN} %
+VOTE_MIN_PCT_TO_VETO: ${contractStatus.votingmachine.VOTE_MIN_PCT_TO_VETO} %
+MIN_PCT_FOR_QUORUM: ${contractStatus.votingmachine.MIN_PCT_FOR_QUORUM} %
+VOTE_MIN_PCT_TO_ACCEPT: ${contractStatus.votingmachine.VOTE_MIN_PCT_TO_ACCEPT} %
+PCT_PRECISION: ${contractStatus.votingmachine.PCT_PRECISION}
+VOTING_TIME_DELTA: ${contractStatus.votingmachine.VOTING_TIME_DELTA} (60 * 60 * 24 * 7)
+
 `
+  render += renderVotingProposal(contractStatus.votingmachine.getProposalByIndex)
+  render += renderVoteInfo(contractStatus.votingmachine.getVoteInfo)
+  render += renderVotingData(contractStatus.votingmachine.getVotingData)
+  render += renderVotingPower(contractStatus)
+
   return render
+}
+
+const renderVotingProposal = (proposals) => {
+  let render = '';
+  let lenProp = 0
+  if (proposals != null) lenProp = Object.keys(proposals).length;
+  for (let i = 0; i < lenProp; i++) {
+    if (proposals[i] !== null) {
+      render += renderProposal(proposals[i], i)
+    }
+  }
+  return render
+}
+
+
+const renderVotingPower = (contractStatus) => {
+
+  const totalSupply = Web3.utils.fromWei(contractStatus.votingmachine.totalSupply)
+  const PRE_VOTE_MIN_TO_WIN = new BigNumber(totalSupply).times(new BigNumber(
+      contractStatus.votingmachine.PRE_VOTE_MIN_PCT_TO_WIN)).div(100);
+  const VOTE_MIN_TO_VETO = new BigNumber(totalSupply).times(new BigNumber(
+      contractStatus.votingmachine.VOTE_MIN_PCT_TO_VETO)).div(100);
+  const MIN_FOR_QUORUM = new BigNumber(totalSupply).times(new BigNumber(
+      contractStatus.votingmachine.MIN_PCT_FOR_QUORUM)).div(100);
+  const VOTE_MIN_TO_ACCEPT = new BigNumber(totalSupply).times(new BigNumber(
+      contractStatus.votingmachine.VOTE_MIN_PCT_TO_ACCEPT)).div(100);
+
+  return `
+Voting Power:
+============
+
+PRE_VOTE_MIN_TO_WIN: ${PRE_VOTE_MIN_TO_WIN}
+VOTE_MIN_TO_VETO: ${VOTE_MIN_TO_VETO}
+MIN_FOR_QUORUM: ${MIN_FOR_QUORUM}
+VOTE_MIN_TO_ACCEPT: ${VOTE_MIN_TO_ACCEPT}
+  `
+}
+
+const renderProposal = (proposal, index) => {
+
+  return `
+Proposal INDEX: ${index}
+==============
+
+proposalAddress: ${proposal.proposalAddress}
+votingRound: ${proposal.votingRound}
+votes: ${Web3.utils.fromWei(proposal.votes)}
+expirationTimeStamp: ${formatTimestamp(new BigNumber(proposal.expirationTimeStamp).times(1000).toNumber())}
+  `
+}
+
+const renderVoteInfo = (info) => {
+
+  return `
+Vote Info
+=========
+
+winnerProposal: ${info.winnerProposal}
+inFavorVotes: ${Web3.utils.fromWei(info.inFavorVotes)}
+againstVotes: ${Web3.utils.fromWei(info.againstVotes)}  
+  `
+}
+
+const renderVotingData = (data) => {
+
+  return `
+Voting Data
+===========
+
+winnerProposal: ${data.winnerProposal}
+inFavorVotes: ${Web3.utils.fromWei(data.inFavorVotes)}
+againstVotes: ${Web3.utils.fromWei(data.againstVotes)}  
+votingExpirationTime: ${formatTimestamp(new BigNumber(data.votingExpirationTime).times(1000).toNumber())}
+  `
 }
 
 const pendingWithdrawals = (delaymachine) => {
@@ -532,6 +652,14 @@ ${config.tokens.TC.name} Allowance: ${fromContractPrecisionDecimals(userBalance.
 ${config.tokens.FeeToken.name} Balance: ${fromContractPrecisionDecimals(userBalance.FeeToken.balance, config.tokens.FeeToken.decimals).toString()} ${config.tokens.FeeToken.name}
 ${config.tokens.FeeToken.name} Allowance: ${fromContractPrecisionDecimals(userBalance.FeeToken.allowance, config.tokens.FeeToken.decimals).toString()} ${config.tokens.FeeToken.name}
 
+
+OMOC VOTING
+===========
+
+Vote Address: ${userBalance.votingmachine.getUserVote.voteAddress}
+Vote Round: ${userBalance.votingmachine.getUserVote.voteRound}
+
+
 OMOC STAKING & WITHDRAWS
 ========================
 
@@ -540,6 +668,12 @@ Staking Machine Balance: ${fromContractPrecisionDecimals(userBalance.stakingmach
 Staking Machine Locked Balance: ${fromContractPrecisionDecimals(userBalance.stakingmachine.getLockedBalance, config.tokens.TG.decimals).toString()} ${config.tokens.TG.name}
 Delay Machine Balance: ${fromContractPrecisionDecimals(userBalance.delaymachine.getBalance, config.tokens.TG.decimals).toString()} ${config.tokens.TG.name}
 ${config.tokens.FeeToken.name} Staking Machine Allowance: ${fromContractPrecisionDecimals(userBalance.stakingmachine.tgAllowance, config.tokens.TG.decimals).toString()} ${config.tokens.FeeToken.name}
+
+OMOC LOCKED INFO
+================
+Staking Machine Locked Balance: ${fromContractPrecisionDecimals(userBalance.stakingmachine.getLockingInfo.amount, config.tokens.TG.decimals).toString()} ${config.tokens.TG.name}
+Staking Machine Locked Balance Until: ${userBalance.stakingmachine.getLockingInfo.untilTimestamp}
+
 
 DELAY PENDING WITHDRAWS
 =======================
