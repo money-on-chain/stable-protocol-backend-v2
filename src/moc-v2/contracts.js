@@ -59,10 +59,12 @@ const readContracts = async (web3, configProject) => {
   const mocAddr = await mocAddresses(web3, dContracts)
 
   dContracts.contracts.CA = []
-  const contractCA = [mocAddr['acToken']]
-  for (let i = 0; i < configProject.tokens.CA.length; i++) {
-    console.log(`Reading ${configProject.tokens.CA[i].name} Token Contract... address: `, contractCA[i])
-    dContracts.contracts.CA.push(new web3.eth.Contract(dContracts.json.CollateralAsset.abi, contractCA[i]))
+  if (configProject.collateral !== 'coinbase') {
+    const contractCA = [mocAddr['acToken']]
+    for (let i = 0; i < configProject.tokens.CA.length; i++) {
+      console.log(`Reading ${configProject.tokens.CA[i].name} Token Contract... address: `, contractCA[i])
+      dContracts.contracts.CA.push(new web3.eth.Contract(dContracts.json.CollateralAsset.abi, contractCA[i]))
+    }
   }
 
   const MAX_LEN_ARRAY_TP = 4;

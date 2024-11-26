@@ -1,5 +1,6 @@
 import BigNumber from 'bignumber.js'
 import {fromContractPrecisionDecimals, readJsonFile} from '../utils.js'
+import Web3 from "web3";
 
 // getting constants from omoc.json
 const configOmoc = readJsonFile('./settings/omoc.json')
@@ -106,9 +107,8 @@ class MultiCall {
 }
 
 const contractStatus = async (web3, dContracts, configProject) => {
-  const collateral = configProject.collateral
-  const vendorAddress = `${process.env.VENDOR_ADDRESS}`.toLowerCase()
 
+  const vendorAddress = `${process.env.VENDOR_ADDRESS}`.toLowerCase()
   const multicall = dContracts.contracts.multicall
   const Moc = dContracts.contracts.Moc
   const MocVendors = dContracts.contracts.MocVendors
@@ -199,6 +199,12 @@ const contractStatus = async (web3, dContracts, configProject) => {
   multiCallRequest.aggregate(Moc, Moc.methods.maxQACToRedeemTP().encodeABI(), 'uint256', 'maxQACToRedeemTP')
   multiCallRequest.aggregate(Moc, Moc.methods.paused().encodeABI(), 'bool', 'paused')
 
+  // only on coinbase mode
+  if (configProject.collateral === 'coinbase') {
+    multiCallRequest.aggregate(Moc, Moc.methods.transferMaxGas().encodeABI(), 'uint256', 'transferMaxGas')
+    multiCallRequest.aggregate(Moc, Moc.methods.coinbaseFailedTransferFallback().encodeABI(), 'address', 'coinbaseFailedTransferFallback')
+  }
+
   // OMOC
   multiCallRequest.aggregate(stakingmachine, stakingmachine.methods.getWithdrawLockTime().encodeABI(), 'uint256', 'stakingmachine', 'getWithdrawLockTime')
   multiCallRequest.aggregate(stakingmachine, stakingmachine.methods.getSupporters().encodeABI(), 'address', 'stakingmachine', 'getSupporters')
@@ -262,8 +268,12 @@ const contractStatus = async (web3, dContracts, configProject) => {
   let CA
   for (let i = 0; i < configProject.tokens.CA.length; i++) {
     PP_CA = dContracts.contracts.PP_CA[i]
-    CA = dContracts.contracts.CA[i]
-    multiCallRequest.aggregate(CA, CA.methods.balanceOf(Moc.options.address).encodeABI(), 'uint256', 'getACBalance', i)
+    if (configProject.collateral === 'coinbase') {
+      multiCallRequest.aggregate(multicall, multicall.methods.getEthBalance(Moc.options.address).encodeABI(), 'uint256', 'getACBalance', i)
+    } else {
+      CA = dContracts.contracts.CA[i]
+      multiCallRequest.aggregate(CA, CA.methods.balanceOf(Moc.options.address).encodeABI(), 'uint256', 'getACBalance', i)
+    }
     multiCallRequest.aggregate(PP_CA, PP_CA.methods.peek().encodeABI(), 'uint256', 'PP_CA', i)
   }
 
@@ -372,10 +382,13 @@ const userBalance = async (web3, dContracts, userAddress, configProject) => {
   }
 
   let CA
-  for (let i = 0; i < configProject.tokens.CA.length; i++) {
-    CA = dContracts.contracts.CA[i]
-    multiCallRequest.aggregate(CA, CA.methods.balanceOf(userAddress).encodeABI(), 'uint256', 'CA_balance', i)
-    multiCallRequest.aggregate(CA, CA.methods.allowance(userAddress, MoCContract.options.address).encodeABI(), 'uint256', 'CA_allowance', i)
+  if (configProject.collateral !== 'coinbase')  {
+    for (let i = 0; i < configProject.tokens.CA.length; i++) {
+      // RC-20 collateral
+      CA = dContracts.contracts.CA[i]
+      multiCallRequest.aggregate(CA, CA.methods.balanceOf(userAddress).encodeABI(), 'uint256', 'CA_balance', i)
+      multiCallRequest.aggregate(CA, CA.methods.allowance(userAddress, MoCContract.options.address).encodeABI(), 'uint256', 'CA_allowance', i)
+    }
   }
 
   const userBalance = await multiCallRequest.tryBlockAndAggregate();
@@ -388,9 +401,15 @@ const userBalance = async (web3, dContracts, userAddress, configProject) => {
   userBalance.TP = TP
 
   CA = []
-  for (let i = 0; i < configProject.tokens.CA.length; i++) {
-    CA.push({ balance: userBalance['CA_balance'][i], allowance: userBalance['CA_allowance'][i] })
+  if (configProject.collateral === 'coinbase')  {
+    //CA.push({ balance: userBalance['coinbase'], allowance: Web3.utils.toWei(1000000000, 'ether') })
+    CA.push({ balance: userBalance['coinbase'], allowance: userBalance['coinbase'] })
+  } else {
+    for (let i = 0; i < configProject.tokens.CA.length; i++) {
+      CA.push({ balance: userBalance['CA_balance'][i], allowance: userBalance['CA_allowance'][i] })
+    }
   }
+
   userBalance.CA = CA
 
   return userBalance
@@ -423,7 +442,11 @@ const mocAddresses = async (web3, dContracts) => {
   const multiCallRequest = new MultiCall(multicall, web3)
   multiCallRequest.aggregate(moc, moc.methods.feeToken().encodeABI(), 'address', 'feeToken')
   multiCallRequest.aggregate(moc, moc.methods.feeTokenPriceProvider().encodeABI(), 'address', 'feeTokenPriceProvider')
-  multiCallRequest.aggregate(moc, moc.methods.acToken().encodeABI(), 'address', 'acToken')
+
+  if (process.env.MOC_PROJECT !== 'moc') {
+    multiCallRequest.aggregate(moc, moc.methods.acToken().encodeABI(), 'address', 'acToken')
+  }
+
   multiCallRequest.aggregate(moc, moc.methods.tcToken().encodeABI(), 'address', 'tcToken')
   multiCallRequest.aggregate(moc, moc.methods.maxAbsoluteOpProvider().encodeABI(), 'address', 'maxAbsoluteOpProvider')
   multiCallRequest.aggregate(moc, moc.methods.maxOpDiffProvider().encodeABI(), 'address', 'maxOpDiffProvider')
