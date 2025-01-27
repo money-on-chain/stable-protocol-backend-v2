@@ -105,6 +105,40 @@
           "decimals": 18
         }
       }
+    },
+    "stablex": {
+      "collateral": "coinbase",
+      "appProject": "stablex",
+      "tokens": {
+        "COINBASE": {
+          "name": "ETH",
+          "decimals": 18
+        },
+        "CA": [
+          {
+            "name": "ETH",
+            "decimals": 18
+          }
+        ],
+        "TP": [
+          {
+            "name": "USDX",
+            "decimals": 18
+          }
+        ],
+        "TC": {
+          "name": "XETH",
+          "decimals": 18
+        },
+        "FeeToken": {
+          "name": "XSTA",
+          "decimals": 18
+        },
+        "TG": {
+          "name": "XSTA",
+          "decimals": 18
+        }
+      }
     }
   }
 }

@@ -15,7 +15,7 @@ const main = async () => {
   // Obtain all contracts
   const dContracts = await readContracts(web3, configProject)
 
-  const vendorAddress = '0xf69287F5Ca3cC3C6d3981f2412109110cB8af076'
+  const vendorAddress = '0xCD8A1c9aCc980ae031456573e34dC05cD7daE6e3'
 
   const MocVendors = dContracts.contracts.MocVendors
   const markup = await MocVendors.methods.vendorMarkup(vendorAddress).call()
