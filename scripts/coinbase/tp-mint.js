@@ -1,7 +1,10 @@
+// Mint Collateral Token
+
 import * as dotenv from 'dotenv'
 
 import { readJsonFile, getWeb3 } from '../../src/utils.js'
 import { readContracts } from '../../src/moc-v2/contracts.js'
+import { mintTP } from '../../src/moc-v2/moc-coinbase.js'
 
 dotenv.config()
 
@@ -15,14 +18,11 @@ const main = async () => {
   // Obtain all contracts
   const dContracts = await readContracts(web3, configProject)
 
-  const vendorAddress = '0xCD8A1c9aCc980ae031456573e34dC05cD7daE6e3'
+  // Get amount from environment
+  const qTP = `${process.env.OPERATION_AMOUNT_MINT_TP}`
+  const tpIndex = 0
 
-  const MocVendors = dContracts.contracts.MocVendors
-  const markup = await MocVendors.methods.vendorMarkup(vendorAddress).call()
-  const guardian = await MocVendors.methods.vendorsGuardianAddress().call()
-
-  console.log(`Guardian: ${guardian.toString()}`)
-  console.log(`Markup: ${markup.toString()}`)
+  const { receipt, filteredEvents } = await mintTP(web3, dContracts, configProject, tpIndex, qTP)
 }
 
 main()

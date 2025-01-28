@@ -56,13 +56,15 @@ const readContracts = async (web3, configProject) => {
   dContracts.contracts.Moc = new web3.eth.Contract(dContracts.json.Moc.abi, process.env.CONTRACT_MOC)
 
   // Read contracts addresses from MoC
-  const mocAddr = await mocAddresses(web3, dContracts)
+  const mocAddr = await mocAddresses(web3, dContracts, configProject)
 
   dContracts.contracts.CA = []
-  const contractCA = [mocAddr['acToken']]
-  for (let i = 0; i < configProject.tokens.CA.length; i++) {
-    console.log(`Reading ${configProject.tokens.CA[i].name} Token Contract... address: `, contractCA[i])
-    dContracts.contracts.CA.push(new web3.eth.Contract(dContracts.json.CollateralAsset.abi, contractCA[i]))
+  if (configProject.collateral !== 'coinbase') {
+    const contractCA = [mocAddr['acToken']]
+    for (let i = 0; i < configProject.tokens.CA.length; i++) {
+      console.log(`Reading ${configProject.tokens.CA[i].name} Token Contract... address: `, contractCA[i])
+      dContracts.contracts.CA.push(new web3.eth.Contract(dContracts.json.CollateralAsset.abi, contractCA[i]))
+    }
   }
 
   const MAX_LEN_ARRAY_TP = 4;
@@ -118,36 +120,39 @@ const readContracts = async (web3, configProject) => {
   console.log('Reading FC_MAX_OP_DIFFERENCE_PROVIDER... address: ', mocAddr['maxOpDiffProvider'])
   dContracts.contracts.FC_MAX_OP_DIFFERENCE_PROVIDER = new web3.eth.Contract(dContracts.json.IPriceProvider.abi, mocAddr['maxOpDiffProvider'])
 
-  console.log('Reading OMOC: IRegistry Contract... address: ', process.env.CONTRACT_IREGISTRY)
-  dContracts.contracts.iregistry = new web3.eth.Contract(dContracts.json.IRegistry.abi, process.env.CONTRACT_IREGISTRY)
+  if (typeof process.env.CONTRACT_IREGISTRY !== 'undefined') {
 
-  // Read contracts addresses from registry
-  const registryAddr = await registryAddresses(web3, dContracts)
+    console.log('Reading OMOC: IRegistry Contract... address: ', process.env.CONTRACT_IREGISTRY)
+    dContracts.contracts.iregistry = new web3.eth.Contract(dContracts.json.IRegistry.abi, process.env.CONTRACT_IREGISTRY)
 
-  console.log('Reading OMOC: StakingMachine Contract... address: ', registryAddr['MOC_STAKING_MACHINE'])
-  dContracts.contracts.stakingmachine = new web3.eth.Contract(dContracts.json.StakingMachine.abi, registryAddr['MOC_STAKING_MACHINE'])
+    // Read contracts addresses from registry
+    const registryAddr = await registryAddresses(web3, dContracts)
 
-  console.log('Reading OMOC: DelayMachine Contract... address: ', registryAddr['MOC_DELAY_MACHINE'])
-  dContracts.contracts.delaymachine = new web3.eth.Contract(dContracts.json.DelayMachine.abi, registryAddr['MOC_DELAY_MACHINE'])
+    console.log('Reading OMOC: StakingMachine Contract... address: ', registryAddr['MOC_STAKING_MACHINE'])
+    dContracts.contracts.stakingmachine = new web3.eth.Contract(dContracts.json.StakingMachine.abi, registryAddr['MOC_STAKING_MACHINE'])
 
-  console.log('Reading OMOC: Supporters Contract... address: ', registryAddr['SUPPORTERS_ADDR'])
-  dContracts.contracts.supporters = new web3.eth.Contract(dContracts.json.Supporters.abi, registryAddr['SUPPORTERS_ADDR'])
+    console.log('Reading OMOC: DelayMachine Contract... address: ', registryAddr['MOC_DELAY_MACHINE'])
+    dContracts.contracts.delaymachine = new web3.eth.Contract(dContracts.json.DelayMachine.abi, registryAddr['MOC_DELAY_MACHINE'])
 
-  // reading vesting machine from environment address
-  if (typeof process.env.CONTRACT_OMOC_VESTING_ADDRESS !== 'undefined') {
-    console.log('Reading OMOC: VestingFactory Contract... address: ', registryAddr['MOC_VESTING_MACHINE'])
-    dContracts.contracts.vestingfactory = new web3.eth.Contract(dContracts.json.VestingFactory.abi, registryAddr['MOC_VESTING_MACHINE'])
+    console.log('Reading OMOC: Supporters Contract... address: ', registryAddr['SUPPORTERS_ADDR'])
+    dContracts.contracts.supporters = new web3.eth.Contract(dContracts.json.Supporters.abi, registryAddr['SUPPORTERS_ADDR'])
 
-    console.log('Reading OMOC: VestingMachine Contract... address: ', process.env.CONTRACT_OMOC_VESTING_ADDRESS)
-    dContracts.contracts.vestingmachine = new web3.eth.Contract(dContracts.json.VestingMachine.abi, process.env.CONTRACT_OMOC_VESTING_ADDRESS)
+    // reading vesting machine from environment address
+    if (typeof process.env.CONTRACT_OMOC_VESTING_ADDRESS !== 'undefined') {
+      console.log('Reading OMOC: VestingFactory Contract... address: ', registryAddr['MOC_VESTING_MACHINE'])
+      dContracts.contracts.vestingfactory = new web3.eth.Contract(dContracts.json.VestingFactory.abi, registryAddr['MOC_VESTING_MACHINE'])
+
+      console.log('Reading OMOC: VestingMachine Contract... address: ', process.env.CONTRACT_OMOC_VESTING_ADDRESS)
+      dContracts.contracts.vestingmachine = new web3.eth.Contract(dContracts.json.VestingMachine.abi, process.env.CONTRACT_OMOC_VESTING_ADDRESS)
+    }
+
+    console.log('Reading OMOC: VotingMachine Contract... address: ', registryAddr['MOC_VOTING_MACHINE'])
+    dContracts.contracts.votingmachine = new web3.eth.Contract(dContracts.json.VotingMachine.abi, registryAddr['MOC_VOTING_MACHINE'])
+
+    console.log('Reading OMOC: Token Govern Contract... address: ', registryAddr['MOC_TOKEN'])
+    dContracts.contracts.tg = new web3.eth.Contract(dContracts.json.IERC20.abi, registryAddr['MOC_TOKEN'])
+
   }
-
-  console.log('Reading OMOC: VotingMachine Contract... address: ', registryAddr['MOC_VOTING_MACHINE'])
-  dContracts.contracts.votingmachine = new web3.eth.Contract(dContracts.json.VotingMachine.abi, registryAddr['MOC_VOTING_MACHINE'])
-
-  console.log('Reading OMOC: Token Govern Contract... address: ', registryAddr['MOC_TOKEN'])
-  dContracts.contracts.tg = new web3.eth.Contract(dContracts.json.IERC20.abi, registryAddr['MOC_TOKEN'])
-
   // Add to abi decoder
   addABIv2(dContracts)
   addABIOMoC(dContracts)
@@ -389,23 +394,62 @@ swapTCforTPExecFee: ${Web3.utils.fromWei(contractStatus.swapTCforTPExecFee)}
 redeemTCandTPExecFee: ${Web3.utils.fromWei(contractStatus.redeemTCandTPExecFee)}
 mintTCandTPExecFee: ${Web3.utils.fromWei(contractStatus.mintTCandTPExecFee)}
 
+`
 
+  if (typeof process.env.CONTRACT_IREGISTRY !== 'undefined') {
+    render += renderStakingMachine(contractStatus)
+    render += renderDelayMachine(contractStatus)
+    render += renderSupporters(contractStatus)
+    render += renderVoting(contractStatus)
+    render += renderVotingProposal(contractStatus.votingmachine.getProposalByIndex)
+    render += renderVoteInfo(contractStatus.votingmachine.getVoteInfo)
+    render += renderVotingData(contractStatus.votingmachine.getVotingData)
+    render += renderVotingPower(contractStatus)
+  }
+
+  return render
+}
+
+const renderVotingProposal = (proposals) => {
+  let render = '';
+  let lenProp = 0
+  if (proposals != null) lenProp = Object.keys(proposals).length;
+  for (let i = 0; i < lenProp; i++) {
+    if (proposals[i] !== null) {
+      render += renderProposal(proposals[i], i)
+    }
+  }
+  return render
+}
+
+const renderStakingMachine = (contractStatus) => {
+
+  return `
 OMOC Staking Machine
 ====================
  
 Withdraw Lock Time: ${contractStatus.stakingmachine.getWithdrawLockTime} 
 Supporters: ${contractStatus.stakingmachine.getSupporters} 
 Oracle Manager: ${contractStatus.stakingmachine.getOracleManager} 
-Delay Machine: ${contractStatus.stakingmachine.getDelayMachine} 
+Delay Machine: ${contractStatus.stakingmachine.getDelayMachine}
+  `
+}
 
+const renderDelayMachine = (contractStatus) => {
 
+  return `
 OMOC Delay Machine
 ==================
  
 Last Id: ${contractStatus.delaymachine.getLastId} 
 Source: ${contractStatus.delaymachine.getSource}
 
+  `
+}
 
+const renderSupporters = (contractStatus) => {
+
+  return `
 OMOC Supporters
 ===============
 
@@ -414,7 +458,12 @@ Moc Token: ${contractStatus.supporters.mocToken}
 Period: ${contractStatus.supporters.period} 
 Total MoC: ${Web3.utils.fromWei(contractStatus.supporters.totalMoc)} 
 Total Token: ${Web3.utils.fromWei(contractStatus.supporters.totalToken)}
+  `
+}
 
+const renderVoting = (contractStatus) => {
+
+  return `
 OMOC Voting
 ===========
 
@@ -435,27 +484,8 @@ VOTE_MIN_PCT_TO_ACCEPT: ${contractStatus.votingmachine.VOTE_MIN_PCT_TO_ACCEPT} %
 PCT_PRECISION: ${contractStatus.votingmachine.PCT_PRECISION}
 VOTING_TIME_DELTA: ${contractStatus.votingmachine.VOTING_TIME_DELTA} (60 * 60 * 24 * 7)
 
-`
-  render += renderVotingProposal(contractStatus.votingmachine.getProposalByIndex)
-  render += renderVoteInfo(contractStatus.votingmachine.getVoteInfo)
-  render += renderVotingData(contractStatus.votingmachine.getVotingData)
-  render += renderVotingPower(contractStatus)
-
-  return render
+  `
 }
-
-const renderVotingProposal = (proposals) => {
-  let render = '';
-  let lenProp = 0
-  if (proposals != null) lenProp = Object.keys(proposals).length;
-  for (let i = 0; i < lenProp; i++) {
-    if (proposals[i] !== null) {
-      render += renderProposal(proposals[i], i)
-    }
-  }
-  return render
-}
-
 
 const renderVotingPower = (contractStatus) => {
 
@@ -535,7 +565,7 @@ const renderPendingWithdrawals = (delayMachine) => {
 
   const withdraws = pendingWithdrawals(delayMachine)
 
-  let render = '';
+  let render = 'DELAY PENDING WITHDRAWS\n=======================\n';
   for (let i = 0; i < withdraws.length; i++) {
     render += `ID: ${withdraws[i].id} AMOUNT: ${Web3.utils.fromWei(withdraws[i].amount)} EXPIRATION: ${formatTimestamp(new BigNumber(withdraws[i].expiration).times(1000).toNumber())} \n`
   }
@@ -609,6 +639,8 @@ ${dates[itemIndex]} | ${(percent.toNumber() / percentMultiplier * 100).toFixed(2
   }
 
   return `
+VESTING PARAMETERS
+==================
 ${table} 
     `
 }
@@ -652,7 +684,12 @@ ${config.tokens.TC.name} Allowance: ${fromContractPrecisionDecimals(userBalance.
 ${config.tokens.FeeToken.name} Balance: ${fromContractPrecisionDecimals(userBalance.FeeToken.balance, config.tokens.FeeToken.decimals).toString()} ${config.tokens.FeeToken.name}
 ${config.tokens.FeeToken.name} Allowance: ${fromContractPrecisionDecimals(userBalance.FeeToken.allowance, config.tokens.FeeToken.decimals).toString()} ${config.tokens.FeeToken.name}
 
+    `
 
+  if (typeof process.env.CONTRACT_IREGISTRY !== 'undefined') {
+
+    render += `
+    
 OMOC VOTING
 ===========
 
@@ -674,11 +711,11 @@ OMOC LOCKED INFO
 Staking Machine Locked Balance: ${fromContractPrecisionDecimals(userBalance.stakingmachine.getLockingInfo.amount, config.tokens.TG.decimals).toString()} ${config.tokens.TG.name}
 Staking Machine Locked Balance Until: ${userBalance.stakingmachine.getLockingInfo.untilTimestamp}
 
-
-DELAY PENDING WITHDRAWS
-=======================
     `
-  render += renderPendingWithdrawals(userBalance.delaymachine)
+
+    render += renderPendingWithdrawals(userBalance.delaymachine)
+
+  }
 
   if (typeof process.env.CONTRACT_OMOC_VESTING_ADDRESS !== 'undefined') {
     render += `
@@ -699,17 +736,10 @@ Is Verified: ${userBalance.vestingmachine.isVerified}
 Get Total: ${Web3.utils.fromWei(userBalance.vestingmachine.getTotal)} ${config.tokens.TG.name}
 Balance: ${Web3.utils.fromWei(userBalance.vestingmachine.tgBalance)} ${config.tokens.TG.name}
 
-
-VESTING PARAMETERS
-==================
     `
     render += renderVestingParameters(userBalance)
 
     render += renderVestingBalance(userBalance, config)
-
-    render += `\nDELAY PENDING WITHDRAWS\n`
-    render += `==================\n`
-    render += `\n`
 
     render += renderPendingWithdrawals(userBalance.vestingmachine.delay)
   }

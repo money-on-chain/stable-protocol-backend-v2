@@ -17,7 +17,7 @@ const main = async () => {
     const dContracts = await readContracts(web3, configProject)
     const MocQueue = dContracts.contracts.MocQueue
 
-    const params = await MocQueue.methods.operationsMintTC(2).call()
+    const params = await MocQueue.methods.operationsMintTC(1).call()
 
     console.log(params)
 }

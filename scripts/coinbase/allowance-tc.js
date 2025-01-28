@@ -2,6 +2,7 @@ import * as dotenv from 'dotenv'
 
 import { readJsonFile, getWeb3 } from '../../src/utils.js'
 import { readContracts } from '../../src/moc-v2/contracts.js'
+import { AllowanceUse } from '../../src/moc-v2/moc-base.js'
 
 dotenv.config()
 
@@ -15,14 +16,12 @@ const main = async () => {
   // Obtain all contracts
   const dContracts = await readContracts(web3, configProject)
 
-  const vendorAddress = '0xCD8A1c9aCc980ae031456573e34dC05cD7daE6e3'
+  // Token to approve
+  const token = dContracts.contracts.CollateralToken
+  const tokenDecimals = configProject.tokens.TC.decimals
 
-  const MocVendors = dContracts.contracts.MocVendors
-  const markup = await MocVendors.methods.vendorMarkup(vendorAddress).call()
-  const guardian = await MocVendors.methods.vendorsGuardianAddress().call()
-
-  console.log(`Guardian: ${guardian.toString()}`)
-  console.log(`Markup: ${markup.toString()}`)
+  // Send transaction and get receipt
+  const { receipt, filteredEvents } = await AllowanceUse(web3, dContracts, configProject, token, true, tokenDecimals)
 }
 
 main()
