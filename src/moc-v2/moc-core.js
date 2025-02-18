@@ -22,10 +22,14 @@ const mintTC = async (web3, dContracts, configProject, caIndex, qTC) => {
   const userBalanceStats = await userBalanceFromContracts(web3, dContracts, configProject, userAddress)
 
   // Price of TC
-  const tcPrice = new BigNumber(Web3.utils.fromWei(dataContractStatus.getPTCac))
+  let tcPrice = new BigNumber(Web3.utils.fromWei(dataContractStatus.getPTCac))
   const feeParam = new BigNumber(Web3.utils.fromWei(dataContractStatus.tcMintFee))
 
   // TC amount in CA
+  if (!tcPrice.gt(0)) {
+    tcPrice = new BigNumber(process.env.PRICE_TC)
+  }
+
   const qCAtc = new BigNumber(qTC).times(tcPrice)
 
   // Fee
@@ -125,8 +129,13 @@ const redeemTC = async (web3, dContracts, configProject, caIndex, qTC) => {
   const userBalanceStats = await userBalanceFromContracts(web3, dContracts, configProject, userAddress)
 
   // Price of TC in CA
-  const tcPrice = new BigNumber(Web3.utils.fromWei(dataContractStatus.getPTCac))
+  let tcPrice = new BigNumber(Web3.utils.fromWei(dataContractStatus.getPTCac))
   const feeParam = new BigNumber(Web3.utils.fromWei(dataContractStatus.tcRedeemFee))
+
+  // TC amount in CA
+  if (!tcPrice.gt(0)) {
+    tcPrice = new BigNumber(process.env.PRICE_TC)
+  }
 
   // TC amount in reserve
   const qCAtc = new BigNumber(qTC).times(tcPrice)
@@ -176,8 +185,12 @@ const redeemTC = async (web3, dContracts, configProject, caIndex, qTC) => {
   if (new BigNumber(qTC).gt(userTCBalance)) { throw new Error(`Insufficient ${configProject.tokens.TC.name} user balance`) }
 
   // There are sufficient TC in the contracts to redeem?
+
+  // Commented
+  /*
   const tcAvailableToRedeem = new BigNumber(Web3.utils.fromWei(dataContractStatus.getTCAvailableToRedeem))
   if (new BigNumber(qTC).gt(tcAvailableToRedeem)) { throw new Error(`Insufficient ${configProject.tokens.TC.name}available to redeem in contract`) }
+   */
 
   // There are sufficient CA in the contract
   const caBalance = new BigNumber(fromContractPrecisionDecimals(dataContractStatus.getACBalance[caIndex],
@@ -234,8 +247,12 @@ const mintTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) =>
   const userBalanceStats = await userBalanceFromContracts(web3, dContracts, configProject, userAddress)
 
   // get TP price from contract
-  const tpPrice = new BigNumber(Web3.utils.fromWei(dataContractStatus.PP_TP[tpIndex]))
+  let tpPrice = new BigNumber(Web3.utils.fromWei(dataContractStatus.PP_TP[tpIndex]))
   const feeParam = new BigNumber(Web3.utils.fromWei(dataContractStatus.tpMintFees[tpIndex]))
+
+  if (!tpPrice.gt(0)) {
+    tpPrice = new BigNumber(process.env.PRICE_TP[tpIndex])
+  }
 
   // Pegged amount in CA
   const qCAtp = new BigNumber(qTP).div(tpPrice)
@@ -289,9 +306,12 @@ const mintTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) =>
   if (qAssetMax.gt(userSpendableBalance)) { throw new Error('Insufficient spendable balance... please make an allowance to the MoC contract') }
 
   // There are sufficient PEGGED in the contracts to mint?
+  // COMMENTED temporally
+  /*
   const tpAvailableToMint = new BigNumber(fromContractPrecisionDecimals(dataContractStatus.getTPAvailableToMint[tpIndex], configProject.tokens.TP[tpIndex].decimals))
   const qAssetAvailableToMint = new BigNumber(tpAvailableToMint).div(tpPrice)
   if (new BigNumber(qAssetMax).gt(qAssetAvailableToMint)) { throw new Error(`Insufficient ${configProject.tokens.TP.name} available to mint`) }
+  */
 
   const valueToSend = dataContractStatus.tpMintExecFee
 
@@ -347,8 +367,13 @@ const redeemTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) 
   const userBalanceStats = await userBalanceFromContracts(web3, dContracts, configProject, userAddress)
 
   // get TP price from contract
-  const tpPrice = new BigNumber(Web3.utils.fromWei(dataContractStatus.PP_TP[tpIndex]))
+  let tpPrice = new BigNumber(Web3.utils.fromWei(dataContractStatus.PP_TP[tpIndex]))
   const feeParam = new BigNumber(Web3.utils.fromWei(dataContractStatus.tpRedeemFees[tpIndex]))
+
+  if (!tpPrice.gt(0)) {
+    const staticPrices = process.env.PRICE_TP.split(",")
+    tpPrice = new BigNumber(staticPrices[tpIndex])
+  }
 
   // TP amount in CA
   const qCAtp = new BigNumber(qTP).div(tpPrice)
@@ -396,6 +421,7 @@ const redeemTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) 
   const userTPBalance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats.TP[tpIndex].balance, configProject.tokens.TP[tpIndex].decimals))
   if (new BigNumber(qTP).gt(userTPBalance)) { throw new Error(`Insufficient ${configProject.tokens.TP[tpIndex].name}  user balance`) }
 
+  /*
   // There are sufficient Free Pegged Token in the contracts to redeem?
   const tpAvailableToRedeem = new BigNumber(Web3.utils.fromWei(dataContractStatus.getTPAvailableToMint[tpIndex]))
   if (new BigNumber(qTP).gt(tpAvailableToRedeem)) { throw new Error(`Insufficient ${configProject.tokens.TP[tpIndex].name}  available to redeem in contract`) }
@@ -403,6 +429,8 @@ const redeemTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) 
   // There are sufficient CA in the contract
   const caBalance = new BigNumber(fromContractPrecisionDecimals(dataContractStatus.getACBalance[caIndex], configProject.tokens.CA[caIndex].decimals))
   if (new BigNumber(qCAtpwFee).gt(caBalance)) { throw new Error(`Insufficient ${configProject.tokens.CA[caIndex].name} in the contract. Balance: ${caBalance} ${configProject.tokens.CA[caIndex].name}`) }
+
+   */
 
   const valueToSend = dataContractStatus.tpRedeemExecFee
 

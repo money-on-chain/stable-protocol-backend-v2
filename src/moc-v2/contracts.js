@@ -258,6 +258,8 @@ Contract Status
 
 Total amount of Collateral Asset held in the Collateral Bag (nACcb): ${Web3.utils.fromWei(contractStatus.nACcb)}
 Collateral Token in the Collateral Bag (nTCcb): ${Web3.utils.fromWei(contractStatus.nTCcb)} 
+Amount of Collateral Asset locked by Pegged Token (lckAC): ${Web3.utils.fromWei(contractStatus.getLckAC)}
+
 ${totalSupplyTP(contractStatus, config)}
 ${totalSupplyCA(contractStatus, config)}
 
@@ -379,6 +381,7 @@ Locked in pending: ${Web3.utils.fromWei(contractStatus.qACLockedInPending)}
 Operation Id Count: ${contractStatus.operIdCount}
 First Operation ID: ${contractStatus.firstOperId}
 Min Operation Waiting Blk: ${contractStatus.minOperWaitingBlk}
+The queue is empty: ${contractStatus.isEmpty}
 
 
 Queue Fees
