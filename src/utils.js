@@ -35,6 +35,13 @@ const getGasPrice = async (web3) => {
   }
 }
 
+const getExecutionFee = async (web3, execCost, slippage) => {
+  const latestBaseFee = (await web3.eth.getBlock("latest")).baseFeePerGas
+  const execFee = execCost * latestBaseFee * ( 1 + slippage / 100)
+  console.log(`Using Base Fee: ${latestBaseFee} * slippage ${slippage} % = ${execFee}`)
+  return execFee;
+}
+
 const toContractPrecision = (amount) => {
   return Web3.utils.toWei(amount.toFormat(18, BigNumber.ROUND_DOWN), 'ether')
 }
@@ -76,5 +83,6 @@ export {
   formatVisibleValue,
   formatTimestamp,
   fromContractPrecisionDecimals,
-  toContractPrecisionDecimals
+  toContractPrecisionDecimals,
+  getExecutionFee
 }

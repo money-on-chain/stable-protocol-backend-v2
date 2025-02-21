@@ -1,6 +1,7 @@
 import { statusFromContracts } from './contracts.js'
 import BigNumber from 'bignumber.js'
 import { sendTransaction } from '../transaction.js'
+import { mocAddresses } from './multicall.js'
 
 const SettlementExecute = async (web3, dContracts, configProject) => {
   const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
@@ -157,24 +158,21 @@ const VendorsSetMarkup = async (web3, dContracts, configProject, vendorMarkup) =
 const QueueExecute = async (web3, dContracts, configProject, feeRecipient) => {
   const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
 
-  const MocQueue = dContracts.contracts.MocQueue
-  const MocQueueAddress = MocQueue.options.address
+  const MocMultiCollateralGuard = dContracts.contracts.MocMultiCollateralGuard
+  const MocMultiCollateralGuardAddress = MocMultiCollateralGuard.options.address
 
-  // Get information from contracts
-  const dataContractStatus = await statusFromContracts(web3, dContracts, configProject)
-
-  const readyToExecute = await MocQueue.methods.readyToExecute().call()
+  const readyToExecute = await MocMultiCollateralGuard.methods.readyToExecute().call()
   if (!readyToExecute) throw new Error('Is not ready to execute the queue!')
 
   const valueToSend = null
 
   // Calculate estimate gas cost
-  const estimateGas = await MocQueue.methods
+  const estimateGas = await MocMultiCollateralGuard.methods
       .execute(feeRecipient)
       .estimateGas({ from: userAddress, value: '0x' })
 
   // encode function
-  const encodedCall = MocQueue.methods
+  const encodedCall = MocMultiCollateralGuard.methods
       .execute(feeRecipient)
       .encodeABI()
 
@@ -184,7 +182,7 @@ const QueueExecute = async (web3, dContracts, configProject, feeRecipient) => {
       valueToSend,
       estimateGas,
       encodedCall,
-      MocQueueAddress
+      MocMultiCollateralGuardAddress
   )
 
   console.log(`Transaction hash: ${receipt.transactionHash}`)
@@ -192,6 +190,85 @@ const QueueExecute = async (web3, dContracts, configProject, feeRecipient) => {
   return { receipt, filteredEvents }
 }
 
+const MicroLiquidationExecute = async (web3, dContracts, configProject, feeRecipient) => {
+  const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
+
+  const Moc = dContracts.contracts.Moc
+  const MocAddress = Moc.options.address
+  const MocMultiCollateralGuard = dContracts.contracts.MocMultiCollateralGuard
+  const MocMultiCollateralGuardAddress = MocMultiCollateralGuard.options.address
+
+  const isMicroLiquidationAvailable = await MocMultiCollateralGuard.methods.isMicroLiquidationAvailable(MocAddress).call()
+  if (!isMicroLiquidationAvailable) throw new Error('Micro liquidation is not available!')
+
+  const latestBaseFee = (await web3.eth.getBlock("latest")).baseFeePerGas
+  console.log(await MocMultiCollateralGuard.methods.getACAndTPtoRebalanceOnMicroLiquidation(MocAddress, latestBaseFee).call())
+
+  const valueToSend = null
+
+  // Calculate estimate gas cost
+  const estimateGas = await MocMultiCollateralGuard.methods
+      .execMicroLiquidation(MocAddress, feeRecipient)
+      .estimateGas({ from: userAddress, value: '0x' })
+
+  // encode function
+  const encodedCall = MocMultiCollateralGuard.methods
+  .execMicroLiquidation(MocAddress, feeRecipient)
+      .encodeABI()
+
+  // send transaction to the blockchain and get receipt
+  const { receipt, filteredEvents } = await sendTransaction(
+      web3,
+      valueToSend,
+      estimateGas,
+      encodedCall,
+      MocMultiCollateralGuardAddress
+  )
+
+  console.log(`Transaction hash: ${receipt.transactionHash}`)
+
+  return { receipt, filteredEvents }
+}
+
+const LiquidationExecute = async (web3, dContracts, configProject, feeRecipient) => {
+  const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
+
+  const Moc = dContracts.contracts.Moc
+  const MocAddress = Moc.options.address
+  const MocMultiCollateralGuard = dContracts.contracts.MocMultiCollateralGuard
+  const MocMultiCollateralGuardAddress = MocMultiCollateralGuard.options.address
+
+  const isMicroLiquidationAvailable = await MocMultiCollateralGuard.methods.isLiquidationAvailable(MocAddress).call()
+  if (!isMicroLiquidationAvailable) throw new Error('Liquidation is not available!')
+
+  const latestBaseFee = (await web3.eth.getBlock("latest")).baseFeePerGas
+  console.log(await MocMultiCollateralGuard.methods.getACAndTPtoRebalanceOnLiquidation(MocAddress, latestBaseFee).call())
+
+  const valueToSend = null
+
+  // Calculate estimate gas cost
+  const estimateGas = await MocMultiCollateralGuard.methods
+      .execLiquidation(MocAddress, feeRecipient)
+      .estimateGas({ from: userAddress, value: '0x' })
+
+  // encode function
+  const encodedCall = MocMultiCollateralGuard.methods
+  .execLiquidation(MocAddress, feeRecipient)
+      .encodeABI()
+
+  // send transaction to the blockchain and get receipt
+  const { receipt, filteredEvents } = await sendTransaction(
+      web3,
+      valueToSend,
+      estimateGas,
+      encodedCall,
+      MocMultiCollateralGuardAddress
+  )
+
+  console.log(`Transaction hash: ${receipt.transactionHash}`)
+
+  return { receipt, filteredEvents }
+}
 
 export {
   SettlementExecute,
@@ -199,5 +276,7 @@ export {
   VendorsGuardianSetMarkup,
   TCHoldersInterestPayment,
   QueueExecute,
+  MicroLiquidationExecute,
+  LiquidationExecute,
   VendorsSetMarkup
 }

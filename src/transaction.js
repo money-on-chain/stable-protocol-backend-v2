@@ -19,6 +19,7 @@ const addABIv2 = (dContracts) => {
   abiDecoder.addABI(dContracts.json.Moc.abi)
   abiDecoder.addABI(dContracts.json.MocVendors.abi)
   abiDecoder.addABI(dContracts.json.MocQueue.abi)
+  abiDecoder.addABI(dContracts.json.MocMultiCollateralGuard.abi)
 
 }
 
