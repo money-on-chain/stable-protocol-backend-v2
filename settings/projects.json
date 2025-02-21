@@ -106,9 +106,9 @@
         }
       }
     },
-    "stablex": {
+    "stablex_eth": {
       "collateral": "coinbase",
-      "appProject": "stablex",
+      "appProject": "stablex_eth",
       "tokens": {
         "COINBASE": {
           "name": "ETH",
@@ -124,10 +124,52 @@
           {
             "name": "USDX",
             "decimals": 18
+          },
+          {
+            "name": "ARSX",
+            "decimals": 18
           }
         ],
         "TC": {
           "name": "XETH",
+          "decimals": 18
+        },
+        "FeeToken": {
+          "name": "XSTA",
+          "decimals": 18
+        },
+        "TG": {
+          "name": "XSTA",
+          "decimals": 18
+        }
+      }
+    },
+    "stablex_wbtc": {
+      "collateral": "rc20",
+      "appProject": "stablex_wbtc",
+      "tokens": {
+        "COINBASE": {
+          "name": "ETH",
+          "decimals": 18
+        },
+        "CA": [
+          {
+            "name": "WBTC",
+            "decimals": 18
+          }
+        ],
+        "TP": [
+          {
+            "name": "USDX",
+            "decimals": 18
+          },
+          {
+            "name": "ARSX",
+            "decimals": 18
+          }
+        ],
+        "TC": {
+          "name": "XWBTC",
           "decimals": 18
         },
         "FeeToken": {

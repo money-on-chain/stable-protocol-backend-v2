@@ -80,7 +80,7 @@ const mintTC = async (web3, dContracts, configProject, qTC) => {
     const userReserveBalance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats.CA[caIndex].balance, configProject.tokens.CA[caIndex].decimals))
     if (qAssetMax.gt(userReserveBalance)) throw new Error(`Insufficient ${configProject.tokens.CA[caIndex].name} balance`)
 
-    let valueToSend = new BigNumber(fromContractPrecisionDecimals(dataContractStatus.tcMintExecFee, configProject.tokens.CA[caIndex].decimals)).plus(qAssetMax)
+    let valueToSend = new BigNumber(fromContractPrecisionDecimals(dataContractStatus.tcMintExecCost, configProject.tokens.CA[caIndex].decimals)).plus(qAssetMax)
     valueToSend = toContractPrecisionDecimals(valueToSend, configProject.tokens.CA[caIndex].decimals)
 
     // Calculate estimate gas cost
@@ -89,7 +89,6 @@ const mintTC = async (web3, dContracts, configProject, qTC) => {
             userAddress,
             vendorAddress
         ).estimateGas({ from: userAddress, value: valueToSend })
-
     // encode function
     const encodedCall = MoCContract.methods
         .mintTC(toContractPrecisionDecimals(new BigNumber(qTC), configProject.tokens.TC.decimals),
@@ -196,7 +195,7 @@ const mintTP = async (web3, dContracts, configProject, tpIndex, qTP) => {
     const qAssetAvailableToMint = new BigNumber(tpAvailableToMint).div(tpPrice)
     if (new BigNumber(qAssetMax).gt(qAssetAvailableToMint)) { throw new Error(`Insufficient ${configProject.tokens.TP.name} available to mint`) }
 
-    let valueToSend = new BigNumber(fromContractPrecisionDecimals(dataContractStatus.tpMintExecFee, configProject.tokens.CA[caIndex].decimals)).plus(qAssetMax)
+    let valueToSend = new BigNumber(fromContractPrecisionDecimals(dataContractStatus.tpMintExecCost, configProject.tokens.CA[caIndex].decimals)).plus(qAssetMax)
     valueToSend = toContractPrecisionDecimals(valueToSend, configProject.tokens.CA[caIndex].decimals)
 
     // Calculate estimate gas cost

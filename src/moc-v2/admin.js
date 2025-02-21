@@ -157,24 +157,21 @@ const VendorsSetMarkup = async (web3, dContracts, configProject, vendorMarkup) =
 const QueueExecute = async (web3, dContracts, configProject, feeRecipient) => {
   const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
 
-  const MocQueue = dContracts.contracts.MocQueue
-  const MocQueueAddress = MocQueue.options.address
+  const MocMultiCollateralGuard = dContracts.contracts.MocMultiCollateralGuard
+  const MocMultiCollateralGuardAddress = MocMultiCollateralGuard.options.address
 
-  // Get information from contracts
-  const dataContractStatus = await statusFromContracts(web3, dContracts, configProject)
-
-  const readyToExecute = await MocQueue.methods.readyToExecute().call()
+  const readyToExecute = await MocMultiCollateralGuard.methods.readyToExecute().call()
   if (!readyToExecute) throw new Error('Is not ready to execute the queue!')
 
   const valueToSend = null
 
   // Calculate estimate gas cost
-  const estimateGas = await MocQueue.methods
+  const estimateGas = await MocMultiCollateralGuard.methods
       .execute(feeRecipient)
       .estimateGas({ from: userAddress, value: '0x' })
 
   // encode function
-  const encodedCall = MocQueue.methods
+  const encodedCall = MocMultiCollateralGuard.methods
       .execute(feeRecipient)
       .encodeABI()
 
@@ -184,7 +181,7 @@ const QueueExecute = async (web3, dContracts, configProject, feeRecipient) => {
       valueToSend,
       estimateGas,
       encodedCall,
-      MocQueueAddress
+      MocMultiCollateralGuardAddress
   )
 
   console.log(`Transaction hash: ${receipt.transactionHash}`)
