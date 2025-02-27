@@ -457,28 +457,27 @@ const registryAddresses = async (web3, dContracts) => {
 }
 
 
-const mocAddresses = async (web3, dContracts, configProject) => {
+const mocAddresses = async (web3, dContracts, contractMoc, contractMocType) => {
 
   const multicall = dContracts.contracts.multicall
-  const moc = dContracts.contracts.Moc
 
   const multiCallRequest = new MultiCall(multicall, web3)
-  multiCallRequest.aggregate(moc, moc.methods.feeToken().encodeABI(), 'address', 'feeToken')
-  multiCallRequest.aggregate(moc, moc.methods.feeTokenPriceProvider().encodeABI(), 'address', 'feeTokenPriceProvider')
+  multiCallRequest.aggregate(contractMoc, contractMoc.methods.feeToken().encodeABI(), 'address', 'feeToken')
+  multiCallRequest.aggregate(contractMoc, contractMoc.methods.feeTokenPriceProvider().encodeABI(), 'address', 'feeTokenPriceProvider')
 
-  if (configProject.collateral !== 'coinbase') {
-    multiCallRequest.aggregate(moc, moc.methods.acToken().encodeABI(), 'address', 'acToken')
+  if (contractMocType !== 'coinbase') {
+    multiCallRequest.aggregate(contractMoc, contractMoc.methods.acToken().encodeABI(), 'address', 'acToken')
   }
 
-  multiCallRequest.aggregate(moc, moc.methods.tcToken().encodeABI(), 'address', 'tcToken')
-  multiCallRequest.aggregate(moc, moc.methods.maxAbsoluteOpProvider().encodeABI(), 'address', 'maxAbsoluteOpProvider')
-  multiCallRequest.aggregate(moc, moc.methods.maxOpDiffProvider().encodeABI(), 'address', 'maxOpDiffProvider')
-  multiCallRequest.aggregate(moc, moc.methods.mocQueue().encodeABI(), 'address', 'mocQueue')
-  multiCallRequest.aggregate(moc, moc.methods.mocVendors().encodeABI(), 'address', 'mocVendors')
+  multiCallRequest.aggregate(contractMoc, contractMoc.methods.tcToken().encodeABI(), 'address', 'tcToken')
+  multiCallRequest.aggregate(contractMoc, contractMoc.methods.maxAbsoluteOpProvider().encodeABI(), 'address', 'maxAbsoluteOpProvider')
+  multiCallRequest.aggregate(contractMoc, contractMoc.methods.maxOpDiffProvider().encodeABI(), 'address', 'maxOpDiffProvider')
+  multiCallRequest.aggregate(contractMoc, contractMoc.methods.mocQueue().encodeABI(), 'address', 'mocQueue')
+  multiCallRequest.aggregate(contractMoc, contractMoc.methods.mocVendors().encodeABI(), 'address', 'mocVendors')
 
   const MAX_LEN_ARRAY_TP = 4;
   for (let i = 0; i < MAX_LEN_ARRAY_TP; i++) {
-    multiCallRequest.aggregate(moc, moc.methods.tpTokens(i).encodeABI(), 'address', 'tpTokens', i)
+    multiCallRequest.aggregate(contractMoc, contractMoc.methods.tpTokens(i).encodeABI(), 'address', 'tpTokens', i)
   }
 
   return await multiCallRequest.tryBlockAndAggregate();

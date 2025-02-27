@@ -117,7 +117,13 @@
         "CA": [
           {
             "name": "ETH",
-            "decimals": 18
+            "decimals": 18,
+            "type": "coinbase"
+          },
+          {
+            "name": "WBTC",
+            "decimals": 18,
+            "type": "rc20"
           }
         ],
         "TP": [
