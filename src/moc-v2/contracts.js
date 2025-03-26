@@ -23,11 +23,13 @@ const readContracts = async (web3, configProject) => {
   dContracts.json.TokenPegged = readJsonFile(`./abis/${appProject}/TokenPegged.json`)
   dContracts.json.CollateralToken = readJsonFile(`./abis/${appProject}/CollateralToken.json`)
   dContracts.json.IPriceProvider = readJsonFile(`./abis/${appProject}/IPriceProvider.json`)
+  dContracts.json.IDataProvider = readJsonFile(`./abis/${appProject}/IDataProvider.json`)
   dContracts.json.Moc = readJsonFile(`./abis/${appProject}/Moc.json`)
   dContracts.json.MocVendors = readJsonFile(`./abis/${appProject}/MocVendors.json`)
   dContracts.json.MocQueue = readJsonFile(`./abis/${appProject}/MocQueue.json`)
   dContracts.json.FeeToken = readJsonFile(`./abis/${appProject}/FeeToken.json`)
   dContracts.json.CollateralAsset = readJsonFile(`./abis/${appProject}/CollateralAsset.json`)
+  dContracts.json.MocMultiCollateralGuard = readJsonFile(`./abis/${appProject}/MocMultiCollateralGuard.json`)
 
   // OMOC Contracts
   dContracts.json.IRegistry = readJsonFile('./abis/omoc/IRegistry.json')
@@ -107,6 +109,9 @@ const readContracts = async (web3, configProject) => {
 
   console.log('Reading MocQueue Contract... address: ', mocAddr['mocQueue'])
   dContracts.contracts.MocQueue = new web3.eth.Contract(dContracts.json.MocQueue.abi, mocAddr['mocQueue'])
+
+  dContracts.contracts.MocMultiCollateralGuard = new web3.eth.Contract(dContracts.json.MocMultiCollateralGuard.abi, await dContracts.contracts.MocQueue.methods.mocMultiCollateralGuard().call())
+  console.log('Reading MocMultiCollateralGuard Contract... address: ', dContracts.contracts.MocMultiCollateralGuard.options.address)
 
   console.log('Reading Fee Token Contract... address: ', mocAddr['feeToken'])
   dContracts.contracts.FeeToken = new web3.eth.Contract(dContracts.json.FeeToken.abi, mocAddr['feeToken'])
@@ -228,6 +233,19 @@ const availableToMintTP = (contractStatus, config) => {
   return result
 }
 
+const realAvailableToMintTP = (contractStatus, config) => {
+  let result = ''
+  for (let i = 0; i < config.tokens.TP.length; i++) {
+
+    result += `${config.tokens.TP[i].name} real available to mint:  ${ contractStatus.getRealTPAvailableToMint[i] === 0 ? '--' : Web3.utils.fromWei(contractStatus.getRealTPAvailableToMint[i])} `
+
+    if (i + 1 < config.tokens.TP.length) {
+      result += '\n'
+    }
+  }
+  return result
+}
+
 const emaTP = (contractStatus, config) => {
   let result = ''
   for (let i = 0; i < config.tokens.TP.length; i++) {
@@ -277,10 +295,8 @@ Coverage & Leverage
 ===================
 
 Bucket global coverage: ${Web3.utils.fromWei(contractStatus.getCglb)}
-Target coverage adjusted by all Pegged Token's to Collateral Asset rate moving average (CtargemaCA): ${Web3.utils.fromWei(contractStatus.calcCtargemaCA)}
-${targetCoverageTP(contractStatus, config)} 
-${config.tokens.TC.name} Leverage:  ${new BigNumber(contractStatus.getLeverageTC).gt(10000000000000000000000) ? '+Inf' : Web3.utils.fromWei(contractStatus.getLeverageTC)}
-
+Target coverage adjusted by all Pegged Token's to Collateral Asset rate moving average (CtargemaCA): ${Web3.utils.fromWei(contractStatus.getCtargemaCA)}
+${targetCoverageTP(contractStatus, config)}
 
 Available
 =========
@@ -295,7 +311,7 @@ EMA
 
 ${emaTP(contractStatus, config)}
 Block next calculation: ${contractStatus.nextEmaCalculation}
-EMA Block Span: ${contractStatus.emaCalculationBlockSpan}
+EMA Time Span: ${contractStatus.emaCalculationTimeSpan}
 Should Calculate EMA: ${contractStatus.shouldCalculateEma}
 
 
@@ -312,8 +328,8 @@ Contract is Liquidation Reached: ${contractStatus.isLiquidationReached}
 Settlement
 ==========
 
-Nº of blocks between settlements: ${contractStatus.bes}
-Next settlement block: ${contractStatus.bns}
+Nº of time between settlements: ${contractStatus.settlementTimeSpan}
+Next settlement time: ${contractStatus.nextSettlementTime}
 Nº of blocks remaining for settlement: ${contractStatus.getBts}
 
 
@@ -355,8 +371,8 @@ Token Collateral Interest
 
 Collector Address: ${contractStatus.tcInterestCollectorAddress}
 Interest Rate: ${Web3.utils.fromWei(contractStatus.tcInterestRate)}
-Block Span: ${contractStatus.tcInterestPaymentBlockSpan}
-Next Payment Block: ${contractStatus.nextTCInterestPayment}
+Time Span: ${contractStatus.tcInterestPaymentTimeSpan}
+Next Payment Time: ${contractStatus.nextTCInterestPayment}
 
 
 Flux Capacitor
@@ -366,13 +382,10 @@ Max Absolute Op Provider: ${contractStatus.maxAbsoluteOpProvider}
 Max Absolute Op: ${Web3.utils.fromWei(contractStatus.FC_MAX_ABSOLUTE_OP)}
 Max Op Diff Provider: ${contractStatus.maxOpDiffProvider}
 Max Op Diff: ${Web3.utils.fromWei(contractStatus.FC_MAX_OP_DIFFERENCE)}
-Decay Block Span: ${contractStatus.decayBlockSpan}
+Decay Time Span: ${contractStatus.decayTimeSpan}
 Absolute Accumulator: ${Web3.utils.fromWei(contractStatus.absoluteAccumulator)}
 Differential Accumulator: ${Web3.utils.fromWei(contractStatus.differentialAccumulator)}
-Last operational Block Number: ${contractStatus.lastOperationBlockNumber}
-maxQACToMintTP: ${Web3.utils.fromWei(contractStatus.maxQACToMintTP)}
-maxQACToRedeemTP: ${Web3.utils.fromWei(contractStatus.maxQACToRedeemTP)}
-
+Last operation Time Stamp: ${contractStatus.lastOperationTimeStamp}
 
 Queue
 =====
@@ -381,22 +394,32 @@ Locked in pending: ${Web3.utils.fromWei(contractStatus.qACLockedInPending)}
 Operation Id Count: ${contractStatus.operIdCount}
 First Operation ID: ${contractStatus.firstOperId}
 Min Operation Waiting Blk: ${contractStatus.minOperWaitingBlk}
+Max Operation Waiting Blk: ${contractStatus.maxOperWaitingBlk}
 The queue is empty: ${contractStatus.isEmpty}
 
 
-Queue Fees
+Queue Execution Costs
 ==========
 
-tcMintExecFee: ${Web3.utils.fromWei(contractStatus.tcMintExecFee)}
-tcRedeemExecFee: ${Web3.utils.fromWei(contractStatus.tcRedeemExecFee)}
-tpMintExecFee: ${Web3.utils.fromWei(contractStatus.tpMintExecFee)}
-tpRedeemExecFee: ${Web3.utils.fromWei(contractStatus.tpRedeemExecFee)}
-swapTPforTPExecFee: ${Web3.utils.fromWei(contractStatus.swapTPforTPExecFee)}
-swapTPforTCExecFee: ${Web3.utils.fromWei(contractStatus.swapTPforTCExecFee)}
-swapTCforTPExecFee: ${Web3.utils.fromWei(contractStatus.swapTCforTPExecFee)}
-redeemTCandTPExecFee: ${Web3.utils.fromWei(contractStatus.redeemTCandTPExecFee)}
-mintTCandTPExecFee: ${Web3.utils.fromWei(contractStatus.mintTCandTPExecFee)}
+tcMintExecCost: ${Web3.utils.fromWei(contractStatus.tcMintExecCost)}
+tcRedeemExecCost: ${Web3.utils.fromWei(contractStatus.tcRedeemExecCost)}
+tpMintExecCost: ${Web3.utils.fromWei(contractStatus.tpMintExecCost)}
+tpRedeemExecCost: ${Web3.utils.fromWei(contractStatus.tpRedeemExecCost)}
+swapTPforTPExecCost: ${Web3.utils.fromWei(contractStatus.swapTPforTPExecCost)}
+swapTPforTCExecCost: ${Web3.utils.fromWei(contractStatus.swapTPforTCExecCost)}
+swapTCforTPExecCost: ${Web3.utils.fromWei(contractStatus.swapTCforTPExecCost)}
+redeemTCandTPExecCost: ${Web3.utils.fromWei(contractStatus.redeemTCandTPExecCost)}
+mintTCandTPExecCost: ${Web3.utils.fromWei(contractStatus.mintTCandTPExecCost)}
 
+
+MultiCollateral
+=====
+
+Combined Coverage: ${Web3.utils.fromWei(contractStatus.getCombinedCglb)}
+Combined Target Coverage: ${Web3.utils.fromWei(contractStatus.getCombinedCtargemaCA)}
+Real ${config.tokens.TC.name} Available to Redeem : ${Web3.utils.fromWei(contractStatus.getRealTCAvailableToRedeem)}
+${realAvailableToMintTP(contractStatus, config)}
+Last Price Publication Block : ${contractStatus.getLastPublicationBlock} 
 `
 
   if (typeof process.env.CONTRACT_IREGISTRY !== 'undefined') {
