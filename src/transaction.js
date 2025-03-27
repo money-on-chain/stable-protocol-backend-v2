@@ -16,7 +16,7 @@ const addABIv2 = (dContracts) => {
   // Abi decoder
   abiDecoder.addABI(dContracts.json.TokenPegged.abi)
   abiDecoder.addABI(dContracts.json.CollateralToken.abi)
-  abiDecoder.addABI(dContracts.json.Moc.abi)
+  abiDecoder.addABI(dContracts.json.MocCACoinbase.abi)
   abiDecoder.addABI(dContracts.json.MocVendors.abi)
   abiDecoder.addABI(dContracts.json.MocQueue.abi)
 
