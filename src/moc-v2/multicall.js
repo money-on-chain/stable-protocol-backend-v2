@@ -346,19 +346,19 @@ const contractStatus = async (web3, dContracts, configProject) => {
   let PP_CA
   let CA
   let countRC20 = 0
-  for (let i = 0; i < configProject.tokens.CA.length; i++) {
-    PP_CA = dContracts.contracts.PP_CA[i]
-    Moc = dContracts.contracts.Moc[i]
-    contractMocType = configProject.tokens.CA[i].type
+  for (let ca = 0; ca < configProject.tokens.CA.length; ca++) {
+    PP_CA = dContracts.contracts.PP_CA[ca]
+    Moc = dContracts.contracts.Moc[ca]
+    contractMocType = configProject.tokens.CA[ca].type
 
     if (contractMocType === 'coinbase') {
-      multiCallRequest.aggregate(multicall, multicall.methods.getEthBalance(Moc.options.address).encodeABI(), 'uint256', 'getACBalance', i)
+      multiCallRequest.aggregate(multicall, multicall.methods.getEthBalance(Moc.options.address).encodeABI(), 'uint256',ca, 'getACBalance')
     } else {
       CA = dContracts.contracts.CA[countRC20]
-      multiCallRequest.aggregate(CA, CA.methods.balanceOf(Moc.options.address).encodeABI(), 'uint256', 'getACBalance', i)
+      multiCallRequest.aggregate(CA, CA.methods.balanceOf(Moc.options.address).encodeABI(), 'uint256', ca, 'getACBalance')
       countRC20++;
     }
-    multiCallRequest.aggregate(PP_CA, PP_CA.methods.peek().encodeABI(), 'uint256', 'PP_CA', i)
+    multiCallRequest.aggregate(PP_CA, PP_CA.methods.peek().encodeABI(), 'uint256', ca, 'PP_CA')
   }
 
   console.log('Reading contract status ...')
@@ -397,7 +397,7 @@ const contractStatus = async (web3, dContracts, configProject) => {
     multiCallRequestHistory.aggregate(PP_CA, PP_CA.methods.peek().encodeABI(), 'uint256', 'PP_CA', i)
   }
 
-  const historic = await multiCallRequestHistory.tryBlockAndAggregate(d24BlockHeights);
+  const historic = await multiCallRequestHistory.tryBlockAndAggregate();
   status.canHistoric = historic.canOperate
   status.historic = historic;
 
