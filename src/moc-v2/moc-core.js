@@ -2,7 +2,7 @@ import BigNumber from 'bignumber.js'
 import Web3 from 'web3'
 
 import { statusFromContracts, userBalanceFromContracts } from './contracts.js'
-import { toContractPrecision, fromContractPrecisionDecimals, toContractPrecisionDecimals } from '../utils.js'
+import { toContractPrecision, fromContractPrecisionDecimals, toContractPrecisionDecimals, getExecutionFee } from '../utils.js'
 import { sendTransaction } from '../transaction.js'
 
 const mintTC = async (web3, dContracts, configProject, caIndex, qTC) => {
@@ -80,7 +80,8 @@ const mintTC = async (web3, dContracts, configProject, caIndex, qTC) => {
   const userSpendableBalance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats.CA[caIndex].allowance, configProject.tokens.CA[caIndex].decimals))
   if (qAssetMax.gt(userSpendableBalance)) throw new Error('Insufficient spendable balance... please make an allowance to the MoC contract')
 
-  const valueToSend = dataContractStatus.tcMintExecFee
+  // static call used in estimateGas returns baseFee == 0, if we use another value the estimateGas function will revert
+  const valueToSend = await getExecutionFee(web3, dataContractStatus.tcMintExecCost, slippage)
 
   // Calculate estimate gas cost
   const estimateGas = await MoCContract.methods
@@ -197,8 +198,7 @@ const redeemTC = async (web3, dContracts, configProject, caIndex, qTC) => {
     configProject.tokens.CA[caIndex].decimals))
   if (new BigNumber(qCAtcwFee).gt(caBalance)) { throw new Error(`Insufficient ${configProject.tokens.CA[caIndex].name} in the contract. Balance: ${caBalance} ${configProject.tokens.CA[caIndex].name}`) }
 
-  // Send value of redeem exec fee
-  const valueToSend = dataContractStatus.tcRedeemExecFee
+  const valueToSend = await getExecutionFee(web3, dataContractStatus.tcRedeemExecCost, slippage)
 
   // Calculate estimate gas cost
   const estimateGas = await MoCContract.methods
@@ -206,7 +206,7 @@ const redeemTC = async (web3, dContracts, configProject, caIndex, qTC) => {
           toContractPrecisionDecimals(qAssetMin, configProject.tokens.CA[caIndex].decimals),
           userAddress,
           vendorAddress
-      ).estimateGas({ from: userAddress, value: valueToSend })
+      ).estimateGas({ from: userAddress, value: valueToSend })   
 
   // encode function
   const encodedCall = MoCContract.methods
@@ -313,7 +313,7 @@ const mintTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) =>
   if (new BigNumber(qAssetMax).gt(qAssetAvailableToMint)) { throw new Error(`Insufficient ${configProject.tokens.TP.name} available to mint`) }
   */
 
-  const valueToSend = dataContractStatus.tpMintExecFee
+  const valueToSend = await getExecutionFee(web3, dataContractStatus.tpMintExecCost, slippage)
 
   // Calculate estimate gas cost
   const estimateGas = await MoCContract.methods
@@ -432,7 +432,7 @@ const redeemTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) 
 
    */
 
-  const valueToSend = dataContractStatus.tpRedeemExecFee
+  const valueToSend = await getExecutionFee(web3, dataContractStatus.tpRedeemExecCost, slippage)
 
   // Calculate estimate gas cost
   const estimateGas = await MoCContract.methods
@@ -476,6 +476,8 @@ const swapTPforTP = async (web3, dContracts, configProject, iFromTP, iToTP, qTP,
   const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
   const vendorAddress = `${process.env.VENDOR_ADDRESS}`.toLowerCase()
   const slippage = `${process.env.REDEEM_SLIPPAGE}`
+  const tpFromAddress = dContracts.contracts.TP[iFromTP].options.address
+  const tpToAddress = dContracts.contracts.TP[iToTP].options.address
 
   const MoCContract = dContracts.contracts.Moc
   const MoCContractAddress = MoCContract.options.address
@@ -522,12 +524,12 @@ const swapTPforTP = async (web3, dContracts, configProject, iFromTP, iToTP, qTP,
   const userSpendableBalance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats.CA[caIndex].allowance, configProject.tokens.CA[caIndex].decimals))
   if (qAssetMaxFees.gt(userSpendableBalance)) { throw new Error('Insufficient spendable balance... please make an allowance to the MoC contract') }
 
-  const valueToSend = dataContractStatus.swapTPforTPExecFee
+  const valueToSend = await getExecutionFee(web3, dataContractStatus.swapTPforTPExecCost, slippage)
 
   // Calculate estimate gas cost
   const estimateGas = await MoCContract.methods
-      .swapTPforTP(iFromTP,
-          iToTP,
+      .swapTPforTP(tpFromAddress,
+          tpToAddress,
           toContractPrecisionDecimals(new BigNumber(qTP), configProject.tokens.TP[iFromTP].decimals),
           toContractPrecisionDecimals(new BigNumber(qTPMin), configProject.tokens.TP[iToTP].decimals),
           toContractPrecisionDecimals(qAssetMaxFees, configProject.tokens.CA[caIndex].decimals),
@@ -537,8 +539,8 @@ const swapTPforTP = async (web3, dContracts, configProject, iFromTP, iToTP, qTP,
 
   // encode function
   const encodedCall = MoCContract.methods
-      .swapTPforTP(iFromTP,
-          iToTP,
+      .swapTPforTP(tpFromAddress,
+          tpToAddress,
           toContractPrecisionDecimals(new BigNumber(qTP), configProject.tokens.TP[iFromTP].decimals),
           toContractPrecisionDecimals(new BigNumber(qTPMin), configProject.tokens.TP[iToTP].decimals),
           toContractPrecisionDecimals(qAssetMaxFees, configProject.tokens.CA[caIndex].decimals),
@@ -567,6 +569,7 @@ const swapTPforTC = async (web3, dContracts, configProject, caIndex, tpIndex, qT
   const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
   const vendorAddress = `${process.env.VENDOR_ADDRESS}`.toLowerCase()
   const slippage = `${process.env.REDEEM_SLIPPAGE}`
+  const tpAddress = dContracts.contracts.TP[tpIndex].options.address
 
   const MoCContract = dContracts.contracts.Moc
   const MoCContractAddress = MoCContract.options.address
@@ -597,9 +600,6 @@ const swapTPforTC = async (web3, dContracts, configProject, caIndex, tpIndex, qT
 
   console.log(`Slippage using ${slippage} %. Maximum amount of asset can be spent in fees: ${qAssetMaxFees.toString()} ${configProject.tokens.CA[caIndex].name} `)
 
-  // Redeem function... no values sent
-  const valueToSend = dataContractStatus.swapTPforTCExecFee
-
   // Verifications
 
   // User have sufficient PEGGED Token in balance?
@@ -617,9 +617,11 @@ const swapTPforTC = async (web3, dContracts, configProject, caIndex, tpIndex, qT
   const userSpendableBalance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats.CA[caIndex].allowance, configProject.tokens.CA[caIndex].decimals))
   if (qAssetMaxFees.gt(userSpendableBalance)) { throw new Error('Insufficient spendable balance... please make an allowance to the MoC contract') }
 
+  const valueToSend = await getExecutionFee(web3, dataContractStatus.swapTPforTCExecCost, slippage)
+
   // Calculate estimate gas cost
   const estimateGas = await MoCContract.methods
-      .swapTPforTC(tpIndex,
+      .swapTPforTC(tpAddress,
           toContractPrecisionDecimals(new BigNumber(qTP), configProject.tokens.TP[tpIndex].decimals),
           toContractPrecisionDecimals(qTCMin, configProject.tokens.TC.decimals),
           toContractPrecisionDecimals(qAssetMaxFees, configProject.tokens.CA[caIndex].decimals),
@@ -630,7 +632,7 @@ const swapTPforTC = async (web3, dContracts, configProject, caIndex, tpIndex, qT
 
   // encode function
   const encodedCall = MoCContract.methods
-      .swapTPforTC(tpIndex,
+      .swapTPforTC(tpAddress,
           toContractPrecisionDecimals(new BigNumber(qTP), configProject.tokens.TP[tpIndex].decimals),
           toContractPrecisionDecimals(qTCMin, configProject.tokens.TC.decimals),
           toContractPrecisionDecimals(qAssetMaxFees, configProject.tokens.CA[caIndex].decimals),
@@ -659,6 +661,7 @@ const swapTCforTP = async (web3, dContracts, configProject, caIndex, tpIndex, qT
   const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
   const vendorAddress = `${process.env.VENDOR_ADDRESS}`.toLowerCase()
   const slippage = `${process.env.REDEEM_SLIPPAGE}`
+  const tpAddress = dContracts.contracts.TP[tpIndex].options.address
 
   const MoCContract = dContracts.contracts.Moc
   const MoCContractAddress = MoCContract.options.address
@@ -672,7 +675,7 @@ const swapTCforTP = async (web3, dContracts, configProject, caIndex, tpIndex, qT
   // Prices
   const tcPrice = new BigNumber(Web3.utils.fromWei(dataContractStatus.getPTCac))
   const tpPrice = new BigNumber(Web3.utils.fromWei(dataContractStatus.PP_TP[tpIndex]))
-  const SwapFees = new BigNumber(Web3.utils.fromWei(dataContractStatus.redeemTCandTPFee))
+  const SwapFees = new BigNumber(Web3.utils.fromWei(dataContractStatus.swapTCforTPFee))
 
   // Conversions
   const qCAtc = new BigNumber(qTC).times(tcPrice)
@@ -708,12 +711,11 @@ const swapTCforTP = async (web3, dContracts, configProject, caIndex, tpIndex, qT
   const userSpendableBalance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats.CA[caIndex].allowance, configProject.tokens.CA[caIndex].decimals))
   if (qAssetMaxFees.gt(userSpendableBalance)) { throw new Error('Insufficient spendable balance... please make an allowance to the MoC contract') }
 
-  // Redeem function... no values sent
-  const valueToSend = dataContractStatus.swapTCforTPExecFee
+  const valueToSend = await getExecutionFee(web3, dataContractStatus.swapTCforTPExecCost, slippage)
 
   // Calculate estimate gas cost
   const estimateGas = await MoCContract.methods
-      .swapTCforTP(tpIndex,
+      .swapTCforTP(tpAddress,
           toContractPrecisionDecimals(new BigNumber(qTC), configProject.tokens.TC.decimals),
           toContractPrecisionDecimals(qTPMin, configProject.tokens.TP[tpIndex].decimals),
           toContractPrecisionDecimals(qAssetMaxFees, configProject.tokens.CA[caIndex].decimals),
@@ -723,7 +725,7 @@ const swapTCforTP = async (web3, dContracts, configProject, caIndex, tpIndex, qT
 
   // encode function
   const encodedCall = MoCContract.methods
-      .swapTCforTP(tpIndex,
+      .swapTCforTP(tpAddress,
           toContractPrecisionDecimals(new BigNumber(qTC), configProject.tokens.TC.decimals),
           toContractPrecisionDecimals(qTPMin, configProject.tokens.TP[tpIndex].decimals),
           toContractPrecisionDecimals(qAssetMaxFees, configProject.tokens.CA[caIndex].decimals),
@@ -750,6 +752,7 @@ const mintTCandTP = async (web3, dContracts, configProject, caIndex, tpIndex, qT
   const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
   const vendorAddress = `${process.env.VENDOR_ADDRESS}`.toLowerCase()
   const slippage = `${process.env.MINT_SLIPPAGE}`
+  const tpAddress = dContracts.contracts.TP[tpIndex].options.address
 
   const MoCContract = dContracts.contracts.Moc
   const MoCContractAddress = MoCContract.options.address
@@ -763,11 +766,11 @@ const mintTCandTP = async (web3, dContracts, configProject, caIndex, tpIndex, qT
   // Price of TC
   const SwapFees = new BigNumber(Web3.utils.fromWei(dataContractStatus.mintTCandTPFee))
   const getPACtp = new BigNumber(Web3.utils.fromWei(dataContractStatus.getPACtp[tpIndex]))
-  const calcCtargemaCA = new BigNumber(Web3.utils.fromWei(dataContractStatus.calcCtargemaCA))
+  const getCtargemaCA = new BigNumber(Web3.utils.fromWei(dataContractStatus.getCtargemaCA))
 
-  // qCA = qTP / getPACtp + ((qTP * (calcCtargemaCA - 1) / getPACtp))
+  // qCA = qTP / getPACtp + ((qTP * (getCtargemaCA - 1) / getPACtp))
   const n1 = new BigNumber(qTP).div(getPACtp)
-  const n2 = calcCtargemaCA.minus(1).times(qTP).div(getPACtp)
+  const n2 = getCtargemaCA.minus(1).times(qTP).div(getPACtp)
   const qCA = n1.plus(n2)
 
   const feeOperation = qCA.times(SwapFees)
@@ -793,11 +796,11 @@ const mintTCandTP = async (web3, dContracts, configProject, caIndex, tpIndex, qT
   const userSpendableBalance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats.CA[caIndex].allowance, configProject.tokens.CA[caIndex].decimals))
   if (qAssetMax.gt(userSpendableBalance)) { throw new Error('Insufficient spendable balance... please make an allowance to the MoC contract') }
 
-  const valueToSend = dataContractStatus.mintTCandTPExecFee
+  const valueToSend = await getExecutionFee(web3, dataContractStatus.mintTCandTPExecCost, slippage)
 
   // Calculate estimate gas cost
   const estimateGas = await MoCContract.methods
-      .mintTCandTP(tpIndex,
+      .mintTCandTP(tpAddress,
           toContractPrecisionDecimals(new BigNumber(qTP), configProject.tokens.TP[tpIndex].decimals),
           toContractPrecisionDecimals(qAssetMax, configProject.tokens.CA[caIndex].decimals),
           userAddress,
@@ -806,7 +809,7 @@ const mintTCandTP = async (web3, dContracts, configProject, caIndex, tpIndex, qT
 
   // encode function
   const encodedCall = MoCContract.methods
-      .mintTCandTP(tpIndex,
+      .mintTCandTP(tpAddress,
           toContractPrecisionDecimals(new BigNumber(qTP), configProject.tokens.TP[tpIndex].decimals),
           toContractPrecisionDecimals(qAssetMax, configProject.tokens.CA[caIndex].decimals),
           userAddress,
@@ -833,6 +836,7 @@ const redeemTCandTP = async (web3, dContracts, configProject, caIndex, tpIndex, 
   const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
   const vendorAddress = `${process.env.VENDOR_ADDRESS}`.toLowerCase()
   const slippage = `${process.env.REDEEM_SLIPPAGE}`
+  const tpAddress = dContracts.contracts.TP[tpIndex].options.address
 
   const MoCContract = dContracts.contracts.Moc
   const MoCContractAddress = MoCContract.options.address
@@ -889,12 +893,11 @@ const redeemTCandTP = async (web3, dContracts, configProject, caIndex, tpIndex, 
     configProject.tokens.CA[caIndex].decimals))
   if (new BigNumber(qCAwFee).gt(caBalance)) { throw new Error(`Insufficient ${configProject.tokens.CA[caIndex].name} in the contract. Balance: ${caBalance} ${configProject.tokens.CA[caIndex].name}`) }
 
-  // Redeem function... no values sent
-  const valueToSend = dataContractStatus.redeemTCandTPExecFee
+  const valueToSend = await getExecutionFee(web3, dataContractStatus.redeemTCandTPExecCost, slippage)
 
   // Calculate estimate gas cost
   const estimateGas = await MoCContract.methods
-      .redeemTCandTP(tpIndex,
+      .redeemTCandTP(tpAddress,
           toContractPrecisionDecimals(new BigNumber(qTC), configProject.tokens.TC.decimals),
           toContractPrecisionDecimals(new BigNumber(qTPMax), configProject.tokens.TP[tpIndex].decimals),
           toContractPrecisionDecimals(qAssetMin, configProject.tokens.CA[caIndex].decimals),
@@ -904,7 +907,7 @@ const redeemTCandTP = async (web3, dContracts, configProject, caIndex, tpIndex, 
 
   // encode function
   const encodedCall = MoCContract.methods
-      .redeemTCandTP(tpIndex,
+      .redeemTCandTP(tpAddress,
           toContractPrecisionDecimals(new BigNumber(qTC), configProject.tokens.TC.decimals),
           toContractPrecisionDecimals(new BigNumber(qTPMax), configProject.tokens.TP[tpIndex].decimals),
           toContractPrecisionDecimals(qAssetMin, configProject.tokens.CA[caIndex].decimals),
