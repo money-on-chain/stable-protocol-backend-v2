@@ -10,9 +10,9 @@ import {
   redeemTCandTP as redeemTCandTP_
 } from './moc-core.js'
 
-const mintTC = async (web3, dContracts, configProject, qTC) => {
+const mintTC = async (web3, dContracts, configProject, caIndex, qTC) => {
   // Mint Collateral token with CA support vendors
-  return mintTC_(web3, dContracts, configProject, 0, qTC)
+  return mintTC_(web3, dContracts, configProject, caIndex, qTC)
 }
 
 const redeemTC = async (web3, dContracts, configProject, qTC) => {

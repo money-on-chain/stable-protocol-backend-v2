@@ -12,7 +12,7 @@ const mintTC = async (web3, dContracts, configProject, caIndex, qTC) => {
   const vendorAddress = `${process.env.VENDOR_ADDRESS}`.toLowerCase()
   const slippage = `${process.env.MINT_SLIPPAGE}`
 
-  const MoCContract = dContracts.contracts.Moc
+  const MoCContract = dContracts.contracts.Moc[caIndex]
   const MoCContractAddress = MoCContract.options.address
 
   // Get information from contracts
@@ -22,8 +22,8 @@ const mintTC = async (web3, dContracts, configProject, caIndex, qTC) => {
   const userBalanceStats = await userBalanceFromContracts(web3, dContracts, configProject, userAddress)
 
   // Price of TC
-  let tcPrice = new BigNumber(Web3.utils.fromWei(dataContractStatus.getPTCac))
-  const feeParam = new BigNumber(Web3.utils.fromWei(dataContractStatus.tcMintFee))
+  let tcPrice = new BigNumber(Web3.utils.fromWei(dataContractStatus[caIndex].getPTCac))
+  const feeParam = new BigNumber(Web3.utils.fromWei(dataContractStatus[caIndex].tcMintFee))
 
   // TC amount in CA
   if (!tcPrice.gt(0)) {
@@ -36,20 +36,20 @@ const mintTC = async (web3, dContracts, configProject, caIndex, qTC) => {
   const feeOperation = qCAtc.times(feeParam)
 
   // Fee Paying with Token
-  const feeTokenPrice = new BigNumber(Web3.utils.fromWei(dataContractStatus.PP_FeeToken))
-  const feeTokenPct = new BigNumber(Web3.utils.fromWei(dataContractStatus.feeTokenPct))
+  const feeTokenPrice = new BigNumber(Web3.utils.fromWei(dataContractStatus[caIndex].PP_FeeToken[0]))
+  const feeTokenPct = new BigNumber(Web3.utils.fromWei(dataContractStatus[caIndex].feeTokenPct))
   const qFeeToken = qCAtc.times(feeParam.times(feeTokenPct)).div(feeTokenPrice)
 
   // Markup Vendors
-  const vendorMarkup = new BigNumber(Web3.utils.fromWei(dataContractStatus.vendorMarkup))
+  const vendorMarkup = new BigNumber(Web3.utils.fromWei(dataContractStatus[caIndex].vendorMarkup))
   const markOperation = qCAtc.times(vendorMarkup)
   const markOperationToken = qCAtc.times(vendorMarkup).div(feeTokenPrice)
 
   // Total fee token
   const totalFeeToken = qFeeToken.plus(markOperationToken)
 
-  const feeTokenAllowance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats.FeeToken.allowance, configProject.tokens.FeeToken.decimals))
-  const feeTokenBalance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats.FeeToken.balance, configProject.tokens.FeeToken.decimals))
+  const feeTokenAllowance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats[caIndex].FeeToken.allowance, configProject.tokens.FeeToken.decimals))
+  const feeTokenBalance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats[caIndex].FeeToken.balance, configProject.tokens.FeeToken.decimals))
   let qCAtcwFee
   if (feeTokenAllowance.gt(totalFeeToken) && feeTokenBalance.gt(totalFeeToken)) {
     // Pay fee with token
@@ -83,6 +83,13 @@ const mintTC = async (web3, dContracts, configProject, caIndex, qTC) => {
   // TODO: view functions returns baseFee == 0, if we use another value the estimateGas function will revert
   let valueToSend = 0
 
+  console.log("MINT TC>>>")
+  console.log(MoCContract.options.address)
+  console.log(qTC.toString())
+  console.log(qAssetMax.toString())
+  console.log(userAddress)
+  console.log(vendorAddress)
+  console.log(valueToSend)
   // Calculate estimate gas cost
   const estimateGas = await MoCContract.methods
       .mintTC(toContractPrecisionDecimals(new BigNumber(qTC), configProject.tokens.TC.decimals),
@@ -91,7 +98,9 @@ const mintTC = async (web3, dContracts, configProject, caIndex, qTC) => {
           vendorAddress
       ).estimateGas({ from: userAddress, value: valueToSend })
 
-  valueToSend = dataContractStatus.tcMintExecFee
+  valueToSend = dataContractStatus[caIndex].tcMintExecCost
+
+  console.log("OK 1>>>")
 
   // encode function
   const encodedCall = MoCContract.methods
@@ -100,6 +109,8 @@ const mintTC = async (web3, dContracts, configProject, caIndex, qTC) => {
           userAddress,
           vendorAddress
       ).encodeABI()
+
+  console.log("OK 2>>>")
 
   // send transaction to the blockchain and get receipt
   const { receipt, filteredEvents } = await sendTransaction(

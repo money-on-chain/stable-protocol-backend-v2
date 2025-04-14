@@ -2,12 +2,12 @@ import { sendTransaction } from '../transaction.js'
 import { toContractPrecisionDecimals } from '../utils.js'
 import BigNumber from 'bignumber.js'
 
-const AllowanceUse = async (web3, dContracts, configProject, token, allow, tokenDecimals) => {
+const AllowanceUse = async (web3, dContracts, configProject, mocBucket, token, allow, tokenDecimals) => {
   const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
   const tokenAddress = token.options.address
 
   let contractAllowAddress
-  contractAllowAddress = dContracts.contracts.Moc.options.address
+  contractAllowAddress = dContracts.contracts.Moc[mocBucket].options.address
 
   let amountAllowance = new BigNumber('0')
   const valueToSend = null
