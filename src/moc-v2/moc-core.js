@@ -80,7 +80,8 @@ const mintTC = async (web3, dContracts, configProject, caIndex, qTC) => {
   const userSpendableBalance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats.CA[caIndex].allowance, configProject.tokens.CA[caIndex].decimals))
   if (qAssetMax.gt(userSpendableBalance)) throw new Error('Insufficient spendable balance... please make an allowance to the MoC contract')
 
-  const valueToSend = dataContractStatus.tcMintExecFee
+  // TODO: view functions returns baseFee == 0, if we use another value the estimateGas function will revert
+  let valueToSend = 0
 
   // Calculate estimate gas cost
   const estimateGas = await MoCContract.methods
@@ -89,6 +90,8 @@ const mintTC = async (web3, dContracts, configProject, caIndex, qTC) => {
           userAddress,
           vendorAddress
       ).estimateGas({ from: userAddress, value: valueToSend })
+
+  valueToSend = dataContractStatus.tcMintExecFee
 
   // encode function
   const encodedCall = MoCContract.methods
@@ -197,8 +200,8 @@ const redeemTC = async (web3, dContracts, configProject, caIndex, qTC) => {
     configProject.tokens.CA[caIndex].decimals))
   if (new BigNumber(qCAtcwFee).gt(caBalance)) { throw new Error(`Insufficient ${configProject.tokens.CA[caIndex].name} in the contract. Balance: ${caBalance} ${configProject.tokens.CA[caIndex].name}`) }
 
-  // Send value of redeem exec fee
-  const valueToSend = dataContractStatus.tcRedeemExecFee
+  // TODO: view functions returns baseFee == 0, if we use another value the estimateGas function will revert
+  let valueToSend = 0
 
   // Calculate estimate gas cost
   const estimateGas = await MoCContract.methods
@@ -207,6 +210,8 @@ const redeemTC = async (web3, dContracts, configProject, caIndex, qTC) => {
           userAddress,
           vendorAddress
       ).estimateGas({ from: userAddress, value: valueToSend })
+
+  valueToSend = dataContractStatus.tcRedeemExecFee
 
   // encode function
   const encodedCall = MoCContract.methods
@@ -313,7 +318,8 @@ const mintTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) =>
   if (new BigNumber(qAssetMax).gt(qAssetAvailableToMint)) { throw new Error(`Insufficient ${configProject.tokens.TP.name} available to mint`) }
   */
 
-  const valueToSend = dataContractStatus.tpMintExecFee
+  // TODO: view functions returns baseFee == 0, if we use another value the estimateGas function will revert
+  let valueToSend = 0
 
   // Calculate estimate gas cost
   const estimateGas = await MoCContract.methods
@@ -324,6 +330,8 @@ const mintTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) =>
           userAddress,
           vendorAddress
       ).estimateGas({ from: userAddress, value: valueToSend })
+
+  valueToSend = dataContractStatus.tpMintExecFee
 
   // encode function
   const encodedCall = MoCContract.methods
@@ -432,7 +440,8 @@ const redeemTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) 
 
    */
 
-  const valueToSend = dataContractStatus.tpRedeemExecFee
+  // TODO: view functions returns baseFee == 0, if we use another value the estimateGas function will revert
+  let valueToSend = 0
 
   // Calculate estimate gas cost
   const estimateGas = await MoCContract.methods
@@ -444,6 +453,8 @@ const redeemTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) 
           vendorAddress
       )
       .estimateGas({ from: userAddress, value: valueToSend })
+
+  valueToSend = dataContractStatus.tpRedeemExecFee
 
   // encode function
   const encodedCall = MoCContract.methods
@@ -522,7 +533,8 @@ const swapTPforTP = async (web3, dContracts, configProject, iFromTP, iToTP, qTP,
   const userSpendableBalance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats.CA[caIndex].allowance, configProject.tokens.CA[caIndex].decimals))
   if (qAssetMaxFees.gt(userSpendableBalance)) { throw new Error('Insufficient spendable balance... please make an allowance to the MoC contract') }
 
-  const valueToSend = dataContractStatus.swapTPforTPExecFee
+  // TODO: view functions returns baseFee == 0, if we use another value the estimateGas function will revert
+  let valueToSend = 0
 
   // Calculate estimate gas cost
   const estimateGas = await MoCContract.methods
@@ -534,6 +546,8 @@ const swapTPforTP = async (web3, dContracts, configProject, iFromTP, iToTP, qTP,
           userAddress,
           vendorAddress
       ).estimateGas({ from: userAddress, value: valueToSend })
+
+  valueToSend = dataContractStatus.swapTPforTPExecFee
 
   // encode function
   const encodedCall = MoCContract.methods
@@ -597,9 +611,6 @@ const swapTPforTC = async (web3, dContracts, configProject, caIndex, tpIndex, qT
 
   console.log(`Slippage using ${slippage} %. Maximum amount of asset can be spent in fees: ${qAssetMaxFees.toString()} ${configProject.tokens.CA[caIndex].name} `)
 
-  // Redeem function... no values sent
-  const valueToSend = dataContractStatus.swapTPforTCExecFee
-
   // Verifications
 
   // User have sufficient PEGGED Token in balance?
@@ -617,6 +628,9 @@ const swapTPforTC = async (web3, dContracts, configProject, caIndex, tpIndex, qT
   const userSpendableBalance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats.CA[caIndex].allowance, configProject.tokens.CA[caIndex].decimals))
   if (qAssetMaxFees.gt(userSpendableBalance)) { throw new Error('Insufficient spendable balance... please make an allowance to the MoC contract') }
 
+  // TODO: view functions returns baseFee == 0, if we use another value the estimateGas function will revert
+  let valueToSend = 0
+
   // Calculate estimate gas cost
   const estimateGas = await MoCContract.methods
       .swapTPforTC(tpIndex,
@@ -627,6 +641,8 @@ const swapTPforTC = async (web3, dContracts, configProject, caIndex, tpIndex, qT
           vendorAddress
       )
       .estimateGas({ from: userAddress, value: valueToSend })
+
+  valueToSend = dataContractStatus.swapTPforTCExecFee
 
   // encode function
   const encodedCall = MoCContract.methods
@@ -708,8 +724,8 @@ const swapTCforTP = async (web3, dContracts, configProject, caIndex, tpIndex, qT
   const userSpendableBalance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats.CA[caIndex].allowance, configProject.tokens.CA[caIndex].decimals))
   if (qAssetMaxFees.gt(userSpendableBalance)) { throw new Error('Insufficient spendable balance... please make an allowance to the MoC contract') }
 
-  // Redeem function... no values sent
-  const valueToSend = dataContractStatus.swapTCforTPExecFee
+  // TODO: view functions returns baseFee == 0, if we use another value the estimateGas function will revert
+  let valueToSend = 0
 
   // Calculate estimate gas cost
   const estimateGas = await MoCContract.methods
@@ -720,6 +736,8 @@ const swapTCforTP = async (web3, dContracts, configProject, caIndex, tpIndex, qT
           userAddress,
           vendorAddress
       ).estimateGas({ from: userAddress, value: valueToSend })
+
+  valueToSend = dataContractStatus.swapTCforTPExecFee
 
   // encode function
   const encodedCall = MoCContract.methods
@@ -793,7 +811,8 @@ const mintTCandTP = async (web3, dContracts, configProject, caIndex, tpIndex, qT
   const userSpendableBalance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats.CA[caIndex].allowance, configProject.tokens.CA[caIndex].decimals))
   if (qAssetMax.gt(userSpendableBalance)) { throw new Error('Insufficient spendable balance... please make an allowance to the MoC contract') }
 
-  const valueToSend = dataContractStatus.mintTCandTPExecFee
+  // TODO: view functions returns baseFee == 0, if we use another value the estimateGas function will revert
+  let valueToSend = 0
 
   // Calculate estimate gas cost
   const estimateGas = await MoCContract.methods
@@ -803,6 +822,8 @@ const mintTCandTP = async (web3, dContracts, configProject, caIndex, tpIndex, qT
           userAddress,
           vendorAddress
       ).estimateGas({ from: userAddress, value: valueToSend })
+
+  valueToSend = dataContractStatus.mintTCandTPExecFee
 
   // encode function
   const encodedCall = MoCContract.methods
@@ -889,8 +910,8 @@ const redeemTCandTP = async (web3, dContracts, configProject, caIndex, tpIndex, 
     configProject.tokens.CA[caIndex].decimals))
   if (new BigNumber(qCAwFee).gt(caBalance)) { throw new Error(`Insufficient ${configProject.tokens.CA[caIndex].name} in the contract. Balance: ${caBalance} ${configProject.tokens.CA[caIndex].name}`) }
 
-  // Redeem function... no values sent
-  const valueToSend = dataContractStatus.redeemTCandTPExecFee
+  // TODO: view functions returns baseFee == 0, if we use another value the estimateGas function will revert
+  let valueToSend = 0
 
   // Calculate estimate gas cost
   const estimateGas = await MoCContract.methods
@@ -901,6 +922,8 @@ const redeemTCandTP = async (web3, dContracts, configProject, caIndex, tpIndex, 
           userAddress,
           vendorAddress
       ).estimateGas({ from: userAddress, value: valueToSend })
+
+  valueToSend = dataContractStatus.redeemTCandTPExecFee
 
   // encode function
   const encodedCall = MoCContract.methods

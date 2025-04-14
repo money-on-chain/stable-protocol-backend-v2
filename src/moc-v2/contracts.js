@@ -64,9 +64,10 @@ const readContracts = async (web3, configProject) => {
   dContracts.contracts.PP_FeeToken = []
   dContracts.contracts.FC_MAX_ABSOLUTE_OP_PROVIDER = []
   dContracts.contracts.FC_MAX_OP_DIFFERENCE_PROVIDER = []
+  dContracts.contracts.PP_AC_COINBASE = []
 
   let collateralMoCAbi = dContracts.json.MocCARC20
-  const contractMocAddresses = process.env.CONTRACT_MOC.split(",")
+  //const contractMocAddresses = process.env.CONTRACT_MOC.split(",")
   let contractMoc
   let contractMocType
   let mocAddr
@@ -76,12 +77,20 @@ const readContracts = async (web3, configProject) => {
   const tpAddresses = [];
   const tpAddressesProviders = []
 
+  const mocMultiCollateralGuard = new web3.eth.Contract(dContracts.json.MocMultiCollateralGuard.abi, process.env.CONTRACT_MULTICOLLATERAL_GUARD)
+  dContracts.contracts.MocMultiCollateralGuard = mocMultiCollateralGuard
+  console.log('Reading MocMultiCollateralGuard Contract... address: ', dContracts.contracts.MocMultiCollateralGuard.options.address)
+
+  let mocBucketAddress;
   for (let i = 0; i < configProject.tokens.CA.length; i++) {
-    console.log('Reading Moc Contract... address: ', contractMocAddresses[i])
+
+    // Get MoC Bucket address from multi-collateral guard
+    mocBucketAddress = await mocMultiCollateralGuard.methods.buckets(i).call()
+    console.log('Reading Moc Contract... address: ', mocBucketAddress)
     contractMocType = configProject.tokens.CA[i].type
     if (contractMocType === "coinbase") collateralMoCAbi = dContracts.json.MocCACoinbase
 
-    contractMoc = new web3.eth.Contract(collateralMoCAbi.abi, contractMocAddresses[i])
+    contractMoc = new web3.eth.Contract(collateralMoCAbi.abi, mocBucketAddress)
     dContracts.contracts.Moc.push(contractMoc)
 
     // Read contracts addresses from MoC
@@ -151,8 +160,12 @@ const readContracts = async (web3, configProject) => {
     dContracts.contracts.PP_TP.push(new web3.eth.Contract(dContracts.json.IPriceProvider.abi, tpAddressesProviders[i]))
   }
 
-  dContracts.contracts.MocMultiCollateralGuard = new web3.eth.Contract(dContracts.json.MocMultiCollateralGuard.abi, await dContracts.contracts.MocQueue[0].methods.mocMultiCollateralGuard().call())
-  console.log('Reading MocMultiCollateralGuard Contract... address: ', dContracts.contracts.MocMultiCollateralGuard.options.address)
+  // Price Provider AC Coinbase
+  const acCoinbasePriceProvider = await mocMultiCollateralGuard.methods.acCoinbasePriceProvider(mocBucketAddress).call()
+  if (acCoinbasePriceProvider !== "0x0000000000000000000000000000000000000000") {
+    console.log(`Reading AC Coinbase Price Provider Contract... address: `, acCoinbasePriceProvider)
+    dContracts.contracts.PP_AC_COINBASE.push(new web3.eth.Contract(dContracts.json.IPriceProvider.abi, acCoinbasePriceProvider))
+  }
 
   if (typeof process.env.CONTRACT_IREGISTRY !== 'undefined') {
 
@@ -218,7 +231,7 @@ const totalSupplyCA = (contractStatus, config, ca) => {
 const pricesTP = (contractStatus, config, ca) => {
   let result = ''
   for (let i = 0; i < config.tokens.TP.length; i++) {
-    result += `Price ${config.tokens.TP[i].name}:  ${Web3.utils.fromWei(contractStatus[ca].PP_TP[i])} `
+    result += `Price ${config.tokens.TP[i].name}:  ${Web3.utils.fromWei(contractStatus[ca].PP_TP[i][0])} Valid: ${contractStatus[ca].PP_TP[i][1]} `
     if (i + 1 < config.tokens.TP.length) {
       result += '\n'
     }
@@ -229,7 +242,7 @@ const pricesTP = (contractStatus, config, ca) => {
 const pricesCA = (contractStatus, config, ca) => {
   let result = ''
 
-  result += `Price ${config.tokens.CA[ca].name}:  ${Web3.utils.fromWei(contractStatus[ca].PP_CA)} `
+  result += `Price ${config.tokens.CA[ca].name}:  ${Web3.utils.fromWei(contractStatus[ca].PP_CA[0])} Valid: ${contractStatus[ca].PP_CA[1]} `
   if (ca + 1 < config.tokens.CA.length) {
     result += '\n'
   }
@@ -322,7 +335,7 @@ Prices
 ${pricesTP(contractStatus, config, ca)} 
 ${pricesCA(contractStatus, config, ca)} 
 Price Tec ${config.tokens.TC.name}:  ${Web3.utils.fromWei(contractStatus[ca].getPTCac)}
-Price ${config.tokens.FeeToken.name}:  ${Web3.utils.fromWei(contractStatus[ca].PP_FeeToken)}
+Price ${config.tokens.FeeToken.name}:  ${Web3.utils.fromWei(contractStatus[ca].PP_FeeToken[0])} Valid: ${contractStatus[ca].PP_FeeToken[1]}
 Price Wrapped Token:  ${contractStatus[ca].getTokenPrice}
 
 
@@ -414,9 +427,9 @@ Flux Capacitor
 ==============
 
 Max Absolute Op Provider: ${contractStatus[ca].maxAbsoluteOpProvider}
-Max Absolute Op: ${Web3.utils.fromWei(contractStatus[ca].FC_MAX_ABSOLUTE_OP)}
+Max Absolute Op: ${contractStatus[ca].maxAbsoluteOpProvider !== '0x0000000000000000000000000000000000000000' ? Web3.utils.fromWei(contractStatus[ca].FC_MAX_ABSOLUTE_OP[0]) : ''}
 Max Op Diff Provider: ${contractStatus[ca].maxOpDiffProvider}
-Max Op Diff: ${Web3.utils.fromWei(contractStatus[ca].FC_MAX_OP_DIFFERENCE)}
+Max Op Diff: ${contractStatus[ca].maxOpDiffProvider !== '0x0000000000000000000000000000000000000000' ? Web3.utils.fromWei(contractStatus[ca].FC_MAX_OP_DIFFERENCE[0]) : ''}
 Decay Time Span: ${contractStatus[ca].decayTimeSpan}
 Absolute Accumulator: ${Web3.utils.fromWei(contractStatus[ca].absoluteAccumulator)}
 Differential Accumulator: ${Web3.utils.fromWei(contractStatus[ca].differentialAccumulator)}
@@ -643,21 +656,21 @@ const renderPendingWithdrawals = (delayMachine) => {
   return render;
 }
 
-const userBalanceAllowanceCA = (userBalance, config) => {
-  let result = ''
-  for (let ca = 0; ca < config.tokens.CA.length; ca++) {
-    result += `${config.tokens.CA[ca].name} Balance: ${fromContractPrecisionDecimals(userBalance.CA[ca].balance, config.tokens.CA[ca].decimals).toString()} ${config.tokens.CA[ca].name} \n`
-    result += `${config.tokens.CA[ca].name} Allowance: ${fromContractPrecisionDecimals(userBalance.CA[ca].allowance, config.tokens.CA[ca].decimals).toString()} ${config.tokens.CA[ca].name} `
+const userBalanceAllowanceCA = (userBalance, config, ca) => {
+  let result = `\nCA BALANCE & ALLOWANCE: ${ca} \n==========================\n`
 
-    if (ca + 1 < config.tokens.CA.length) {
-      result += '\n'
-    }
+  result += `${config.tokens.CA[ca].name} Balance: ${fromContractPrecisionDecimals(userBalance.CA[ca].balance, config.tokens.CA[ca].decimals).toString()} ${config.tokens.CA[ca].name} \n`
+  result += `${config.tokens.CA[ca].name} Allowance: ${fromContractPrecisionDecimals(userBalance.CA[ca].allowance, config.tokens.CA[ca].decimals).toString()} ${config.tokens.CA[ca].name} `
+
+  if (ca + 1 < config.tokens.CA.length) {
+    result += '\n'
   }
+
   return result
 }
 
-const userBalanceAllowanceTP = (userBalance, config) => {
-  let result = ''
+const userBalanceAllowanceTP = (userBalance, config, ca) => {
+  let result = `\nTP BALANCE & ALLOWANCE: ${ca} \n==========================\n`
   for (let i = 0; i < config.tokens.TP.length; i++) {
     result += `${config.tokens.TP[i].name} Balance: ${fromContractPrecisionDecimals(userBalance.TP[i].balance, config.tokens.TP[i].decimals).toString()} ${config.tokens.TP[i].name} `
     if (i + 1 < config.tokens.TP.length) {
@@ -667,6 +680,34 @@ const userBalanceAllowanceTP = (userBalance, config) => {
   }
   return result
 }
+
+const userBalanceAllowanceTC = (userBalance, config, ca) => {
+  let result = `\nTC BALANCE & ALLOWANCE: ${ca} \n==========================\n`
+
+  result += `${config.tokens.TC.name} Balance: ${fromContractPrecisionDecimals(userBalance[ca].TC.balance, config.tokens.TC.decimals).toString()} ${config.tokens.TC.name} \n`
+  result += `${config.tokens.TC.name} Allowance: ${fromContractPrecisionDecimals(userBalance[ca].TC.allowance, config.tokens.TC.decimals).toString()} ${config.tokens.TC.name} `
+
+  if (ca + 1 < config.tokens.CA.length) {
+    result += '\n'
+  }
+
+  return result
+}
+
+
+const userBalanceAllowanceFeeToken = (userBalance, config, ca) => {
+  let result =  `\nFEE TOKEN BALANCE & ALLOWANCE: ${ca} \n==========================\n`
+
+  result += `${config.tokens.FeeToken.name} Balance: ${fromContractPrecisionDecimals(userBalance[ca].FeeToken.balance, config.tokens.FeeToken.decimals).toString()} ${config.tokens.FeeToken.name} \n`
+  result += `${config.tokens.FeeToken.name} Allowance: ${fromContractPrecisionDecimals(userBalance[ca].FeeToken.allowance, config.tokens.FeeToken.decimals).toString()} ${config.tokens.FeeToken.name} `
+
+  if (ca + 1 < config.tokens.CA.length) {
+    result += '\n'
+  }
+
+  return result
+}
+
 
 const renderVestingParameters = (userBalance) => {
   const getParameters = userBalance.vestingmachine.getParameters
@@ -747,15 +788,19 @@ const renderUserBalance = (userBalance, config) => {
   let render = `
 User: ${userBalance.userAddress}
 
+BASECOIN
+========
 ${config.tokens.COINBASE.name} Balance: ${fromContractPrecisionDecimals(userBalance.coinbase, config.tokens.COINBASE.decimals).toString()} ${config.tokens.COINBASE.name}
-${userBalanceAllowanceCA(userBalance, config)}
-${userBalanceAllowanceTP(userBalance, config)}
-${config.tokens.TC.name} Balance: ${fromContractPrecisionDecimals(userBalance.TC.balance, config.tokens.TC.decimals).toString()} ${config.tokens.TC.name}
-${config.tokens.TC.name} Allowance: ${fromContractPrecisionDecimals(userBalance.TC.allowance, config.tokens.TC.decimals).toString()} ${config.tokens.TC.name}
-${config.tokens.FeeToken.name} Balance: ${fromContractPrecisionDecimals(userBalance.FeeToken.balance, config.tokens.FeeToken.decimals).toString()} ${config.tokens.FeeToken.name}
-${config.tokens.FeeToken.name} Allowance: ${fromContractPrecisionDecimals(userBalance.FeeToken.allowance, config.tokens.FeeToken.decimals).toString()} ${config.tokens.FeeToken.name}
-
     `
+
+  for (let ca = 0; ca < config.tokens.CA.length; ca++) {
+    render += `
+${userBalanceAllowanceCA(userBalance, config, ca)}
+${userBalanceAllowanceTP(userBalance, config, ca)}
+${userBalanceAllowanceTC(userBalance, config, ca)}
+${userBalanceAllowanceFeeToken(userBalance, config, ca)}
+`
+  }
 
   if (typeof process.env.CONTRACT_IREGISTRY !== 'undefined') {
 

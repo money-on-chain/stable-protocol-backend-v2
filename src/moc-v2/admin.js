@@ -98,9 +98,9 @@ const UpdateEma = async (web3, dContracts, configProject) => {
   return { receipt, filteredEvents }
 }
 
-const VendorsGuardianSetMarkup = async (web3, dContracts, configProject, vendorAddress, vendorMarkup) => {
+const VendorsGuardianSetMarkup = async (web3, dContracts, configProject, mocBucket, vendorAddress, vendorMarkup) => {
   const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
-  const MocVendors = dContracts.contracts.MocVendors
+  const MocVendors = dContracts.contracts.MocVendors[mocBucket]
   const MocVendorsAddress = MocVendors.options.address
 
   // Get information from contracts
