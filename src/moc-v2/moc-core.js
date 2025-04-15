@@ -2,7 +2,7 @@ import BigNumber from 'bignumber.js'
 import Web3 from 'web3'
 
 import { statusFromContracts, userBalanceFromContracts } from './contracts.js'
-import { toContractPrecision, fromContractPrecisionDecimals, toContractPrecisionDecimals } from '../utils.js'
+import { toContractPrecision, fromContractPrecisionDecimals, toContractPrecisionDecimals, getExecutionFee } from '../utils.js'
 import { sendTransaction } from '../transaction.js'
 
 const mintTC = async (web3, dContracts, configProject, caIndex, qTC) => {
@@ -84,12 +84,14 @@ const mintTC = async (web3, dContracts, configProject, caIndex, qTC) => {
   let valueToSend = 0
 
   console.log("MINT TC>>>")
-  console.log(MoCContract.options.address)
-  console.log(qTC.toString())
-  console.log(qAssetMax.toString())
-  console.log(userAddress)
-  console.log(vendorAddress)
-  console.log(valueToSend)
+  console.log("MoCContract: ", MoCContract.options.address)
+  console.log("qTC: ", qTC.toString())
+  console.log("qAssetMax: ", qAssetMax.toString())
+  console.log("userAddress: ", userAddress)
+  console.log("vendorAddress: ", vendorAddress)
+  console.log("valueToSend: ", valueToSend)
+  console.log("tcMintExecCost: ", dataContractStatus[caIndex].tcMintExecCost)
+  console.log("slippage: ", slippage)
   // Calculate estimate gas cost
   const estimateGas = await MoCContract.methods
       .mintTC(toContractPrecisionDecimals(new BigNumber(qTC), configProject.tokens.TC.decimals),
@@ -98,7 +100,7 @@ const mintTC = async (web3, dContracts, configProject, caIndex, qTC) => {
           vendorAddress
       ).estimateGas({ from: userAddress, value: valueToSend })
 
-  valueToSend = dataContractStatus[caIndex].tcMintExecCost
+  valueToSend = await getExecutionFee(web3, dataContractStatus[caIndex].tcMintExecCost, slippage)
 
   console.log("OK 1>>>")
 
