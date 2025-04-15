@@ -10,7 +10,12 @@ import {
 import {statusFromContracts, userBalanceFromContracts} from "./contracts.js";
 import BigNumber from "bignumber.js";
 import Web3 from "web3";
-import {fromContractPrecisionDecimals, toContractPrecisionDecimals} from "../utils.js";
+import {
+    fromContractPrecisionDecimals,
+    getExecutionFee,
+    getNetworkFromProject,
+    toContractPrecisionDecimals
+} from "../utils.js";
 import {sendTransaction} from "../transaction.js";
 
 const mintTC = async (web3, dContracts, configProject, caIndex, qTC) => {
@@ -20,7 +25,7 @@ const mintTC = async (web3, dContracts, configProject, caIndex, qTC) => {
     const vendorAddress = `${process.env.VENDOR_ADDRESS}`.toLowerCase()
     const slippage = `${process.env.MINT_SLIPPAGE}`
 
-    const MoCContract = dContracts.contracts.Moc
+    const MoCContract = dContracts.contracts.Moc[caIndex]
     const MoCContractAddress = MoCContract.options.address
 
     // Get information from contracts
@@ -30,8 +35,8 @@ const mintTC = async (web3, dContracts, configProject, caIndex, qTC) => {
     const userBalanceStats = await userBalanceFromContracts(web3, dContracts, configProject, userAddress)
 
     // Price of TC
-    const tcPrice = new BigNumber(Web3.utils.fromWei(dataContractStatus.getPTCac))
-    const feeParam = new BigNumber(Web3.utils.fromWei(dataContractStatus.tcMintFee))
+    const tcPrice = new BigNumber(Web3.utils.fromWei(dataContractStatus[caIndex].getPTCac))
+    const feeParam = new BigNumber(Web3.utils.fromWei(dataContractStatus[caIndex].tcMintFee))
 
     // TC amount in CA
     const qCAtc = new BigNumber(qTC).times(tcPrice)
@@ -40,20 +45,20 @@ const mintTC = async (web3, dContracts, configProject, caIndex, qTC) => {
     const feeOperation = qCAtc.times(feeParam)
 
     // Fee Paying with Token
-    const feeTokenPrice = new BigNumber(Web3.utils.fromWei(dataContractStatus.PP_FeeToken))
-    const feeTokenPct = new BigNumber(Web3.utils.fromWei(dataContractStatus.feeTokenPct))
+    const feeTokenPrice = new BigNumber(Web3.utils.fromWei(dataContractStatus[caIndex].PP_FeeToken[0]))
+    const feeTokenPct = new BigNumber(Web3.utils.fromWei(dataContractStatus[caIndex].feeTokenPct))
     const qFeeToken = qCAtc.times(feeParam.times(feeTokenPct)).div(feeTokenPrice)
 
     // Markup Vendors
-    const vendorMarkup = new BigNumber(Web3.utils.fromWei(dataContractStatus.vendorMarkup))
+    const vendorMarkup = new BigNumber(Web3.utils.fromWei(dataContractStatus[caIndex].vendorMarkup))
     const markOperation = qCAtc.times(vendorMarkup)
     const markOperationToken = qCAtc.times(vendorMarkup).div(feeTokenPrice)
 
     // Total fee token
     const totalFeeToken = qFeeToken.plus(markOperationToken)
 
-    const feeTokenAllowance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats.FeeToken.allowance, configProject.tokens.FeeToken.decimals))
-    const feeTokenBalance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats.FeeToken.balance, configProject.tokens.FeeToken.decimals))
+    const feeTokenAllowance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats[caIndex].FeeToken.allowance, configProject.tokens.FeeToken.decimals))
+    const feeTokenBalance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats[caIndex].FeeToken.balance, configProject.tokens.FeeToken.decimals))
     let qCAtcwFee
     if (feeTokenAllowance.gt(totalFeeToken) && feeTokenBalance.gt(totalFeeToken)) {
         // Pay fee with token
@@ -79,7 +84,7 @@ const mintTC = async (web3, dContracts, configProject, caIndex, qTC) => {
     const userReserveBalance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats.CA[caIndex].balance, configProject.tokens.CA[caIndex].decimals))
     if (qAssetMax.gt(userReserveBalance)) throw new Error(`Insufficient ${configProject.tokens.CA[caIndex].name} balance`)
 
-    let valueToSend = new BigNumber(fromContractPrecisionDecimals(dataContractStatus.tcMintExecFee, configProject.tokens.CA[caIndex].decimals)).plus(qAssetMax)
+    let valueToSend = new BigNumber(await getExecutionFee(web3, dataContractStatus[caIndex].tcMintExecCost, slippage)).plus(qAssetMax)
     valueToSend = toContractPrecisionDecimals(valueToSend, configProject.tokens.CA[caIndex].decimals)
 
     // Calculate estimate gas cost
@@ -123,7 +128,7 @@ const mintTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) =>
     const slippage = `${process.env.MINT_SLIPPAGE}`
     const tpAddress = dContracts.contracts.TP[tpIndex].options.address
 
-    const MoCContract = dContracts.contracts.Moc
+    const MoCContract = dContracts.contracts.Moc[caIndex]
     const MoCContractAddress = MoCContract.options.address
 
     // Get information from contracts
@@ -133,8 +138,8 @@ const mintTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) =>
     const userBalanceStats = await userBalanceFromContracts(web3, dContracts, configProject, userAddress)
 
     // get TP price from contract
-    const tpPrice = new BigNumber(Web3.utils.fromWei(dataContractStatus.PP_TP[tpIndex]))
-    const feeParam = new BigNumber(Web3.utils.fromWei(dataContractStatus.tpMintFees[tpIndex]))
+    const tpPrice = new BigNumber(Web3.utils.fromWei(dataContractStatus[caIndex].PP_TP[tpIndex][0]))
+    const feeParam = new BigNumber(Web3.utils.fromWei(dataContractStatus[caIndex].tpMintFees[tpIndex]))
 
     // Pegged amount in CA
     const qCAtp = new BigNumber(qTP).div(tpPrice)
@@ -143,20 +148,20 @@ const mintTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) =>
     const feeOperation = qCAtp.times(feeParam)
 
     // Fee Paying with Token
-    const feeTokenPrice = new BigNumber(Web3.utils.fromWei(dataContractStatus.PP_FeeToken))
-    const feeTokenPct = new BigNumber(Web3.utils.fromWei(dataContractStatus.feeTokenPct))
+    const feeTokenPrice = new BigNumber(Web3.utils.fromWei(dataContractStatus[caIndex].PP_FeeToken[0]))
+    const feeTokenPct = new BigNumber(Web3.utils.fromWei(dataContractStatus[caIndex].feeTokenPct))
     const qFeeToken = qCAtp.times(feeParam.times(feeTokenPct)).div(feeTokenPrice)
 
     // Markup Vendors
-    const vendorMarkup = new BigNumber(Web3.utils.fromWei(dataContractStatus.vendorMarkup))
+    const vendorMarkup = new BigNumber(Web3.utils.fromWei(dataContractStatus[caIndex].vendorMarkup))
     const markOperation = qCAtp.times(vendorMarkup)
     const markOperationToken = qCAtp.times(vendorMarkup).div(feeTokenPrice)
 
     // Total fee token
     const totalFeeToken = qFeeToken.plus(markOperationToken)
 
-    const feeTokenAllowance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats.FeeToken.allowance, configProject.tokens.FeeToken.decimals))
-    const feeTokenBalance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats.FeeToken.balance, configProject.tokens.FeeToken.decimals))
+    const feeTokenAllowance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats[caIndex].FeeToken.allowance, configProject.tokens.FeeToken.decimals))
+    const feeTokenBalance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats[caIndex].FeeToken.balance, configProject.tokens.FeeToken.decimals))
     let qCAtpwFee
     if (feeTokenAllowance.gt(totalFeeToken) && feeTokenBalance.gt(totalFeeToken)) {
         // Pay fee with token
@@ -190,11 +195,11 @@ const mintTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) =>
      */
 
     // There are sufficient PEGGED in the contracts to mint?
-    const tpAvailableToMint = new BigNumber(fromContractPrecisionDecimals(dataContractStatus.getTPAvailableToMint[tpIndex], configProject.tokens.TP[tpIndex].decimals))
+    const tpAvailableToMint = new BigNumber(fromContractPrecisionDecimals(dataContractStatus[caIndex].getTPAvailableToMint[tpIndex], configProject.tokens.TP[tpIndex].decimals))
     const qAssetAvailableToMint = new BigNumber(tpAvailableToMint).div(tpPrice)
     if (new BigNumber(qAssetMax).gt(qAssetAvailableToMint)) { throw new Error(`Insufficient ${configProject.tokens.TP.name} available to mint`) }
 
-    let valueToSend = new BigNumber(fromContractPrecisionDecimals(dataContractStatus.tpMintExecFee, configProject.tokens.CA[caIndex].decimals)).plus(qAssetMax)
+    let valueToSend = new BigNumber(await getExecutionFee(web3, dataContractStatus[caIndex].tpMintExecCost, slippage)).plus(qAssetMax)
     valueToSend = toContractPrecisionDecimals(valueToSend, configProject.tokens.CA[caIndex].decimals)
 
     // Calculate estimate gas cost
