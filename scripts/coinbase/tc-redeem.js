@@ -19,9 +19,10 @@ const main = async () => {
   const dContracts = await readContracts(web3, configProject)
 
   // Get amount from environment
+  const caIndex = 0
   const qTC = `${process.env.OPERATION_AMOUNT_REDEEM_TC}`
 
-  const { receipt, filteredEvents } = await redeemTC(web3, dContracts, configProject, qTC)
+  const { receipt, filteredEvents } = await redeemTC(web3, dContracts, configProject, caIndex, qTC)
 }
 
 main()

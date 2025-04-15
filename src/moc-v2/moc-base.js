@@ -59,10 +59,10 @@ const AllowanceUseContract = async (web3, dContracts, configProject, token, cont
 }
 
 
-const refreshACBalance = async (web3, dContracts) => {
+const refreshACBalance = async (web3, dContracts, caIndex) => {
   const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
 
-  const MoCContract = dContracts.contracts.Moc
+  const MoCContract = dContracts.contracts.Moc[caIndex]
   const MoCContractAddress = MoCContract.options.address
 
   // Calculate estimate gas cost

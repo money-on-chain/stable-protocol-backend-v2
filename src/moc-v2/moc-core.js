@@ -128,7 +128,7 @@ const redeemTC = async (web3, dContracts, configProject, caIndex, qTC) => {
   const vendorAddress = `${process.env.VENDOR_ADDRESS}`.toLowerCase()
   const slippage = `${process.env.REDEEM_SLIPPAGE}`
 
-  const MoCContract = dContracts.contracts.Moc
+  const MoCContract = dContracts.contracts.Moc[caIndex]
   const MoCContractAddress = MoCContract.options.address
 
   // Get information from contracts
@@ -138,8 +138,8 @@ const redeemTC = async (web3, dContracts, configProject, caIndex, qTC) => {
   const userBalanceStats = await userBalanceFromContracts(web3, dContracts, configProject, userAddress)
 
   // Price of TC in CA
-  let tcPrice = new BigNumber(Web3.utils.fromWei(dataContractStatus.getPTCac))
-  const feeParam = new BigNumber(Web3.utils.fromWei(dataContractStatus.tcRedeemFee))
+  let tcPrice = new BigNumber(Web3.utils.fromWei(dataContractStatus[caIndex].getPTCac))
+  const feeParam = new BigNumber(Web3.utils.fromWei(dataContractStatus[caIndex].tcRedeemFee))
 
   // TC amount in CA
   if (!tcPrice.gt(0)) {
@@ -153,20 +153,20 @@ const redeemTC = async (web3, dContracts, configProject, caIndex, qTC) => {
   const feeOperation = qCAtc.times(feeParam)
 
   // Fee Paying with Token
-  const feeTokenPrice = new BigNumber(Web3.utils.fromWei(dataContractStatus.PP_FeeToken))
-  const feeTokenPct = new BigNumber(Web3.utils.fromWei(dataContractStatus.feeTokenPct))
+  const feeTokenPrice = new BigNumber(Web3.utils.fromWei(dataContractStatus[caIndex].PP_FeeToken[0]))
+  const feeTokenPct = new BigNumber(Web3.utils.fromWei(dataContractStatus[caIndex].feeTokenPct))
   const qFeeToken = qCAtc.times(feeParam.times(feeTokenPct)).div(feeTokenPrice)
 
   // Markup Vendors
-  const vendorMarkup = new BigNumber(Web3.utils.fromWei(dataContractStatus.vendorMarkup))
+  const vendorMarkup = new BigNumber(Web3.utils.fromWei(dataContractStatus[caIndex].vendorMarkup))
   const markOperation = qCAtc.times(vendorMarkup)
   const markOperationToken = qCAtc.times(vendorMarkup).div(feeTokenPrice)
 
   // Total fee token
   const totalFeeToken = qFeeToken.plus(markOperationToken)
 
-  const feeTokenAllowance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats.FeeToken.allowance, configProject.tokens.FeeToken.decimals))
-  const feeTokenBalance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats.FeeToken.balance, configProject.tokens.FeeToken.decimals))
+  const feeTokenAllowance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats[caIndex].FeeToken.allowance, configProject.tokens.FeeToken.decimals))
+  const feeTokenBalance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats[caIndex].FeeToken.balance, configProject.tokens.FeeToken.decimals))
   let qCAtcwFee
   if (feeTokenAllowance.gt(totalFeeToken) && feeTokenBalance.gt(totalFeeToken)) {
     // Pay fee with token
@@ -189,7 +189,7 @@ const redeemTC = async (web3, dContracts, configProject, caIndex, qTC) => {
 
   // User have sufficient TC in balance?
   console.log(`Redeeming ${qTC} ${configProject.tokens.TC.name} ... getting approx: ${qCAtcwFee} ${configProject.tokens.CA[caIndex].name}... `)
-  const userTCBalance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats.TC.balance,
+  const userTCBalance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats[caIndex].TC.balance,
     configProject.tokens.TC.decimals))
   if (new BigNumber(qTC).gt(userTCBalance)) { throw new Error(`Insufficient ${configProject.tokens.TC.name} user balance`) }
 
@@ -202,7 +202,7 @@ const redeemTC = async (web3, dContracts, configProject, caIndex, qTC) => {
    */
 
   // There are sufficient CA in the contract
-  const caBalance = new BigNumber(fromContractPrecisionDecimals(dataContractStatus.getACBalance[caIndex],
+  const caBalance = new BigNumber(fromContractPrecisionDecimals(dataContractStatus[caIndex].getACBalance,
     configProject.tokens.CA[caIndex].decimals))
   if (new BigNumber(qCAtcwFee).gt(caBalance)) { throw new Error(`Insufficient ${configProject.tokens.CA[caIndex].name} in the contract. Balance: ${caBalance} ${configProject.tokens.CA[caIndex].name}`) }
 
@@ -248,14 +248,14 @@ const redeemTC = async (web3, dContracts, configProject, caIndex, qTC) => {
 }
 
 const mintTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) => {
-  // Mint pegged token with collateral CA BAG support vendor
+  // Mint pegged token with collateral CA
 
   const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
   const vendorAddress = `${process.env.VENDOR_ADDRESS}`.toLowerCase()
   const slippage = `${process.env.MINT_SLIPPAGE}`
   const tpAddress = dContracts.contracts.TP[tpIndex].options.address
 
-  const MoCContract = dContracts.contracts.Moc
+  const MoCContract = dContracts.contracts.Moc[caIndex]
   const MoCContractAddress = MoCContract.options.address
 
   // Get information from contracts
@@ -265,8 +265,8 @@ const mintTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) =>
   const userBalanceStats = await userBalanceFromContracts(web3, dContracts, configProject, userAddress)
 
   // get TP price from contract
-  let tpPrice = new BigNumber(Web3.utils.fromWei(dataContractStatus.PP_TP[tpIndex]))
-  const feeParam = new BigNumber(Web3.utils.fromWei(dataContractStatus.tpMintFees[tpIndex]))
+  let tpPrice = new BigNumber(Web3.utils.fromWei(dataContractStatus[caIndex].PP_TP[tpIndex][0]))
+  const feeParam = new BigNumber(Web3.utils.fromWei(dataContractStatus[caIndex].tpMintFees[tpIndex]))
 
   if (!tpPrice.gt(0)) {
     tpPrice = new BigNumber(process.env.PRICE_TP[tpIndex])
@@ -279,20 +279,20 @@ const mintTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) =>
   const feeOperation = qCAtp.times(feeParam)
 
   // Fee Paying with Token
-  const feeTokenPrice = new BigNumber(Web3.utils.fromWei(dataContractStatus.PP_FeeToken))
-  const feeTokenPct = new BigNumber(Web3.utils.fromWei(dataContractStatus.feeTokenPct))
+  const feeTokenPrice = new BigNumber(Web3.utils.fromWei(dataContractStatus[caIndex].PP_FeeToken[0]))
+  const feeTokenPct = new BigNumber(Web3.utils.fromWei(dataContractStatus[caIndex].feeTokenPct))
   const qFeeToken = qCAtp.times(feeParam.times(feeTokenPct)).div(feeTokenPrice)
 
   // Markup Vendors
-  const vendorMarkup = new BigNumber(Web3.utils.fromWei(dataContractStatus.vendorMarkup))
+  const vendorMarkup = new BigNumber(Web3.utils.fromWei(dataContractStatus[caIndex].vendorMarkup))
   const markOperation = qCAtp.times(vendorMarkup)
   const markOperationToken = qCAtp.times(vendorMarkup).div(feeTokenPrice)
 
   // Total fee token
   const totalFeeToken = qFeeToken.plus(markOperationToken)
 
-  const feeTokenAllowance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats.FeeToken.allowance, configProject.tokens.FeeToken.decimals))
-  const feeTokenBalance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats.FeeToken.balance, configProject.tokens.FeeToken.decimals))
+  const feeTokenAllowance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats[caIndex].FeeToken.allowance, configProject.tokens.FeeToken.decimals))
+  const feeTokenBalance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats[caIndex].FeeToken.balance, configProject.tokens.FeeToken.decimals))
   let qCAtpwFee
   if (feeTokenAllowance.gt(totalFeeToken) && feeTokenBalance.gt(totalFeeToken)) {
     // Pay fee with token
@@ -385,7 +385,7 @@ const redeemTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) 
   const slippage = `${process.env.REDEEM_SLIPPAGE}`
   const tpAddress = dContracts.contracts.TP[tpIndex].options.address
 
-  const MoCContract = dContracts.contracts.Moc
+  const MoCContract = dContracts.contracts.Moc[caIndex]
   const MoCContractAddress = MoCContract.options.address
 
   // Get information from contracts
@@ -395,8 +395,8 @@ const redeemTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) 
   const userBalanceStats = await userBalanceFromContracts(web3, dContracts, configProject, userAddress)
 
   // get TP price from contract
-  let tpPrice = new BigNumber(Web3.utils.fromWei(dataContractStatus.PP_TP[tpIndex]))
-  const feeParam = new BigNumber(Web3.utils.fromWei(dataContractStatus.tpRedeemFees[tpIndex]))
+  let tpPrice = new BigNumber(Web3.utils.fromWei(dataContractStatus[caIndex].PP_TP[tpIndex][0]))
+  const feeParam = new BigNumber(Web3.utils.fromWei(dataContractStatus[caIndex].tpRedeemFees[tpIndex]))
 
   if (!tpPrice.gt(0)) {
     const staticPrices = process.env.PRICE_TP.split(",")
@@ -410,20 +410,20 @@ const redeemTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) 
   const feeOperation = qCAtp.times(feeParam)
 
   // Fee Paying with Token
-  const feeTokenPrice = new BigNumber(Web3.utils.fromWei(dataContractStatus.PP_FeeToken))
-  const feeTokenPct = new BigNumber(Web3.utils.fromWei(dataContractStatus.feeTokenPct))
+  const feeTokenPrice = new BigNumber(Web3.utils.fromWei(dataContractStatus[caIndex].PP_FeeToken[0]))
+  const feeTokenPct = new BigNumber(Web3.utils.fromWei(dataContractStatus[caIndex].feeTokenPct))
   const qFeeToken = qCAtp.times(feeParam.times(feeTokenPct)).div(feeTokenPrice)
 
   // Markup Vendors
-  const vendorMarkup = new BigNumber(Web3.utils.fromWei(dataContractStatus.vendorMarkup))
+  const vendorMarkup = new BigNumber(Web3.utils.fromWei(dataContractStatus[caIndex].vendorMarkup))
   const markOperation = qCAtp.times(vendorMarkup)
   const markOperationToken = qCAtp.times(vendorMarkup).div(feeTokenPrice)
 
   // Total fee token
   const totalFeeToken = qFeeToken.plus(markOperationToken)
 
-  const feeTokenAllowance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats.FeeToken.allowance, configProject.tokens.FeeToken.decimals))
-  const feeTokenBalance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats.FeeToken.balance, configProject.tokens.FeeToken.decimals))
+  const feeTokenAllowance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats[caIndex].FeeToken.allowance, configProject.tokens.FeeToken.decimals))
+  const feeTokenBalance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats[caIndex].FeeToken.balance, configProject.tokens.FeeToken.decimals))
   let qCAtpwFee
   if (feeTokenAllowance.gt(totalFeeToken) && feeTokenBalance.gt(totalFeeToken)) {
     // Pay fee with token

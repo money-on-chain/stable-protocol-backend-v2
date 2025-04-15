@@ -17,12 +17,12 @@ const main = async () => {
   const dContracts = await readContracts(web3, configProject)
 
   // Token to approve
-  const mocBucket = 0
+  const caIndex = 0
   const token = dContracts.contracts.CollateralToken[mocBucket]
   const tokenDecimals = configProject.tokens.TC.decimals
 
   // Send transaction and get receipt
-  const { receipt, filteredEvents } = await AllowanceUse(web3, dContracts, configProject, mocBucket,token, true, tokenDecimals)
+  const { receipt, filteredEvents } = await AllowanceUse(web3, dContracts, configProject, caIndex,token, true, tokenDecimals)
 }
 
 main()

@@ -19,9 +19,10 @@ const main = async () => {
   // Token to approve
   const token = dContracts.contracts.FeeToken
   const tokenDecimals = configProject.tokens.FeeToken.decimals
+  const caIndex = 0
 
   // Send transaction and get receipt
-  const { receipt, filteredEvents } = await AllowanceUse(web3, dContracts, configProject, token, true, tokenDecimals)
+  const { receipt, filteredEvents } = await AllowanceUse(web3, dContracts, configProject, caIndex, token, true, tokenDecimals)
 }
 
 main()

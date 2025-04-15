@@ -13,10 +13,9 @@ import Web3 from "web3";
 import {fromContractPrecisionDecimals, toContractPrecisionDecimals} from "../utils.js";
 import {sendTransaction} from "../transaction.js";
 
-const mintTC = async (web3, dContracts, configProject, qTC) => {
+const mintTC = async (web3, dContracts, configProject, caIndex, qTC) => {
     // Mint Collateral token with Coinbase support vendors
 
-    const caIndex = 0;
     const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
     const vendorAddress = `${process.env.VENDOR_ADDRESS}`.toLowerCase()
     const slippage = `${process.env.MINT_SLIPPAGE}`
@@ -111,15 +110,14 @@ const mintTC = async (web3, dContracts, configProject, qTC) => {
     return { receipt, filteredEvents }
 }
 
-const redeemTC = async (web3, dContracts, configProject, qTC) => {
+const redeemTC = async (web3, dContracts, configProject, caIndex, qTC) => {
     // Redeem Collateral token receiving CA support vendors
-    return redeemTC_(web3, dContracts, configProject, 0, qTC)
+    return redeemTC_(web3, dContracts, configProject, caIndex, qTC)
 }
 
-const mintTP = async (web3, dContracts, configProject, tpIndex, qTP) => {
+const mintTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) => {
     // Mint pegged token with collateral Coinbase support vendor
 
-    const caIndex = 0
     const userAddress = `${process.env.USER_ADDRESS}`.toLowerCase()
     const vendorAddress = `${process.env.VENDOR_ADDRESS}`.toLowerCase()
     const slippage = `${process.env.MINT_SLIPPAGE}`
@@ -233,34 +231,34 @@ const mintTP = async (web3, dContracts, configProject, tpIndex, qTP) => {
     return { receipt, filteredEvents }
 }
 
-const redeemTP = async (web3, dContracts, configProject, tpIndex, qTP) => {
+const redeemTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) => {
     // Redeem pegged token receiving CA support vendor
-    return redeemTP_(web3, dContracts, configProject, 0, tpIndex, qTP)
+    return redeemTP_(web3, dContracts, configProject, caIndex, tpIndex, qTP)
 }
 
-const swapTPforTP = async (web3, dContracts, configProject, iFromTP, iToTP, qTP) => {
+const swapTPforTP = async (web3, dContracts, configProject, caIndex, iFromTP, iToTP, qTP) => {
     // caller sends a Pegged Token and receives another one support vendor
-    return swapTPforTP_(web3, dContracts, configProject, iFromTP, iToTP, qTP, 0)
+    return swapTPforTP_(web3, dContracts, configProject, iFromTP, iToTP, qTP, caIndex)
 }
 
-const swapTPforTC = async (web3, dContracts, configProject, tpIndex, qTP) => {
+const swapTPforTC = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) => {
     // caller sends a Pegged Token and receives Collateral Token support vendor
-    return swapTPforTC_(web3, dContracts, configProject, 0, tpIndex, qTP)
+    return swapTPforTC_(web3, dContracts, configProject, caIndex, tpIndex, qTP)
 }
 
-const swapTCforTP = async (web3, dContracts, configProject, tpIndex, qTC) => {
+const swapTCforTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTC) => {
     // caller sends Collateral Token and receives Pegged Token support vendor
-    return swapTCforTP_(web3, dContracts, configProject, 0, tpIndex, qTC)
+    return swapTCforTP_(web3, dContracts, configProject, caIndex, tpIndex, qTC)
 }
 
-const mintTCandTP = async (web3, dContracts, configProject, tpIndex, qTP) => {
+const mintTCandTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) => {
     // caller sends Asset and receives Collateral Token and Pegged Token support vendor
-    return mintTCandTP_(web3, dContracts, configProject, 0, tpIndex, qTP)
+    return mintTCandTP_(web3, dContracts, configProject, caIndex, tpIndex, qTP)
 }
 
-const redeemTCandTP = async (web3, dContracts, configProject, tpIndex, qTC) => {
+const redeemTCandTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTC) => {
     // caller sends Collateral Token and Pegged Token and receives Assets support vendor
-    return redeemTCandTP_(web3, dContracts, configProject, 0, tpIndex, qTC)
+    return redeemTCandTP_(web3, dContracts, configProject, caIndex, tpIndex, qTC)
 }
 
 export {

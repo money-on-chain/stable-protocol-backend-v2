@@ -16,8 +16,10 @@ const main = async () => {
     // Obtain all contracts
     const dContracts = await readContracts(web3, configProject)
 
+    const caIndex = 0
+
     // Send transaction and get receipt
-    const { receipt, filteredEvents } = await refreshACBalance(web3, dContracts, configProject)
+    const { receipt, filteredEvents } = await refreshACBalance(web3, dContracts, configProject, caIndex)
 }
 
 main()

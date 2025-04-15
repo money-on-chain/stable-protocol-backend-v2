@@ -19,10 +19,10 @@ const main = async () => {
   // Token to approve
   const token = dContracts.contracts.CA[0]
   const tokenDecimals = configProject.tokens.CA[0].decimals
-  const mocBucket = 0
+  const caIndex = 0
 
   // Send transaction and get receipt
-  const { receipt, filteredEvents } = await AllowanceUse(web3, dContracts, configProject, mocBucket, token, true, tokenDecimals)
+  const { receipt, filteredEvents } = await AllowanceUse(web3, dContracts, configProject, caIndex, token, true, tokenDecimals)
 }
 
 main()

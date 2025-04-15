@@ -336,7 +336,6 @@ ${pricesTP(contractStatus, config, ca)}
 ${pricesCA(contractStatus, config, ca)} 
 Price Tec ${config.tokens.TC.name}:  ${Web3.utils.fromWei(contractStatus[ca].getPTCac)}
 Price ${config.tokens.FeeToken.name}:  ${Web3.utils.fromWei(contractStatus[ca].PP_FeeToken[0])} Valid: ${contractStatus[ca].PP_FeeToken[1]}
-Price Wrapped Token:  ${contractStatus[ca].getTokenPrice}
 
 
 Coverage & Leverage
@@ -358,7 +357,7 @@ EMA
 ====
 
 ${emaTP(contractStatus, config, ca)}
-Block next calculation: ${contractStatus[ca].nextEmaCalculation}
+Next EMA calculation: ${contractStatus[ca].nextEmaCalculation}
 EMA Time Span: ${contractStatus[ca].emaCalculationTimeSpan}
 Should Calculate EMA: ${contractStatus[ca].shouldCalculateEma}
 
@@ -378,7 +377,6 @@ Settlement
 
 Nº of time between settlements: ${contractStatus[ca].settlementTimeSpan}
 Next settlement time: ${contractStatus[ca].nextSettlementTime}
-Nº of blocks remaining for settlement: ${contractStatus[ca].getBts}
 
 
 Fees

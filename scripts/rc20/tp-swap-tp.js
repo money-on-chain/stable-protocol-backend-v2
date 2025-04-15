@@ -19,11 +19,12 @@ const main = async () => {
   const dContracts = await readContracts(web3, configProject)
 
   // Get amount from environment
+  const caIndex = 0
   const iFromTP = 0
   const iToTP = 1
   const qTP = `${process.env.OPERATION_AMOUNT_SWAP_TP_FOR_TP}`
 
-  const { receipt, filteredEvents } = await swapTPforTP(web3, dContracts, configProject, iFromTP, iToTP, qTP)
+  const { receipt, filteredEvents } = await swapTPforTP(web3, dContracts, configProject, caIndex, iFromTP, iToTP, qTP)
 }
 
 main()
