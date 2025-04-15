@@ -2,7 +2,7 @@ import BigNumber from 'bignumber.js'
 import Web3 from 'web3'
 
 import { statusFromContracts, userBalanceFromContracts } from './contracts.js'
-import { toContractPrecision, fromContractPrecisionDecimals, toContractPrecisionDecimals, getExecutionFee } from '../utils.js'
+import { toContractPrecision, fromContractPrecisionDecimals, toContractPrecisionDecimals, getExecutionFee, getNetworkFromProject } from '../utils.js'
 import { sendTransaction } from '../transaction.js'
 
 const mintTC = async (web3, dContracts, configProject, caIndex, qTC) => {
@@ -81,17 +81,13 @@ const mintTC = async (web3, dContracts, configProject, caIndex, qTC) => {
   if (qAssetMax.gt(userSpendableBalance)) throw new Error('Insufficient spendable balance... please make an allowance to the MoC contract')
 
   // TODO: view functions returns baseFee == 0, if we use another value the estimateGas function will revert
-  let valueToSend = 0
+  let valueToSend
+  if (getNetworkFromProject()==="rsk") {
+    valueToSend = await getExecutionFee(web3, dataContractStatus[caIndex].tcMintExecCost, slippage)
+  } else {
+    valueToSend = 0
+  }
 
-  console.log("MINT TC>>>")
-  console.log("MoCContract: ", MoCContract.options.address)
-  console.log("qTC: ", qTC.toString())
-  console.log("qAssetMax: ", qAssetMax.toString())
-  console.log("userAddress: ", userAddress)
-  console.log("vendorAddress: ", vendorAddress)
-  console.log("valueToSend: ", valueToSend)
-  console.log("tcMintExecCost: ", dataContractStatus[caIndex].tcMintExecCost)
-  console.log("slippage: ", slippage)
   // Calculate estimate gas cost
   const estimateGas = await MoCContract.methods
       .mintTC(toContractPrecisionDecimals(new BigNumber(qTC), configProject.tokens.TC.decimals),
@@ -100,19 +96,16 @@ const mintTC = async (web3, dContracts, configProject, caIndex, qTC) => {
           vendorAddress
       ).estimateGas({ from: userAddress, value: valueToSend })
 
-  valueToSend = await getExecutionFee(web3, dataContractStatus[caIndex].tcMintExecCost, slippage)
+  if (valueToSend === 0) {
+    valueToSend = await getExecutionFee(web3, dataContractStatus[caIndex].tcMintExecCost, slippage)
+  }
 
-  console.log("OK 1>>>")
-
-  // encode function
   const encodedCall = MoCContract.methods
       .mintTC(toContractPrecisionDecimals(new BigNumber(qTC), configProject.tokens.TC.decimals),
           toContractPrecisionDecimals(qAssetMax, configProject.tokens.CA[caIndex].decimals),
           userAddress,
           vendorAddress
       ).encodeABI()
-
-  console.log("OK 2>>>")
 
   // send transaction to the blockchain and get receipt
   const { receipt, filteredEvents } = await sendTransaction(
@@ -214,7 +207,12 @@ const redeemTC = async (web3, dContracts, configProject, caIndex, qTC) => {
   if (new BigNumber(qCAtcwFee).gt(caBalance)) { throw new Error(`Insufficient ${configProject.tokens.CA[caIndex].name} in the contract. Balance: ${caBalance} ${configProject.tokens.CA[caIndex].name}`) }
 
   // TODO: view functions returns baseFee == 0, if we use another value the estimateGas function will revert
-  let valueToSend = 0
+  let valueToSend
+  if (getNetworkFromProject()==="rsk") {
+    valueToSend = await getExecutionFee(web3, dataContractStatus[caIndex].tcRedeemExecCost, slippage)
+  } else {
+    valueToSend = 0
+  }
 
   // Calculate estimate gas cost
   const estimateGas = await MoCContract.methods
@@ -224,7 +222,9 @@ const redeemTC = async (web3, dContracts, configProject, caIndex, qTC) => {
           vendorAddress
       ).estimateGas({ from: userAddress, value: valueToSend })
 
-  valueToSend = dataContractStatus.tcRedeemExecFee
+  if (valueToSend === 0) {
+    valueToSend = await getExecutionFee(web3, dataContractStatus[caIndex].tcRedeemExecCost, slippage)
+  }
 
   // encode function
   const encodedCall = MoCContract.methods
@@ -332,7 +332,12 @@ const mintTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) =>
   */
 
   // TODO: view functions returns baseFee == 0, if we use another value the estimateGas function will revert
-  let valueToSend = 0
+  let valueToSend
+  if (getNetworkFromProject()==="rsk") {
+    valueToSend = await getExecutionFee(web3, dataContractStatus[caIndex].tpMintExecCost, slippage)
+  } else {
+    valueToSend = 0
+  }
 
   // Calculate estimate gas cost
   const estimateGas = await MoCContract.methods
@@ -344,7 +349,9 @@ const mintTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) =>
           vendorAddress
       ).estimateGas({ from: userAddress, value: valueToSend })
 
-  valueToSend = dataContractStatus.tpMintExecFee
+  if (valueToSend === 0) {
+    valueToSend = await getExecutionFee(web3, dataContractStatus[caIndex].tpMintExecCost, slippage)
+  }
 
   // encode function
   const encodedCall = MoCContract.methods
@@ -454,7 +461,12 @@ const redeemTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) 
    */
 
   // TODO: view functions returns baseFee == 0, if we use another value the estimateGas function will revert
-  let valueToSend = 0
+  let valueToSend
+  if (getNetworkFromProject()==="rsk") {
+    valueToSend = await getExecutionFee(web3, dataContractStatus[caIndex].tpRedeemExecCost, slippage)
+  } else {
+    valueToSend = 0
+  }
 
   // Calculate estimate gas cost
   const estimateGas = await MoCContract.methods
@@ -467,7 +479,9 @@ const redeemTP = async (web3, dContracts, configProject, caIndex, tpIndex, qTP) 
       )
       .estimateGas({ from: userAddress, value: valueToSend })
 
-  valueToSend = dataContractStatus.tpRedeemExecFee
+  if (valueToSend === 0) {
+    valueToSend = await getExecutionFee(web3, dataContractStatus[caIndex].tpRedeemExecCost, slippage)
+  }
 
   // encode function
   const encodedCall = MoCContract.methods
@@ -547,7 +561,12 @@ const swapTPforTP = async (web3, dContracts, configProject, iFromTP, iToTP, qTP,
   if (qAssetMaxFees.gt(userSpendableBalance)) { throw new Error('Insufficient spendable balance... please make an allowance to the MoC contract') }
 
   // TODO: view functions returns baseFee == 0, if we use another value the estimateGas function will revert
-  let valueToSend = 0
+  let valueToSend
+  if (getNetworkFromProject()==="rsk") {
+    valueToSend = await getExecutionFee(web3, dataContractStatus[caIndex].swapTPforTPExecCost, slippage)
+  } else {
+    valueToSend = 0
+  }
 
   // Calculate estimate gas cost
   const estimateGas = await MoCContract.methods
@@ -560,7 +579,9 @@ const swapTPforTP = async (web3, dContracts, configProject, iFromTP, iToTP, qTP,
           vendorAddress
       ).estimateGas({ from: userAddress, value: valueToSend })
 
-  valueToSend = dataContractStatus.swapTPforTPExecFee
+  if (valueToSend === 0) {
+    valueToSend = await getExecutionFee(web3, dataContractStatus[caIndex].swapTPforTPExecCost, slippage)
+  }
 
   // encode function
   const encodedCall = MoCContract.methods
@@ -642,7 +663,12 @@ const swapTPforTC = async (web3, dContracts, configProject, caIndex, tpIndex, qT
   if (qAssetMaxFees.gt(userSpendableBalance)) { throw new Error('Insufficient spendable balance... please make an allowance to the MoC contract') }
 
   // TODO: view functions returns baseFee == 0, if we use another value the estimateGas function will revert
-  let valueToSend = 0
+  let valueToSend
+  if (getNetworkFromProject()==="rsk") {
+    valueToSend = await getExecutionFee(web3, dataContractStatus[caIndex].swapTPforTCExecCost, slippage)
+  } else {
+    valueToSend = 0
+  }
 
   // Calculate estimate gas cost
   const estimateGas = await MoCContract.methods
@@ -655,7 +681,9 @@ const swapTPforTC = async (web3, dContracts, configProject, caIndex, tpIndex, qT
       )
       .estimateGas({ from: userAddress, value: valueToSend })
 
-  valueToSend = dataContractStatus.swapTPforTCExecFee
+  if (valueToSend === 0) {
+    valueToSend = await getExecutionFee(web3, dataContractStatus[caIndex].swapTPforTCExecCost, slippage)
+  }
 
   // encode function
   const encodedCall = MoCContract.methods
@@ -738,7 +766,12 @@ const swapTCforTP = async (web3, dContracts, configProject, caIndex, tpIndex, qT
   if (qAssetMaxFees.gt(userSpendableBalance)) { throw new Error('Insufficient spendable balance... please make an allowance to the MoC contract') }
 
   // TODO: view functions returns baseFee == 0, if we use another value the estimateGas function will revert
-  let valueToSend = 0
+  let valueToSend
+  if (getNetworkFromProject()==="rsk") {
+    valueToSend = await getExecutionFee(web3, dataContractStatus[caIndex].swapTCforTPExecCost, slippage)
+  } else {
+    valueToSend = 0
+  }
 
   // Calculate estimate gas cost
   const estimateGas = await MoCContract.methods
@@ -750,7 +783,9 @@ const swapTCforTP = async (web3, dContracts, configProject, caIndex, tpIndex, qT
           vendorAddress
       ).estimateGas({ from: userAddress, value: valueToSend })
 
-  valueToSend = dataContractStatus.swapTCforTPExecFee
+  if (valueToSend === 0) {
+    valueToSend = await getExecutionFee(web3, dataContractStatus[caIndex].swapTCforTPExecCost, slippage)
+  }
 
   // encode function
   const encodedCall = MoCContract.methods
@@ -825,7 +860,12 @@ const mintTCandTP = async (web3, dContracts, configProject, caIndex, tpIndex, qT
   if (qAssetMax.gt(userSpendableBalance)) { throw new Error('Insufficient spendable balance... please make an allowance to the MoC contract') }
 
   // TODO: view functions returns baseFee == 0, if we use another value the estimateGas function will revert
-  let valueToSend = 0
+  let valueToSend
+  if (getNetworkFromProject()==="rsk") {
+    valueToSend = await getExecutionFee(web3, dataContractStatus[caIndex].swapTCforTPExecCost, slippage)
+  } else {
+    valueToSend = 0
+  }
 
   // Calculate estimate gas cost
   const estimateGas = await MoCContract.methods
@@ -836,7 +876,9 @@ const mintTCandTP = async (web3, dContracts, configProject, caIndex, tpIndex, qT
           vendorAddress
       ).estimateGas({ from: userAddress, value: valueToSend })
 
-  valueToSend = dataContractStatus.mintTCandTPExecFee
+  if (valueToSend === 0) {
+    valueToSend = await getExecutionFee(web3, dataContractStatus[caIndex].mintTCandTPExecCost, slippage)
+  }
 
   // encode function
   const encodedCall = MoCContract.methods
@@ -924,7 +966,12 @@ const redeemTCandTP = async (web3, dContracts, configProject, caIndex, tpIndex, 
   if (new BigNumber(qCAwFee).gt(caBalance)) { throw new Error(`Insufficient ${configProject.tokens.CA[caIndex].name} in the contract. Balance: ${caBalance} ${configProject.tokens.CA[caIndex].name}`) }
 
   // TODO: view functions returns baseFee == 0, if we use another value the estimateGas function will revert
-  let valueToSend = 0
+  let valueToSend
+  if (getNetworkFromProject()==="rsk") {
+    valueToSend = await getExecutionFee(web3, dataContractStatus[caIndex].swapTCforTPExecCost, slippage)
+  } else {
+    valueToSend = 0
+  }
 
   // Calculate estimate gas cost
   const estimateGas = await MoCContract.methods
@@ -936,7 +983,9 @@ const redeemTCandTP = async (web3, dContracts, configProject, caIndex, tpIndex, 
           vendorAddress
       ).estimateGas({ from: userAddress, value: valueToSend })
 
-  valueToSend = dataContractStatus.redeemTCandTPExecFee
+  if (valueToSend === 0) {
+    valueToSend = await getExecutionFee(web3, dataContractStatus[caIndex].redeemTCandTPExecCost, slippage)
+  }
 
   // encode function
   const encodedCall = MoCContract.methods

@@ -35,8 +35,32 @@ const getGasPrice = async (web3) => {
   }
 }
 
+const getNetworkFromProject = () => {
+  let network
+  switch (process.env.MOC_PROJECT) {
+    case "flipmoney":
+      network = "rsk"
+      break;
+    case "stablex":
+      network = "arbitrum"
+      break;
+    default:
+      network = "rsk"
+  }
+  return network;
+}
+
+
 const getExecutionFee = async (web3, execCost, slippage) => {
-  const latestBaseFee = (await web3.eth.getBlock("latest")).baseFeePerGas
+  const lastBlock = await web3.eth.getBlock("latest")
+
+  let latestBaseFee
+  if (getNetworkFromProject()==="rsk") {
+    latestBaseFee = lastBlock.minimumGasPrice
+  } else {
+    latestBaseFee = lastBlock.baseFeePerGas
+  }
+
   const execFee = execCost * latestBaseFee * ( 1 + slippage / 100)
   console.log(`Using Base Fee: ${latestBaseFee} * slippage ${slippage} % = ${execFee}`)
   return execFee;
@@ -84,5 +108,6 @@ export {
   formatTimestamp,
   fromContractPrecisionDecimals,
   toContractPrecisionDecimals,
-  getExecutionFee
+  getExecutionFee,
+  getNetworkFromProject
 }
