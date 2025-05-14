@@ -12,6 +12,10 @@
           {
             "name": "BPro",
             "decimals": 18
+          },
+          {
+            "name": "DOC",
+            "decimals": 18
           }
         ],
         "TP": [
@@ -24,10 +28,16 @@
             "decimals": 18
           }
         ],
-        "TC": {
-          "name": "BPro Max",
-          "decimals": 18
-        },
+        "TC": [
+          {
+            "name": "BPro Max",
+            "decimals": 18
+          },
+          {
+            "name": "DOC Max",
+            "decimals": 18
+          }
+        ],
         "FeeToken": {
           "name": "FLIP",
           "decimals": 18

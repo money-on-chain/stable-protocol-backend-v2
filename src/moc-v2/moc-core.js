@@ -71,12 +71,12 @@ const mintTC = async (web3, dContracts, configProject, caIndex, qTC) => {
   // Verifications
 
   // User have sufficient reserve to pay?
-  console.log(`To mint ${qTC} ${configProject.tokens.TC.name} you need > ${qAssetMax.toString()} ${configProject.tokens.CA[caIndex].name} in your balance`)
+  console.log(`To mint ${qTC} ${configProject.tokens.TC[caIndex].name} you need > ${qAssetMax.toString()} ${configProject.tokens.CA[caIndex].name} in your balance`)
   const userReserveBalance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats.CA[caIndex].balance, configProject.tokens.CA[caIndex].decimals))
   if (qAssetMax.gt(userReserveBalance)) throw new Error(`Insufficient ${configProject.tokens.CA[caIndex].name} balance`)
 
   // Allowance    reserveAllowance
-  console.log(`Allowance: To mint ${qTC} ${configProject.tokens.TC.name} you need > ${qAssetMax.toString()} ${configProject.tokens.CA[caIndex].name} in your spendable balance`)
+  console.log(`Allowance: To mint ${qTC} ${configProject.tokens.TC[caIndex].name} you need > ${qAssetMax.toString()} ${configProject.tokens.CA[caIndex].name} in your spendable balance`)
   const userSpendableBalance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats.CA[caIndex].allowance, configProject.tokens.CA[caIndex].decimals))
   if (qAssetMax.gt(userSpendableBalance)) throw new Error('Insufficient spendable balance... please make an allowance to the MoC contract')
 
@@ -90,7 +90,7 @@ const mintTC = async (web3, dContracts, configProject, caIndex, qTC) => {
 
   // Calculate estimate gas cost
   const estimateGas = await MoCContract.methods
-      .mintTC(toContractPrecisionDecimals(new BigNumber(qTC), configProject.tokens.TC.decimals),
+      .mintTC(toContractPrecisionDecimals(new BigNumber(qTC), configProject.tokens.TC[caIndex].decimals),
           toContractPrecisionDecimals(qAssetMax, configProject.tokens.CA[caIndex].decimals),
           userAddress,
           vendorAddress
@@ -101,7 +101,7 @@ const mintTC = async (web3, dContracts, configProject, caIndex, qTC) => {
   }
 
   const encodedCall = MoCContract.methods
-      .mintTC(toContractPrecisionDecimals(new BigNumber(qTC), configProject.tokens.TC.decimals),
+      .mintTC(toContractPrecisionDecimals(new BigNumber(qTC), configProject.tokens.TC[caIndex].decimals),
           toContractPrecisionDecimals(qAssetMax, configProject.tokens.CA[caIndex].decimals),
           userAddress,
           vendorAddress
@@ -188,17 +188,17 @@ const redeemTC = async (web3, dContracts, configProject, caIndex, qTC) => {
   // Verifications
 
   // User have sufficient TC in balance?
-  console.log(`Redeeming ${qTC} ${configProject.tokens.TC.name} ... getting approx: ${qCAtcwFee} ${configProject.tokens.CA[caIndex].name}... `)
+  console.log(`Redeeming ${qTC} ${configProject.tokens.TC[caIndex].name} ... getting approx: ${qCAtcwFee} ${configProject.tokens.CA[caIndex].name}... `)
   const userTCBalance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats[caIndex].TC.balance,
-    configProject.tokens.TC.decimals))
-  if (new BigNumber(qTC).gt(userTCBalance)) { throw new Error(`Insufficient ${configProject.tokens.TC.name} user balance`) }
+    configProject.tokens.TC[caIndex].decimals))
+  if (new BigNumber(qTC).gt(userTCBalance)) { throw new Error(`Insufficient ${configProject.tokens.TC[caIndex].name} user balance`) }
 
   // There are sufficient TC in the contracts to redeem?
 
   // Commented
   /*
   const tcAvailableToRedeem = new BigNumber(Web3.utils.fromWei(dataContractStatus.getTCAvailableToRedeem))
-  if (new BigNumber(qTC).gt(tcAvailableToRedeem)) { throw new Error(`Insufficient ${configProject.tokens.TC.name}available to redeem in contract`) }
+  if (new BigNumber(qTC).gt(tcAvailableToRedeem)) { throw new Error(`Insufficient ${configProject.tokens.TC[caIndex].name}available to redeem in contract`) }
    */
 
   // There are sufficient CA in the contract
@@ -216,7 +216,7 @@ const redeemTC = async (web3, dContracts, configProject, caIndex, qTC) => {
 
   // Calculate estimate gas cost
   const estimateGas = await MoCContract.methods
-      .redeemTC(toContractPrecisionDecimals(new BigNumber(qTC), configProject.tokens.TC.decimals),
+      .redeemTC(toContractPrecisionDecimals(new BigNumber(qTC), configProject.tokens.TC[caIndex].decimals),
           toContractPrecisionDecimals(qAssetMin, configProject.tokens.CA[caIndex].decimals),
           userAddress,
           vendorAddress
@@ -228,7 +228,7 @@ const redeemTC = async (web3, dContracts, configProject, caIndex, qTC) => {
 
   // encode function
   const encodedCall = MoCContract.methods
-      .redeemTC(toContractPrecisionDecimals(new BigNumber(qTC), configProject.tokens.TC.decimals),
+      .redeemTC(toContractPrecisionDecimals(new BigNumber(qTC), configProject.tokens.TC[caIndex].decimals),
           toContractPrecisionDecimals(qAssetMin, configProject.tokens.CA[caIndex].decimals),
           userAddress,
           vendorAddress
@@ -638,7 +638,7 @@ const swapTPforTC = async (web3, dContracts, configProject, caIndex, tpIndex, qT
   // minimum amount of target Pegged Token that the sender expects to receive
   const qTCMin = qTC.minus(new BigNumber(slippage).div(100).times(qTC))
 
-  console.log(`Slippage using ${slippage} %. Minimum limit to receive: ${qTCMin.toString()} ${configProject.tokens.TC.name}`)
+  console.log(`Slippage using ${slippage} %. Minimum limit to receive: ${qTCMin.toString()} ${configProject.tokens.TC[caIndex].name}`)
 
   // maximum amount of Asset that can be spent in fees
   const qAssetMaxFees = new BigNumber(slippage).div(100).times(qCAtp).plus(qCAtp).times(SwapFees)
@@ -648,7 +648,7 @@ const swapTPforTC = async (web3, dContracts, configProject, caIndex, tpIndex, qT
   // Verifications
 
   // User have sufficient PEGGED Token in balance?
-  console.log(`Swap ${qTP} ${configProject.tokens.TP[tpIndex].name} ... getting approx: ${qTC} ${configProject.tokens.TC.name}... `)
+  console.log(`Swap ${qTP} ${configProject.tokens.TP[tpIndex].name} ... getting approx: ${qTC} ${configProject.tokens.TC[caIndex].name}... `)
   const userTPBalance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats.TP[tpIndex].balance, configProject.tokens.TP[tpIndex].decimals))
   if (new BigNumber(qTP).gt(userTPBalance)) { throw new Error(`Insufficient ${configProject.tokens.TP[tpIndex].name}  user balance`) }
 
@@ -674,7 +674,7 @@ const swapTPforTC = async (web3, dContracts, configProject, caIndex, tpIndex, qT
   const estimateGas = await MoCContract.methods
       .swapTPforTC(tpIndex,
           toContractPrecisionDecimals(new BigNumber(qTP), configProject.tokens.TP[tpIndex].decimals),
-          toContractPrecisionDecimals(qTCMin, configProject.tokens.TC.decimals),
+          toContractPrecisionDecimals(qTCMin, configProject.tokens.TC[caIndex].decimals),
           toContractPrecisionDecimals(qAssetMaxFees, configProject.tokens.CA[caIndex].decimals),
           userAddress,
           vendorAddress
@@ -689,7 +689,7 @@ const swapTPforTC = async (web3, dContracts, configProject, caIndex, tpIndex, qT
   const encodedCall = MoCContract.methods
       .swapTPforTC(tpIndex,
           toContractPrecisionDecimals(new BigNumber(qTP), configProject.tokens.TP[tpIndex].decimals),
-          toContractPrecisionDecimals(qTCMin, configProject.tokens.TC.decimals),
+          toContractPrecisionDecimals(qTCMin, configProject.tokens.TC[caIndex].decimals),
           toContractPrecisionDecimals(qAssetMaxFees, configProject.tokens.CA[caIndex].decimals),
           userAddress,
           vendorAddress
@@ -751,9 +751,9 @@ const swapTCforTP = async (web3, dContracts, configProject, caIndex, tpIndex, qT
   // Verifications
 
   // User have sufficient TC in balance?
-  console.log(`Swap ${qTC} ${configProject.tokens.TC.name} ... getting approx: ${qTP} ${configProject.tokens.TP[tpIndex].name}... `)
-  const userTCBalance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats.TC, configProject.tokens.TC.decimals))
-  if (new BigNumber(qTC).gt(userTCBalance)) { throw new Error(`Insufficient ${configProject.tokens.TC.name}  user balance`) }
+  console.log(`Swap ${qTC} ${configProject.tokens.TC[caIndex].name} ... getting approx: ${qTP} ${configProject.tokens.TP[tpIndex].name}... `)
+  const userTCBalance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats.TC, configProject.tokens.TC[caIndex].decimals))
+  if (new BigNumber(qTC).gt(userTCBalance)) { throw new Error(`Insufficient ${configProject.tokens.TC[caIndex].name}  user balance`) }
 
   // Fees user have sufficient reserve to pay?
   console.log(`To pay fees you need > ${qAssetMaxFees.toString()} ${configProject.tokens.CA[caIndex].name} in your balance`)
@@ -776,7 +776,7 @@ const swapTCforTP = async (web3, dContracts, configProject, caIndex, tpIndex, qT
   // Calculate estimate gas cost
   const estimateGas = await MoCContract.methods
       .swapTCforTP(tpIndex,
-          toContractPrecisionDecimals(new BigNumber(qTC), configProject.tokens.TC.decimals),
+          toContractPrecisionDecimals(new BigNumber(qTC), configProject.tokens.TC[caIndex].decimals),
           toContractPrecisionDecimals(qTPMin, configProject.tokens.TP[tpIndex].decimals),
           toContractPrecisionDecimals(qAssetMaxFees, configProject.tokens.CA[caIndex].decimals),
           userAddress,
@@ -790,7 +790,7 @@ const swapTCforTP = async (web3, dContracts, configProject, caIndex, tpIndex, qT
   // encode function
   const encodedCall = MoCContract.methods
       .swapTCforTP(tpIndex,
-          toContractPrecisionDecimals(new BigNumber(qTC), configProject.tokens.TC.decimals),
+          toContractPrecisionDecimals(new BigNumber(qTC), configProject.tokens.TC[caIndex].decimals),
           toContractPrecisionDecimals(qTPMin, configProject.tokens.TP[tpIndex].decimals),
           toContractPrecisionDecimals(qAssetMaxFees, configProject.tokens.CA[caIndex].decimals),
           userAddress,
@@ -950,10 +950,10 @@ const redeemTCandTP = async (web3, dContracts, configProject, caIndex, tpIndex, 
   // Verifications
 
   // User have sufficient TC in balance?
-  console.log(`Redeeming ${qTC} ${configProject.tokens.TC.name} ... getting approx: ${qCAtc} ${configProject.tokens.CA[caIndex].name}... `)
+  console.log(`Redeeming ${qTC} ${configProject.tokens.TC[caIndex].name} ... getting approx: ${qCAtc} ${configProject.tokens.CA[caIndex].name}... `)
   const userTCBalance = new BigNumber(fromContractPrecisionDecimals(userBalanceStats.TC.balance,
-    configProject.tokens.TC.decimals))
-  if (new BigNumber(qTC).gt(userTCBalance)) { throw new Error(`Insufficient ${configProject.tokens.TC.name} user balance`) }
+    configProject.tokens.TC[caIndex].decimals))
+  if (new BigNumber(qTC).gt(userTCBalance)) { throw new Error(`Insufficient ${configProject.tokens.TC[caIndex].name} user balance`) }
 
   // User have sufficient PEGGED Token in balance?
   console.log(`Redeeming ${qTP} ${configProject.tokens.TP[tpIndex].name} ... getting approx: ${qCAtp} ${configProject.tokens.CA[caIndex].name}... `)
@@ -976,7 +976,7 @@ const redeemTCandTP = async (web3, dContracts, configProject, caIndex, tpIndex, 
   // Calculate estimate gas cost
   const estimateGas = await MoCContract.methods
       .redeemTCandTP(tpIndex,
-          toContractPrecisionDecimals(new BigNumber(qTC), configProject.tokens.TC.decimals),
+          toContractPrecisionDecimals(new BigNumber(qTC), configProject.tokens.TC[caIndex].decimals),
           toContractPrecisionDecimals(new BigNumber(qTPMax), configProject.tokens.TP[tpIndex].decimals),
           toContractPrecisionDecimals(qAssetMin, configProject.tokens.CA[caIndex].decimals),
           userAddress,
@@ -990,7 +990,7 @@ const redeemTCandTP = async (web3, dContracts, configProject, caIndex, tpIndex, 
   // encode function
   const encodedCall = MoCContract.methods
       .redeemTCandTP(tpIndex,
-          toContractPrecisionDecimals(new BigNumber(qTC), configProject.tokens.TC.decimals),
+          toContractPrecisionDecimals(new BigNumber(qTC), configProject.tokens.TC[caIndex].decimals),
           toContractPrecisionDecimals(new BigNumber(qTPMax), configProject.tokens.TP[tpIndex].decimals),
           toContractPrecisionDecimals(qAssetMin, configProject.tokens.CA[caIndex].decimals),
           userAddress,

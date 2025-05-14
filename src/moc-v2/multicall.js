@@ -19,6 +19,11 @@ const onErrorProposal = () => {
   return { value: null, canOperate: true };
 };
 
+const onErrorFluxCapacitor = () => {
+  console.warn("Flux capacitor is disabled");
+  return { value: null, canOperate: true };
+};
+
 const onErrorTP = () => {
   return { value: null, canOperate: true };
 };
@@ -108,6 +113,9 @@ class MultiCall {
             "WARN: Cannot operate! Index query:",
             itemIndex
           );
+          console.warn("keyName:", keyName)
+          console.warn("keyIndex:", keyIndex)
+          console.warn("keySubIndex:", keySubIndex)
         }
       }
 
@@ -204,10 +212,10 @@ const contractStatus = async (web3, dContracts, configProject) => {
     multiCallRequest.aggregate(Moc, Moc.methods.feeRetainer().encodeABI(), 'uint256', i, 'feeRetainer')
     multiCallRequest.aggregate(Moc, Moc.methods.tcMintFee().encodeABI(), 'uint256', i, 'tcMintFee')
     multiCallRequest.aggregate(Moc, Moc.methods.tcRedeemFee().encodeABI(), 'uint256', i, 'tcRedeemFee')
-    multiCallRequest.aggregate(Moc, Moc.methods.swapTPforTPFee().encodeABI(), 'uint256', i,'swapTPforTPFee')
-    multiCallRequest.aggregate(Moc, Moc.methods.swapTPforTCFee().encodeABI(), 'uint256', i, 'swapTPforTCFee')
-    multiCallRequest.aggregate(Moc, Moc.methods.swapTCforTPFee().encodeABI(), 'uint256', i, 'swapTCforTPFee')
-    multiCallRequest.aggregate(Moc, Moc.methods.redeemTCandTPFee().encodeABI(), 'uint256', i, 'redeemTCandTPFee')
+    //multiCallRequest.aggregate(Moc, Moc.methods.swapTPforTPFee().encodeABI(), 'uint256', i,'swapTPforTPFee')
+    //multiCallRequest.aggregate(Moc, Moc.methods.swapTPforTCFee().encodeABI(), 'uint256', i, 'swapTPforTCFee')
+    //multiCallRequest.aggregate(Moc, Moc.methods.swapTCforTPFee().encodeABI(), 'uint256', i, 'swapTCforTPFee')
+    //multiCallRequest.aggregate(Moc, Moc.methods.redeemTCandTPFee().encodeABI(), 'uint256', i, 'redeemTCandTPFee')
     multiCallRequest.aggregate(Moc, Moc.methods.mintTCandTPFee().encodeABI(), 'uint256', i, 'mintTCandTPFee')
     multiCallRequest.aggregate(Moc, Moc.methods.mocFeeFlowAddress().encodeABI(), 'address', i, 'mocFeeFlowAddress')
     multiCallRequest.aggregate(Moc, Moc.methods.mocAppreciationBeneficiaryAddress().encodeABI(), 'address', i, 'mocAppreciationBeneficiaryAddress')
@@ -290,7 +298,7 @@ const contractStatus = async (web3, dContracts, configProject) => {
         "name": "",
         "type": "bool"
       }
-    ], i, 'FC_MAX_ABSOLUTE_OP')
+    ], i, 'FC_MAX_ABSOLUTE_OP', null, onErrorFluxCapacitor)
     multiCallRequest.aggregate(FC_MAX_OP_DIFFERENCE_PROVIDER, FC_MAX_OP_DIFFERENCE_PROVIDER.methods.peek().encodeABI(), [
       {
         "internalType": "bytes32",
@@ -302,7 +310,7 @@ const contractStatus = async (web3, dContracts, configProject) => {
         "name": "",
         "type": "bool"
       }
-    ], i, 'FC_MAX_OP_DIFFERENCE')
+    ], i, 'FC_MAX_OP_DIFFERENCE', null, onErrorFluxCapacitor)
     multiCallRequest.aggregate(Moc, Moc.methods.maxQACToMintTP(currentBlockNumber).encodeABI(), 'uint256', i, 'maxQACToMintTP')
     multiCallRequest.aggregate(Moc, Moc.methods.maxQACToRedeemTP(currentBlockNumber).encodeABI(), 'uint256', i, 'maxQACToRedeemTP')
     multiCallRequest.aggregate(Moc, Moc.methods.paused().encodeABI(), 'bool', i, 'paused')
@@ -369,15 +377,15 @@ const contractStatus = async (web3, dContracts, configProject) => {
   let PP_TP
   let tpAddress
   for (let ca = 0; ca < configProject.tokens.CA.length; ca++) {
-    for (let i = 0; i < configProject.tokens.TP.length; i++) {
+    for (let tp = 0; tp < configProject.tokens.TP.length; tp++) {
       Moc = dContracts.contracts.Moc[ca]
-      tpAddress = dContracts.contracts.TP[i].options.address
-      PP_TP = dContracts.contracts.PP_TP[i]
+      tpAddress = dContracts.contracts.TP[tp].options.address
+      PP_TP = dContracts.contracts.PP_TP[ca][tp]
 
-      multiCallRequest.aggregate(Moc, Moc.methods.tpMintFees(tpAddress).encodeABI(), 'uint256', ca, 'tpMintFees', i)
-      multiCallRequest.aggregate(Moc, Moc.methods.tpRedeemFees(tpAddress).encodeABI(), 'uint256', ca, 'tpRedeemFees', i)
-      multiCallRequest.aggregate(Moc, Moc.methods.tpCtarg(i).encodeABI(), 'uint256', ca, 'tpCtarg', i)
-      multiCallRequest.aggregate(Moc, Moc.methods.pegContainer(i).encodeABI(), 'uint256', ca, 'pegContainer', i)
+      multiCallRequest.aggregate(Moc, Moc.methods.tpMintFees(tpAddress).encodeABI(), 'uint256', ca, 'tpMintFees', tp)
+      multiCallRequest.aggregate(Moc, Moc.methods.tpRedeemFees(tpAddress).encodeABI(), 'uint256', ca, 'tpRedeemFees', tp)
+      multiCallRequest.aggregate(Moc, Moc.methods.tpCtarg(tp).encodeABI(), 'uint256', ca, 'tpCtarg', tp)
+      multiCallRequest.aggregate(Moc, Moc.methods.pegContainer(tp).encodeABI(), 'uint256', ca, 'pegContainer', tp)
       multiCallRequest.aggregate(PP_TP, PP_TP.methods.peek().encodeABI(), [
         {
           "internalType": "bytes32",
@@ -389,11 +397,11 @@ const contractStatus = async (web3, dContracts, configProject) => {
           "name": "",
           "type": "bool"
         }
-      ], ca, 'PP_TP', i)
-      multiCallRequest.aggregate(Moc, Moc.methods.getPACtp(tpAddress).encodeABI(), 'uint256', ca, 'getPACtp', i)
-      multiCallRequest.aggregate(Moc, Moc.methods.getTPAvailableToMint(tpAddress).encodeABI(), 'int256', ca, 'getTPAvailableToMint', i)
-      multiCallRequest.aggregate(Moc, Moc.methods.tpEma(i).encodeABI(), 'uint256', ca, 'tpEma', i)
-      multiCallRequest.aggregate(MocMultiCollateralGuard, MocMultiCollateralGuard.methods.getRealTPAvailableToMint(Moc.options.address, tpAddress).encodeABI(), 'uint256', ca, 'getRealTPAvailableToMint', i)
+      ], ca, 'PP_TP', tp)
+      multiCallRequest.aggregate(Moc, Moc.methods.getPACtp(tpAddress).encodeABI(), 'uint256', ca, 'getPACtp', tp)
+      multiCallRequest.aggregate(Moc, Moc.methods.getTPAvailableToMint(tpAddress).encodeABI(), 'int256', ca, 'getTPAvailableToMint', tp)
+      multiCallRequest.aggregate(Moc, Moc.methods.tpEma(tp).encodeABI(), 'uint256', ca, 'tpEma', tp)
+      multiCallRequest.aggregate(MocMultiCollateralGuard, MocMultiCollateralGuard.methods.getRealTPAvailableToMint(Moc.options.address, tpAddress).encodeABI(), 'uint256', ca, 'getRealTPAvailableToMint', tp)
     }
   }
 
@@ -446,9 +454,9 @@ const contractStatus = async (web3, dContracts, configProject) => {
   const d24BlockHeights = status.blockHeight - process.env.BLOCK_SPAN_HISTORIC;
   const multiCallRequestHistory = new MultiCall(multicall, web3)
 
-  for (let i = 0; i < configProject.tokens.CA.length; i++) {
-    Moc = dContracts.contracts.Moc[i]
-    multiCallRequestHistory.aggregate(Moc, Moc.methods.getPTCac().encodeABI(), 'uint256', i, 'getPTCac')
+  for (let ca = 0; ca < configProject.tokens.CA.length; ca++) {
+    Moc = dContracts.contracts.Moc[ca]
+    multiCallRequestHistory.aggregate(Moc, Moc.methods.getPTCac().encodeABI(), 'uint256', ca, 'getPTCac')
     multiCallRequestHistory.aggregate(PP_COINBASE, PP_COINBASE.methods.peek().encodeABI(), [
       {
         "internalType": "bytes32",
@@ -460,7 +468,7 @@ const contractStatus = async (web3, dContracts, configProject) => {
         "name": "",
         "type": "bool"
       }
-    ], i, 'PP_COINBASE')
+    ], ca, 'PP_COINBASE')
     multiCallRequestHistory.aggregate(PP_FeeToken, PP_FeeToken.methods.peek().encodeABI(), [
       {
         "internalType": "bytes32",
@@ -472,27 +480,9 @@ const contractStatus = async (web3, dContracts, configProject) => {
         "name": "",
         "type": "bool"
       }
-    ], i, 'PP_FeeToken')
-  }
+    ], ca, 'PP_FeeToken')
 
-  for (let i = 0; i < configProject.tokens.TP.length; i++) {
-    PP_TP = dContracts.contracts.PP_TP[i]
-    multiCallRequestHistory.aggregate(PP_TP, PP_TP.methods.peek().encodeABI(), [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ], 'PP_TP', i)
-  }
-
-  for (let i = 0; i < configProject.tokens.CA.length; i++) {
-    PP_CA = dContracts.contracts.PP_CA[i]
+    PP_CA = dContracts.contracts.PP_CA[ca]
     multiCallRequestHistory.aggregate(PP_CA, PP_CA.methods.peek().encodeABI(), [
       {
         "internalType": "bytes32",
@@ -504,7 +494,23 @@ const contractStatus = async (web3, dContracts, configProject) => {
         "name": "",
         "type": "bool"
       }
-    ], 'PP_CA', i)
+    ], 'PP_CA', ca)
+
+    for (let tp = 0; tp < configProject.tokens.TP.length; tp++) {
+      PP_TP = dContracts.contracts.PP_TP[ca][tp]
+      multiCallRequestHistory.aggregate(PP_TP, PP_TP.methods.peek().encodeABI(), [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ], ca, 'PP_TP', tp)
+    }
   }
 
   const historic = await multiCallRequestHistory.tryBlockAndAggregate();
@@ -590,11 +596,11 @@ const userBalance = async (web3, dContracts, userAddress, configProject) => {
 
   let TP
   for (let ca = 0; ca < configProject.tokens.CA.length; ca++) {
-    for (let i = 0; i < configProject.tokens.TP.length; i++) {
-      TP = dContracts.contracts.TP[i]
+    for (let tp = 0; tp < configProject.tokens.TP.length; tp++) {
+      TP = dContracts.contracts.TP[tp]
       Moc = dContracts.contracts.Moc[ca]
-      multiCallRequest.aggregate(TP, TP.methods.balanceOf(userAddress).encodeABI(), 'uint256', ca, 'TP_balance', i)
-      multiCallRequest.aggregate(TP, TP.methods.allowance(userAddress, Moc.options.address).encodeABI(), 'uint256', ca, 'TP_allowance', i)
+      multiCallRequest.aggregate(TP, TP.methods.balanceOf(userAddress).encodeABI(), 'uint256', ca, 'TP_balance', tp)
+      multiCallRequest.aggregate(TP, TP.methods.allowance(userAddress, Moc.options.address).encodeABI(), 'uint256', ca, 'TP_allowance', tp)
     }
   }
 
@@ -613,14 +619,13 @@ const userBalance = async (web3, dContracts, userAddress, configProject) => {
     }
   }
 
-
   const userBalance = await multiCallRequest.tryBlockAndAggregate();
   //userBalance.blockHeight = multicallResult[0]
 
   TP = []
   for (let ca = 0; ca < configProject.tokens.CA.length; ca++) {
-    for (let i = 0; i < configProject.tokens.TP.length; i++) {
-      TP.push({balance: userBalance[ca]['TP_balance'][i], allowance: userBalance[ca]['TP_allowance'][i]})
+    for (let tp = 0; tp < configProject.tokens.TP.length; tp++) {
+      TP.push({balance: userBalance[ca]['TP_balance'][tp], allowance: userBalance[ca]['TP_allowance'][tp]})
     }
   }
   userBalance.TP = TP
